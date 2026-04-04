@@ -38,6 +38,11 @@ body {
   font-family: "Space Grotesk", sans-serif;
 }
 
+body.site-cursor-active,
+body.site-cursor-active * {
+  cursor: none !important;
+}
+
 button,
 a,
 input,
@@ -50,6 +55,71 @@ a {
   color: inherit;
   text-decoration-color: rgba(209, 168, 111, 0.55);
   text-underline-offset: 0.2em;
+}
+
+.site-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9999;
+  transition: opacity 160ms ease;
+}
+
+.site-cursor::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(236, 233, 225, 0.9);
+  box-shadow:
+    0 0 0 4px rgba(9, 9, 9, 0.72),
+    0 10px 24px rgba(0, 0, 0, 0.24);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition:
+    width 160ms ease,
+    height 160ms ease,
+    border-radius 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.site-cursor--pointer::before {
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+  background: rgba(209, 168, 111, 0.96);
+  box-shadow:
+    0 0 0 5px rgba(9, 9, 9, 0.82),
+    0 12px 28px rgba(0, 0, 0, 0.28);
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.04);
+}
+
+.site-cursor__tail-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.site-cursor__tail-dot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(209, 168, 111, 0.3);
+  background: rgba(236, 233, 225, 0.42);
+  border-radius: 3px;
+  transform: translate3d(-999px, -999px, 0) rotate(45deg);
+  will-change: transform, opacity;
+  opacity: 0;
+  mix-blend-mode: screen;
 }
 
 .page {
@@ -76,6 +146,18 @@ a {
 .nav-link {
   color: var(--soft);
   text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.nav-link:hover,
+.nav-link.nav-link-near {
+  color: var(--text);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .nav-link.current {
@@ -598,6 +680,24 @@ h3 {
     right: 0.9rem;
     bottom: 0.9rem;
     font-size: 0.86rem;
+  }
+}
+
+@media (pointer: coarse) {
+  body.site-cursor-active,
+  body.site-cursor-active * {
+    cursor: auto !important;
+  }
+
+  .site-cursor,
+  .site-cursor__tail-layer {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-cursor__tail-layer {
+    display: none;
   }
 }
 

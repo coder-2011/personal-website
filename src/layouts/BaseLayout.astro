@@ -34,6 +34,13 @@ const {
   </head>
   <body>
     <slot />
+    <div class="site-cursor__tail-layer" aria-hidden="true">
+      <span class="site-cursor__tail-dot"></span>
+      <span class="site-cursor__tail-dot"></span>
+      <span class="site-cursor__tail-dot"></span>
+      <span class="site-cursor__tail-dot"></span>
+    </div>
+    <div class="site-cursor" aria-hidden="true"></div>
     <a
       class="site-github"
       href="https://github.com/coder-2011"
@@ -49,5 +56,151 @@ const {
       </svg>
       <span>github.com/coder-2011</span>
     </a>
+    <script is:inline>
+      (() => {
+        const INTERACTIVE_SELECTOR =
+          "a, button, input, textarea, select, label, summary, [role='button']";
+        const PROXIMITY_SELECTOR = ".top-nav .nav-link";
+        const cursor = document.querySelector(".site-cursor");
+        const tailLayer = document.querySelector(".site-cursor__tail-layer");
+        const tailDots = Array.from(
+          document.querySelectorAll(".site-cursor__tail-dot")
+        );
+        const proximityLinks = Array.from(document.querySelectorAll(PROXIMITY_SELECTOR));
+
+        if (!(cursor instanceof HTMLDivElement) || !(tailLayer instanceof HTMLDivElement)) {
+          return;
+        }
+
+        const pointerMediaQuery = window.matchMedia("(pointer: fine) and (hover: hover)");
+        const motionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const trail = tailDots.map(() => ({ x: -999, y: -999 }));
+
+        let pointerEffectsEnabled = false;
+        let prefersReducedMotion = motionMediaQuery.matches;
+        let visible = false;
+        let cursorX = -999;
+        let cursorY = -999;
+        let targetX = -999;
+        let targetY = -999;
+        let frameId = 0;
+
+        const setEnabledState = () => {
+          pointerEffectsEnabled = pointerMediaQuery.matches;
+          prefersReducedMotion = motionMediaQuery.matches;
+          document.body.classList.toggle("site-cursor-active", pointerEffectsEnabled);
+          tailLayer.style.display =
+            pointerEffectsEnabled && !prefersReducedMotion ? "block" : "none";
+
+          if (!pointerEffectsEnabled) {
+            visible = false;
+            cursor.style.opacity = "0";
+            tailDots.forEach((dot) => {
+              dot.style.opacity = "0";
+            });
+          }
+        };
+
+        const updatePointerState = (target) => {
+          const isPointer = target instanceof Element && target.closest(INTERACTIVE_SELECTOR);
+          cursor.classList.toggle("site-cursor--pointer", Boolean(isPointer));
+        };
+
+        const handleMouseMove = (event) => {
+          if (!pointerEffectsEnabled) {
+            return;
+          }
+
+          targetX = event.clientX;
+          targetY = event.clientY;
+          visible = true;
+          updatePointerState(event.target);
+
+          proximityLinks.forEach((link) => {
+            if (!(link instanceof HTMLElement)) {
+              return;
+            }
+
+            const rect = link.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+
+            link.classList.toggle("nav-link-near", distance < 90);
+          });
+        };
+
+        const handleMouseLeave = () => {
+          visible = false;
+          cursor.classList.remove("site-cursor--pointer");
+          proximityLinks.forEach((link) => {
+            if (link instanceof HTMLElement) {
+              link.classList.remove("nav-link-near");
+            }
+          });
+        };
+
+        const render = () => {
+          cursorX += (targetX - cursorX) * 0.28;
+          cursorY += (targetY - cursorY) * 0.28;
+          cursor.style.opacity = pointerEffectsEnabled && visible ? "1" : "0";
+          cursor.style.transform =
+            "translate3d(" +
+            cursorX +
+            "px, " +
+            cursorY +
+            "px, 0) translate(-50%, -50%)";
+
+          if (pointerEffectsEnabled && !prefersReducedMotion) {
+            for (let index = 0; index < trail.length; index += 1) {
+              const point = trail[index];
+              const leader = index === 0 ? { x: targetX, y: targetY } : trail[index - 1];
+              const easing = index === 0 ? 0.3 : 0.23;
+              const dot = tailDots[index];
+              const opacity = visible ? Math.max(0, 0.66 - index * 0.065) : 0;
+              const scale = 1 - index * 0.08;
+              const rotation = 45 + index * 7;
+
+              point.x += (leader.x - point.x) * easing;
+              point.y += (leader.y - point.y) * easing;
+
+              dot.style.opacity = String(opacity);
+              dot.style.transform =
+                "translate3d(" +
+                (point.x - 7) +
+                "px, " +
+                (point.y - 7) +
+                "px, 0) rotate(" +
+                rotation +
+                "deg) scale(" +
+                scale +
+                ")";
+            }
+          }
+
+          frameId = window.requestAnimationFrame(render);
+        };
+
+        setEnabledState();
+        pointerMediaQuery.addEventListener("change", setEnabledState);
+        motionMediaQuery.addEventListener("change", setEnabledState);
+        window.addEventListener("mousemove", handleMouseMove, { passive: true });
+        window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
+        frameId = window.requestAnimationFrame(render);
+
+        window.addEventListener(
+          "pagehide",
+          () => {
+            window.cancelAnimationFrame(frameId);
+            pointerMediaQuery.removeEventListener("change", setEnabledState);
+            motionMediaQuery.removeEventListener("change", setEnabledState);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mouseleave", handleMouseLeave);
+            document.body.classList.remove("site-cursor-active");
+          },
+          { once: true }
+        );
+      })();
+    </script>
   </body>
 </html>
