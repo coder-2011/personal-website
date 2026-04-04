@@ -3,11 +3,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 const projects = [
   {
-    title: "Autonomous wildfire UAV",
+    title: "STRATUS UAV: Optimizing Prescribed Burning using UAVs and Predictive Modeling",
     paragraphs: [
       "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance.",
       "The goal was to solve the biggest issues in the field: cost, pilot liability, lower price, and higher range than the closest drone competitor."
     ],
+    image: {
+      src: "/projects/stratus-poster.png",
+      alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview."
+    },
     bullets: [
       "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
       "Safety: pilot liability",
@@ -74,6 +78,11 @@ const projects = [
           <section class="project-panel">
             <h2>{project.title}</h2>
             {project.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            {project.image && (
+              <figure class="project-figure">
+                <img src={project.image.src} alt={project.image.alt} loading="lazy" />
+              </figure>
+            )}
             {project.bullets && (
               <ul class="plain-list project-bullets">
                 {project.bullets.map((bullet) => <li>{bullet}</li>)}
