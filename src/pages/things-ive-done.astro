@@ -10,7 +10,8 @@ const projects = [
     ],
     image: {
       src: "/projects/stratus-poster.png",
-      alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview."
+      alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview.",
+      caption: "STRATUS project poster"
     },
     bullets: [
       "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
@@ -42,7 +43,12 @@ const projects = [
     paragraphs: [
       "Placed 2nd in the California State Science Fair, 1st at regionals, and won 5 awards building PHEONIX UAV for early wildfire detection.",
       "That included 1st in category, 1st in fair, the Henkel aerospace award, selection for national competition, the Junior Lemelson-MIT Inventor Award, and selection for state-level competition."
-    ]
+    ],
+    image: {
+      src: "/projects/phoenix-uav-poster.png",
+      alt: "PHEONIX UAV project poster for early wildfire detection.",
+      caption: "PHEONIX UAV poster"
+    }
   },
   {
     title: "Competitions",
@@ -88,12 +94,13 @@ const projects = [
         {projects.map((project) => (
           <section class="project-panel">
             <h2>{project.title}</h2>
-            {project.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
             {project.image && (
               <figure class="project-figure">
                 <img src={project.image.src} alt={project.image.alt} loading="lazy" />
+                {project.image.caption && <figcaption>{project.image.caption}</figcaption>}
               </figure>
             )}
+            {project.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
             {project.bullets && (
               <ul class="plain-list project-bullets">
                 {project.bullets.map((bullet) => <li>{bullet}</li>)}

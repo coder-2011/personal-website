@@ -247,9 +247,23 @@ h3 {
   background: rgba(255, 255, 255, 0.03);
 }
 
+.project-figure figcaption {
+  margin-top: 0.55rem;
+  color: var(--soft);
+  font-size: 0.92rem;
+}
+
 .project-bullets {
   margin-top: 0.4rem;
   margin-bottom: 1rem;
+}
+
+.project-links {
+  color: var(--soft);
+}
+
+.link-divider {
+  color: var(--soft);
 }
 
 .reading-section {
