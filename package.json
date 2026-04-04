@@ -10,6 +10,8 @@
     "preview": "astro preview --host --port 3000"
   },
   "dependencies": {
+    "@astrojs/node": "^9.5.5",
+    "@supabase/supabase-js": "^2.101.1",
     "astro": "^5.7.1"
   }
 }
