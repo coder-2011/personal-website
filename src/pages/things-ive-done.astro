@@ -37,7 +37,7 @@ const projects = [
   {
     title: "SBON (Strategic-Blackline-Optimization-Engine)",
     paragraphs: [
-      "Engineered an AI-driven ecological tool designed to prevent catastrophic wildfires. Utilizing a tri-branch architecture with state-space model architecture and ConvNeXt, the engine analyzes environmental variables to pinpoint ideal locations for prescribed burns.",
+      "Engineered an AI-driven ecological tool designed to prevent catastrophic wildfires, broke SOTA, and created the first ever ML approach to optimizing prescribed burns. Utilizing a tri-branch architecture with state-space model architecture and ConvNeXt, the engine analyzes environmental variables to pinpoint ideal locations for prescribed burns.",
       "The 13 types of input data are split into current fire imaging, text-based weather data, and less dynamic geography data. Each category is initially processed through its own specialized model, then fused through a stronger state-space model before being turned into an output fire mask for prediction and simulation."
     ],
     image: {
@@ -56,8 +56,13 @@ const projects = [
     title: "No Circles",
     paragraphs: [
       "Built no-circles.com, a website-first personalized daily newsletter that learns from what each reader actually responds to.",
-      "The system keeps a text-first memory of the user, builds a brief from that memory, and updates future issues from replies and feedback instead of sending everyone the same links."
+      "The system keeps a memory of the user, builds a brief from that memory, and updates future issues from replies and feedback to help teach the person about tangential fields they know little about. Scaled to triple-digit users 3 weeks from inception"
     ],
+    image: {
+      src: "/reading/no-circles.png",
+      alt: "No Circles product image.",
+      caption: "No Circles"
+    },
     links: [
       { href: "https://no-circles.com", label: "no-circles.com" },
       { href: "https://github.com/coder-2011/no-circles", label: "GitHub repo" }
@@ -109,11 +114,15 @@ const projects = [
     <article class="essay about-essay">
       <h1>Things I&apos;ve Done</h1>
 
-      <p>
-        awards, accomplishments, and projects I&apos;m proud of.
-      </p>
-
       <div class="project-stack">
+        <section class="project-panel">
+          <h2>Contract Work</h2>
+          <p>
+            Under contract building machines for fire tech companies, with a focus on systems that
+            are actually useful in the field.
+          </p>
+        </section>
+
         {projects.map((project) => (
           <section class="project-panel">
             <h2>{project.title}</h2>
