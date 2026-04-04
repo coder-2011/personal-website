@@ -352,6 +352,34 @@ h3 {
   z-index: 1;
 }
 
+.waitlist-particle {
+  position: absolute;
+  top: -20px;
+  border-radius: 999px;
+  opacity: 0;
+  filter: blur(0.2px);
+  animation-name: none;
+  animation-timing-function: cubic-bezier(0.2, 0.72, 0.2, 1);
+  animation-fill-mode: forwards;
+}
+
+.waitlist-celebration-overlay {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.waitlist-celebration-overlay-animated .waitlist-particle {
+  animation-name: waitlist-confetti-fall;
+}
+
+.waitlist-card-success .waitlist-notice-success {
+  border-color: rgba(211, 192, 155, 0.32);
+  background: rgba(241, 236, 227, 0.06);
+}
+
 .waitlist-kicker {
   margin-bottom: 0.8rem;
   color: var(--accent);
@@ -459,6 +487,21 @@ h3 {
 .waitlist-notice-error {
   color: #ffb0b0;
   border-color: rgba(255, 120, 120, 0.35);
+}
+
+@keyframes waitlist-confetti-fall {
+  0% {
+    transform: translate3d(calc(var(--waitlist-drift-x, 0px) * -0.18), -12px, 0) rotate(0deg)
+      scale(1.02);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(var(--waitlist-drift-x, 0px), 112vh, 0) rotate(420deg) scale(0.94);
+    opacity: 0;
+  }
 }
 
 .plain-list {
