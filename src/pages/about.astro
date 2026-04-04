@@ -6,15 +6,13 @@ const randomNotes = [
   "I like getting good at things until I can do them intuitively (thats why physics is so satisfying).",
   "I keep a small booklet of ideas and usually rotate through a few of them every month.",
   "I use Ghostty and VScode completely blacked out",
-  "I like elegantly designed card tricks and board games",
-  "I subscribe to Crocker's Rules.",
-  "If you want to reach me, email naman.chetwani@gmail.com (my threshold for reaching out to me is rlly low)"
+  "I like elegantly designed card tricks and board games"
 ];
 
 const beliefs = [
   "my theory is that if I get better at reflecting on my implementation of advice, and figuring out what I am bad at, I will exponentially improve",
   "most people do much more performative stuff than they think. Humanity's bar for what is performative is suprisingly high",
-  "Cool people make life feel cool"
+  "Cool people make life feel exciting"
 ];
 
 const favoriteTheorems = [
@@ -42,33 +40,34 @@ const favoriteTheorems = [
     </div>
 
     <article class="essay about-essay">
-      <h1>About.</h1>
+      <h1>About</h1>
 
       <h2>Things I believe:</h2>
       <ul class="plain-list about-list">
         {beliefs.map((belief) => <li>{belief}</li>)}
       </ul>
 
-      <h2>Fav th's</h2>
+      <h2>My favorite theorems:</h2>
       <ul class="plain-list about-list">
         {favoriteTheorems.map((theorem) => <li>{theorem}</li>)}
       </ul>
 
-      <ul class="plain-list about-list">
+      <div class="about-notes">
         {randomNotes.map((note) => (
-          <li
-            set:html={note
-              .replace(
-                "Crocker's Rules",
-                `<a href="http://sl4.org/crocker.html" target="_blank" rel="noreferrer">Crocker's Rules</a>`
-              )
-              .replace(
-                "naman.chetwani@gmail.com",
-                `<a href="mailto:naman.chetwani@gmail.com">naman.chetwani@gmail.com</a>`
-              )}
-          />
+          <p>{note}</p>
         ))}
-      </ul>
+      </div>
+
+      <p>
+        I subscribe to
+        <a href="http://sl4.org/crocker.html" target="_blank" rel="noreferrer"> Crocker&apos;s Rules</a>.
+      </p>
+
+      <p>
+        If you want to reach me, email
+        <a href="mailto:naman.chetwani@gmail.com"> naman.chetwani@gmail.com</a>
+        (my threshold for reaching out to me is rlly low).
+      </p>
     </article>
   </main>
 </BaseLayout>
