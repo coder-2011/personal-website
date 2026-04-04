@@ -12,8 +12,14 @@ const projects = [
   {
     title: "STRATUS UAV: Optimizing Prescribed Burning using UAVs and Predictive Modeling",
     paragraphs: [
-      "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance.",
-      "The goal was to solve the biggest issues in the field: cost, pilot liability, lower price, and higher range than the closest drone competitor."
+      "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance, solving the biggest issues in the field:",
+      "I built in 7 months what they built in 9 years."
+    ],
+    bullets: [
+      "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
+      "Safety: pilot liability",
+      "Lower price: by 5x",
+      "Higher range: by a factor of 3x over the closest drone competitor"
     ],
     images: [
       {
@@ -26,19 +32,13 @@ const projects = [
         alt: "STRATUS UAV aircraft photo.",
         caption: "STRATUS UAV airframe"
       }
-    ],
-    bullets: [
-      "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
-      "Safety: pilot liability",
-      "Lower price: by 5x",
-      "Higher range: by a factor of 3x over the closest drone competitor"
     ]
   },
   {
     title: "SBON (Strategic-Blackline-Optimization-Engine)",
     paragraphs: [
-      "Engineered an AI-driven ecological tool designed to prevent catastrophic wildfires, broke SOTA, and created the first ever ML approach to optimizing prescribed burns. Utilizing a tri-branch architecture with state-space model architecture and ConvNeXt, the engine analyzes environmental variables to pinpoint ideal locations for prescribed burns.",
-      "The 13 types of input data are split into current fire imaging, text-based weather data, and less dynamic geography data. Each category is initially processed through its own specialized model, then fused through a stronger state-space model before being turned into an output fire mask for prediction and simulation."
+      "Built a wildfire prediction foundational model that broke SOTA and created the first ML approach to optimizing prescribed burns.",
+      "SBON uses a tri-branch multimodal architecture over 13 input modalities spanning fire imagery, weather, and geography, with ConvNeXt and state-space modeling to fuse those signals into a 4-hour fire-mask prediction. I then used the model as a simulator during inference, perturbing inputs to test prescribed burns and firebreak placement, turning a workflow still driven largely by checklists and operator intuition into an optimization problem."
     ],
     image: {
       src: "/projects/sbon-diagram.png",
@@ -71,8 +71,8 @@ const projects = [
   {
     title: "Science fair results",
     paragraphs: [
-      "Placed 2nd in the California State Science Fair, 1st at regionals, and won 5 awards building PHEONIX UAV for early wildfire detection.",
-      "That included 1st in category, 1st in fair, the Henkel aerospace award, selection for national competition, the Junior Lemelson-MIT Inventor Award, and selection for state-level competition."
+      "Placed 2nd in the California State Science Fair, 1st @ regionals and won 5 awards building PHEONIX UAV for early wildfire detection:",
+      "1st in category, 1st in fair, Henkel aerospace award, 1 of 3 selected for national competition, 1 out of 200 nationally winning Junior Lemelson-MIT Inventor Award, and 1 of 20 selected for state level competition."
     ],
     image: {
       src: "/projects/phoenix-uav-poster.png",
