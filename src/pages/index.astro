@@ -6,7 +6,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   title="Naman Chetwani"
   description="Personal website for Naman Chetwani."
 >
-  <main class="page">
+  <main class="page home-page">
     <div class="page-top">
       <nav class="top-nav" aria-label="Primary">
         <a class="nav-link current" href="/">Naman Chetwani</a>
@@ -14,13 +14,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <a class="nav-link" href="/things-ive-done">Things I've Done</a>
         <a class="nav-link" href="/reading">Reading</a>
       </nav>
-      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
-        Light mode
-      </button>
     </div>
 
     <article class="essay">
-      <h1>hi, i'm Naman</h1>
+      <h1 class="intro-title">hi, i'm Naman</h1>
 
       <p>I’m 15 and I am an engineer.</p>
 
@@ -29,17 +26,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <p>I&apos;ve dabbled across most realms of building things.</p>
 
       <p>
-        My long-term goal is to build tech that reduces humanity&apos;s existential debt
-        <span class="tooltip-wrap">
-          <button class="tooltip-trigger" type="button" aria-describedby="existential-debt-tip">
-            ?
-          </button>
-          <span class="tooltip" id="existential-debt-tip" role="tooltip">
-            My shorthand for the preventable long-term risks, fragility, and lost future
-            potential humanity keeps handing to itself.
-          </span>
-        </span>
-        .
+        My long-term goal is to build tech that reduces humanity&apos;s existential debt.
       </p>
 
       <p>
@@ -57,47 +44,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <li>doing things that I think about when I am not doing them</li>
       </ul>
 
-      <p>
-        my theory is that if I get better at reflecting on how I implement advice and identify
-        what I am bad at, at repeat fast enough, I can recursively improve
-      </p>
-
-      <div class="link-grid" aria-label="Site sections">
-        <a class="page-card" href="/about">
-          <span class="page-card-kicker">separate page</span>
-          <strong class="page-card-title">About</strong>
-          <span class="page-card-copy">
-            notes, beliefs, favorite theorems, and the stuff that used to live in the about section.
-          </span>
-        </a>
-
-        <a class="page-card" href="/things-ive-done">
-          <span class="page-card-kicker">separate page</span>
-          <strong class="page-card-title">Things I&apos;ve Done</strong>
-          <span class="page-card-copy">
-            awards, projects, competition results, and technical work I&apos;m proud of.
-          </span>
-        </a>
-
-        <a class="page-card" href="/reading">
-          <span class="page-card-kicker">separate page</span>
-          <strong class="page-card-title">Reading</strong>
-          <span class="page-card-copy">
-            favorite writing, morsels of wisdom, and things I keep reading outside my lane.
-          </span>
-        </a>
-      </div>
-
-      <p>Breakfast: billions of tokens.</p>
     </article>
-
-    <a
-      class="corner-link"
-      href="https://github.com/coder-2011"
-      target="_blank"
-      rel="noreferrer"
-    >
-      github.com/coder-2011
-    </a>
   </main>
 </BaseLayout>

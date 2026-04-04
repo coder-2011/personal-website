@@ -13,7 +13,7 @@ const {
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,35 +26,8 @@ const {
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
       rel="stylesheet"
     />
-    <script is:inline>
-      const savedTheme = localStorage.getItem("theme");
-      const initialTheme = savedTheme === "light" ? "light" : "dark";
-      document.documentElement.dataset.theme = initialTheme;
-    </script>
   </head>
   <body>
     <slot />
-    <script is:inline>
-      const root = document.documentElement;
-      const toggle = document.querySelector("[data-theme-toggle]");
-
-      const setTheme = (theme) => {
-        root.dataset.theme = theme;
-        localStorage.setItem("theme", theme);
-        if (toggle) {
-          toggle.textContent = theme === "dark" ? "Light mode" : "Dark mode";
-          toggle.setAttribute(
-            "aria-label",
-            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-          );
-        }
-      };
-
-      setTheme(root.dataset.theme === "light" ? "light" : "dark");
-
-      toggle?.addEventListener("click", () => {
-        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
-      });
-    </script>
   </body>
 </html>

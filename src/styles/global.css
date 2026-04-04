@@ -6,16 +6,13 @@
   --soft: #8f8a82;
   --border: rgba(255, 255, 255, 0.12);
   --accent: #d1a86f;
+  --hero-grid-size: 20px;
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --bg: #f2ede5;
-  --text: #151311;
-  --muted: #474039;
-  --soft: #6e655e;
-  --border: rgba(21, 19, 17, 0.12);
-  --accent: #8a4d1c;
+@font-face {
+  font-family: "Geist";
+  src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
+  font-display: swap;
 }
 
 * {
@@ -39,9 +36,6 @@ body {
   background-size: 100% 100%;
   color: var(--text);
   font-family: "Space Grotesk", sans-serif;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease;
 }
 
 button,
@@ -88,26 +82,48 @@ a {
   color: var(--text);
 }
 
-.theme-toggle {
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  border-radius: 999px;
-  padding: 0.55rem 0.9rem;
-  cursor: pointer;
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease;
-}
-
-.theme-toggle:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-
 .essay {
   width: min(100%, 42rem);
   margin-left: clamp(0rem, 10vw, 6.5rem);
+}
+
+.intro-title {
+  max-width: 11ch;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.26;
+  background:
+    conic-gradient(
+      from 180deg at 50% 70%,
+      hsl(0 0% 92%) 0deg,
+      hsl(0 0% 78%) 72deg,
+      hsl(0 0% 58%) 144deg,
+      hsl(0 0% 38%) 216deg,
+      hsl(0 0% 70%) 288deg,
+      hsl(0 0% 92%) 1turn
+    );
+  mask:
+    radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px) 50% 50% /
+      var(--hero-grid-size) var(--hero-grid-size),
+    url("https://assets.codepen.io/605876/noise-mask.png") 256px 50% / 256px 256px;
+  mask-composite: intersect;
+  -webkit-mask:
+    radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px) 50% 50% /
+      var(--hero-grid-size) var(--hero-grid-size),
+    url("https://assets.codepen.io/605876/noise-mask.png") 256px 50% / 256px 256px;
+  -webkit-mask-composite: source-in;
+  animation: flicker 20s infinite linear;
+  pointer-events: none;
 }
 
 .about-essay {
@@ -175,52 +191,8 @@ h3 {
   margin-bottom: 2rem;
 }
 
-.link-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin: 2rem 0;
-}
-
-.page-card {
-  display: block;
-  padding: 1.05rem 1.1rem;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  text-decoration: none;
-  background: rgba(255, 255, 255, 0.02);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease;
-}
-
-.page-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--accent);
-}
-
-.page-card-kicker,
-.page-card-title,
-.page-card-copy {
-  display: block;
-}
-
-.page-card-kicker {
-  color: var(--soft);
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.page-card-title {
-  margin: 0.45rem 0 0.6rem;
-  color: var(--text);
-  font-size: 1.05rem;
-}
-
-.page-card-copy {
-  color: var(--muted);
-  line-height: 1.65;
+.about-notes {
+  margin-bottom: 2rem;
 }
 
 .project-stack {
@@ -340,19 +312,6 @@ h3 {
   margin-left: 0.45rem;
 }
 
-.corner-link {
-  position: fixed;
-  right: 1.5rem;
-  bottom: 1.25rem;
-  color: var(--soft);
-  text-decoration: none;
-  font-size: 0.92rem;
-}
-
-.corner-link:hover {
-  color: var(--text);
-}
-
 .tooltip-wrap {
   position: relative;
   display: inline-flex;
@@ -421,7 +380,10 @@ h3 {
     line-height: 1.8;
   }
 
-  .link-grid,
+  body::before {
+    background-size: cover;
+  }
+
   .reading-grid {
     grid-template-columns: 1fr;
   }
@@ -433,23 +395,11 @@ h3 {
   .plain-list li {
     line-height: 1.7;
   }
+}
 
-  .corner-link {
-    right: 1rem;
-    bottom: 1rem;
-    font-size: 0.88rem;
+@keyframes flicker {
+  to {
+    mask-position: 50% 50%, 0 50%;
+    -webkit-mask-position: 50% 50%, 0 50%;
   }
-}
-
-:root[data-theme="light"] body {
-  background:
-    radial-gradient(circle at 12% 18%, rgba(21, 19, 17, 0.14) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 84% 26%, rgba(21, 19, 17, 0.12) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 68% 72%, rgba(21, 19, 17, 0.1) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 22% 84%, rgba(21, 19, 17, 0.12) 0 1px, transparent 1.5px),
-    var(--bg);
-}
-
-:root[data-theme="light"] .tooltip {
-  background: rgba(242, 237, 229, 0.98);
 }
