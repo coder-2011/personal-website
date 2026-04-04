@@ -38,7 +38,8 @@ const projects = [
     title: "SBON (Strategic-Blackline-Optimization-Engine)",
     paragraphs: [
       "Built a wildfire prediction foundational model that broke SOTA and created the first ML approach to optimizing prescribed burns.",
-      "SBON uses a tri-branch multimodal architecture over 13 input modalities spanning fire imagery, weather, and geography, with ConvNeXt and state-space modeling to fuse those signals into a 4-hour fire-mask prediction. I then used the model as a simulator during inference, perturbing inputs to test prescribed burns and firebreak placement, turning a workflow still driven largely by checklists and operator intuition into an optimization problem."
+      "SBON uses a tri-branch multimodal architecture over 13 input modalities spanning fire imagery, weather, and geography, with ConvNeXt and SSMs as encoders, feeding into a larger SSM to create a 4-hour fire-mask prediction.",
+      "We treat the wildfire foundational model as an environment, where we autoregressively rollout to 48 hours to get a longer scale prediction. We then use PPO to optimize the placement of prescribed burns, turning a workflow still driven largely by checklists and operator intuition into an optimization problem."
     ],
     image: {
       src: "/projects/sbon-diagram.png",
