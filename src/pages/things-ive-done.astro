@@ -20,10 +20,21 @@ const projects = [
     ]
   },
   {
-    title: "AI ecological firebreak engine",
+    title: "SBON (Strategic-Blackline-Optimization-Engine)",
     paragraphs: [
       "Engineered an AI-driven ecological tool designed to prevent catastrophic wildfires. Utilizing a tri-branch architecture with state-space model architecture and ConvNeXt, the engine analyzes environmental variables to pinpoint ideal locations for prescribed burns.",
       "The 13 types of input data are split into current fire imaging, text-based weather data, and less dynamic geography data. Each category is initially processed through its own specialized model, then fused through a stronger state-space model before being turned into an output fire mask for prediction and simulation."
+    ]
+  },
+  {
+    title: "No Circles",
+    paragraphs: [
+      "Built no-circles.com, a website-first personalized daily newsletter that learns from what each reader actually responds to.",
+      "The system keeps a text-first memory of the user, builds a brief from that memory, and updates future issues from replies and feedback instead of sending everyone the same links."
+    ],
+    links: [
+      { href: "https://no-circles.com", label: "no-circles.com" },
+      { href: "https://github.com/coder-2011/no-circles", label: "GitHub repo" }
     ]
   },
   {
@@ -36,7 +47,7 @@ const projects = [
   {
     title: "Competitions",
     paragraphs: [
-      "Competed in various competitive programming and physics competitions, ultimately developing skills achieving USACO Silver and qualifying scores on the F=MA exam, which is top 5% nationally.",
+      "Competed in various competitive programming and physics competitions, ultimately developing skills achieving USACO Gold and qualifying scores on the F=MA exam, which is top 5% nationally.",
       "I also competed in CALICO, Harker Physics Invitational, Harker Programming Invitational, and held a top 30 placement in the nation in MSPF Debate, reaching elimination rounds in national-circuit tournaments like Stanford and TOC."
     ]
   },
@@ -87,6 +98,16 @@ const projects = [
               <ul class="plain-list project-bullets">
                 {project.bullets.map((bullet) => <li>{bullet}</li>)}
               </ul>
+            )}
+            {project.links && (
+              <p class="project-links">
+                {project.links.map((link, index) => (
+                  <>
+                    {index > 0 && <span class="link-divider"> · </span>}
+                    <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                  </>
+                ))}
+              </p>
             )}
           </section>
         ))}
