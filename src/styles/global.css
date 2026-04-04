@@ -171,9 +171,13 @@ h3 {
   line-height: 1.75;
 }
 
+.about-list {
+  margin-bottom: 2rem;
+}
+
 .link-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin: 2rem 0;
 }
@@ -407,6 +411,7 @@ h3 {
   .reading-grid {
     grid-template-columns: 1fr;
   }
+
 
   .plain-list li {
     line-height: 1.7;
