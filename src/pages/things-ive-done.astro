@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const projects = [
+  {
+    title: "Autonomous wildfire UAV",
+    paragraphs: [
+      "I led development of a patent-pending autonomous UAV to mitigate wildfire spread. From scratch, I built a 3D-printed VTOL aircraft designed to conduct autonomous backburning, with 15 km range and 1.2 hour endurance.",
+      "The goal was to attack the main constraints in the field at once: cost, pilot liability, price, and range."
+    ],
+    bullets: [
+      "Helicopters can run around $16k/day once pilots and custom hardware are involved",
+      "Lower pilot risk",
+      "Around 5x lower price",
+      "Around 3x the range of the closest drone competitor"
+    ]
+  },
+  {
+    title: "AI ecological firebreak engine",
+    paragraphs: [
+      "I engineered an AI-driven ecological tool designed to prevent catastrophic wildfires. It uses fire imagery, weather time series, and geography data to predict fire evolution and test where prescribed burns or firebreaks should go.",
+      "The system fuses those streams into a shared representation, predicts the next fire mask, and can then be used like a simulator so different interventions can be compared."
+    ]
+  },
+  {
+    title: "Science fair results",
+    paragraphs: [
+      "I placed 2nd in the California State Science Fair, 1st at regionals, and picked up multiple awards building PHEONIX UAV for early wildfire detection.",
+      "That included category wins, aerospace recognition, and selection into higher-level competition."
+    ]
+  },
+  {
+    title: "Competitions",
+    paragraphs: [
+      "I reached USACO Silver, earned top-5%-nationally-level F=MA results, competed in CALICO and Harker invitationals, and held a top-30 placement in the nation in MSPF Debate.",
+      "I like hard technical and competitive environments because they make it obvious what you actually know."
+    ]
+  },
+  {
+    title: "Self-study",
+    paragraphs: [
+      "I independently studied from high school precalculus through multivariable calculus and linear algebra, then pushed into ML and transformer theory in under a year.",
+      "A lot of that came from compressing ideas until they felt intuitive instead of merely familiar."
+    ]
+  }
+];
+---
+
+<BaseLayout
+  title="Things I've Done | Naman Chetwani"
+  description="Selected projects and accomplishments by Naman Chetwani."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link" href="/">Naman Chetwani</a>
+        <a class="nav-link current" href="/things-ive-done">Things I've Done</a>
+        <a class="nav-link" href="/reading">Reading</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+        Light mode
+      </button>
+    </div>
+
+    <article class="essay about-essay">
+      <h1>Things I&apos;ve Done</h1>
+
+      <p>
+        This is the page for projects, awards, and technical work. The homepage stays minimal on
+        purpose.
+      </p>
+
+      <div class="project-stack">
+        {projects.map((project) => (
+          <section class="project-panel">
+            <h2>{project.title}</h2>
+            {project.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+            {project.bullets && (
+              <ul class="plain-list project-bullets">
+                {project.bullets.map((bullet) => <li>{bullet}</li>)}
+              </ul>
+            )}
+          </section>
+        ))}
+      </div>
+    </article>
+  </main>
+</BaseLayout>
