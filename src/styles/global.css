@@ -273,7 +273,7 @@ h3 {
 }
 
 .waitlist-input::placeholder {
-  color: rgba(236, 233, 225, 0.38);
+  color: rgba(236, 233, 225, 0.24);
 }
 
 .waitlist-input:focus {
