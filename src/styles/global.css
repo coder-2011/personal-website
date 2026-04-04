@@ -243,6 +243,20 @@ h3 {
   margin: 1rem 0 1.1rem;
 }
 
+.project-gallery {
+  margin: 1rem 0 1.1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.project-gallery-multi {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.project-gallery .project-figure {
+  margin: 0;
+}
+
 .project-figure img {
   width: 100%;
   display: block;
@@ -412,6 +426,9 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .project-gallery-multi {
+    grid-template-columns: 1fr;
+  }
 
   .plain-list li {
     line-height: 1.7;

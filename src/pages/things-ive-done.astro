@@ -5,7 +5,7 @@ const projects = [
   {
     title: "wrdn",
     paragraphs: [
-      "Built wrdn, an AI accountability system for your life. It watches your day through ambient audio and visual context, builds a long-term model of your goals and values, and tells you when you're drifting from what you said actually matters.",
+      "Building wrdn, an AI accountability system for your life. It watches your day through ambient audio and visual context, builds a long-term model of your goals and values, and tells you when you're drifting from what you said actually matters.",
       "It helps you make decisions according to the context spanning your life, and proactively executes commands through personal agents."
     ]
   },
@@ -15,11 +15,18 @@ const projects = [
       "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance.",
       "The goal was to solve the biggest issues in the field: cost, pilot liability, lower price, and higher range than the closest drone competitor."
     ],
-    image: {
-      src: "/projects/stratus-poster.jpg",
-      alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview.",
-      caption: "STRATUS project poster"
-    },
+    images: [
+      {
+        src: "/projects/stratus-poster-real.png",
+        alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview.",
+        caption: "STRATUS project poster"
+      },
+      {
+        src: "/projects/stratus-poster.jpg",
+        alt: "STRATUS UAV aircraft photo.",
+        caption: "STRATUS UAV airframe"
+      }
+    ],
     bullets: [
       "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
       "Safety: pilot liability",
@@ -32,7 +39,12 @@ const projects = [
     paragraphs: [
       "Engineered an AI-driven ecological tool designed to prevent catastrophic wildfires. Utilizing a tri-branch architecture with state-space model architecture and ConvNeXt, the engine analyzes environmental variables to pinpoint ideal locations for prescribed burns.",
       "The 13 types of input data are split into current fire imaging, text-based weather data, and less dynamic geography data. Each category is initially processed through its own specialized model, then fused through a stronger state-space model before being turned into an output fire mask for prediction and simulation."
-    ]
+    ],
+    image: {
+      src: "/projects/sbon-diagram.png",
+      alt: "SBON system diagram showing the terrain, weather, fire, Mamba core, and decoder pipeline.",
+      caption: "SBON architecture diagram"
+    }
   },
   {
     title: "No Circles",
@@ -82,6 +94,7 @@ const projects = [
     <div class="page-top">
       <nav class="top-nav" aria-label="Primary">
         <a class="nav-link" href="/">Naman Chetwani</a>
+        <a class="nav-link" href="/about">About</a>
         <a class="nav-link current" href="/things-ive-done">Things I've Done</a>
         <a class="nav-link" href="/reading">Reading</a>
       </nav>
@@ -101,6 +114,16 @@ const projects = [
         {projects.map((project) => (
           <section class="project-panel">
             <h2>{project.title}</h2>
+            {project.images && (
+              <div class:list={["project-gallery", project.images.length > 1 && "project-gallery-multi"]}>
+                {project.images.map((image) => (
+                  <figure class="project-figure">
+                    <img src={image.src} alt={image.alt} loading="lazy" />
+                    {image.caption && <figcaption>{image.caption}</figcaption>}
+                  </figure>
+                ))}
+              </div>
+            )}
             {project.image && (
               <figure class="project-figure">
                 <img src={project.image.src} alt={project.image.alt} loading="lazy" />
