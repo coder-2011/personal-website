@@ -42,6 +42,30 @@ const {
     </div>
     <div class="site-cursor" aria-hidden="true"></div>
     <a
+      class="site-x"
+      href="https://x.com/_no_circles"
+      target="_blank"
+      rel="noreferrer"
+      aria-label="_no_circles on X"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M18.9 2H22l-6.77 7.74L23.2 22h-6.26l-4.9-7.45L5.52 22H2.4l7.24-8.27L1.8 2h6.42l4.43 6.76L18.9 2Zm-1.1 18h1.73L7.26 3.9H5.4Z"
+          fill="currentColor"
+        />
+      </svg>
+      <span>no-circles</span>
+    </a>
+    <a class="site-phone" href="tel:+19258959674" aria-label="Call +1 925 895 9674">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.49a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.24 1.02Z"
+          fill="currentColor"
+        />
+      </svg>
+      <span>+1 925 895 9674</span>
+    </a>
+    <a
       class="site-github"
       href="https://github.com/coder-2011"
       target="_blank"
@@ -61,12 +85,16 @@ const {
         const INTERACTIVE_SELECTOR =
           "a, button, input, textarea, select, label, summary, [role='button']";
         const PROXIMITY_SELECTOR = ".top-nav .nav-link";
+        const FLOATING_LINK_SELECTOR = ".site-github, .site-phone, .site-x";
         const cursor = document.querySelector(".site-cursor");
         const tailLayer = document.querySelector(".site-cursor__tail-layer");
         const tailDots = Array.from(
           document.querySelectorAll(".site-cursor__tail-dot")
         );
         const proximityLinks = Array.from(document.querySelectorAll(PROXIMITY_SELECTOR));
+        const floatingLinks = Array.from(
+          document.querySelectorAll(FLOATING_LINK_SELECTOR)
+        );
 
         if (!(cursor instanceof HTMLDivElement) || !(tailLayer instanceof HTMLDivElement)) {
           return;
@@ -101,6 +129,12 @@ const {
           }
         };
 
+        const distanceToRect = (x, y, rect) => {
+          const dx = Math.max(rect.left - x, 0, x - rect.right);
+          const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+          return Math.hypot(dx, dy);
+        };
+
         const updatePointerState = (target) => {
           const isPointer = target instanceof Element && target.closest(INTERACTIVE_SELECTOR);
           cursor.classList.toggle("site-cursor--pointer", Boolean(isPointer));
@@ -122,11 +156,20 @@ const {
             }
 
             const rect = link.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+            const distance = distanceToRect(event.clientX, event.clientY, rect);
 
-            link.classList.toggle("nav-link-near", distance < 52);
+            link.classList.toggle("nav-link-near", distance < 54);
+          });
+
+          floatingLinks.forEach((link) => {
+            if (!(link instanceof HTMLElement)) {
+              return;
+            }
+
+            const rect = link.getBoundingClientRect();
+            const distance = distanceToRect(event.clientX, event.clientY, rect);
+
+            link.classList.toggle("site-floating-link-near", distance < 60);
           });
         };
 
@@ -136,6 +179,11 @@ const {
           proximityLinks.forEach((link) => {
             if (link instanceof HTMLElement) {
               link.classList.remove("nav-link-near");
+            }
+          });
+          floatingLinks.forEach((link) => {
+            if (link instanceof HTMLElement) {
+              link.classList.remove("site-floating-link-near");
             }
           });
         };

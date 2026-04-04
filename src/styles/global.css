@@ -144,20 +144,73 @@ a {
 }
 
 .nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
   color: var(--soft);
   text-decoration: none;
-  border-bottom: 1px solid transparent;
+  padding: 0.08rem 0.08rem 0.08rem 0.85rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   transition:
     color 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.nav-link::before {
+  content: "";
+  position: absolute;
+  left: 0.18rem;
+  top: 50%;
+  width: 1px;
+  height: 0.95rem;
+  background: linear-gradient(180deg, transparent, var(--accent) 28%, #f4efe6 52%, var(--accent) 76%, transparent);
+  border-radius: 999px;
+  opacity: 0;
+  transform: translateY(-50%) scaleY(0.35);
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+  pointer-events: none;
+}
+
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.18rem;
+  top: 50%;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: rgba(209, 168, 111, 0.14);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.5);
+  transition:
+    opacity 180ms ease,
+    transform 220ms ease;
+  pointer-events: none;
 }
 
 .nav-link:hover,
 .nav-link.nav-link-near {
   color: var(--text);
-  border-color: var(--accent);
-  transform: translateY(-1px);
+  transform: translateX(0.18rem);
+}
+
+.nav-link:hover::before,
+.nav-link.nav-link-near::before,
+.nav-link.current::before {
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
+}
+
+.nav-link:hover::after,
+.nav-link.nav-link-near::after,
+.nav-link.current::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .nav-link.current {
@@ -488,10 +541,12 @@ h3 {
   color: var(--soft);
 }
 
+.site-x,
+.site-phone,
 .site-github {
   position: fixed;
   right: 1.25rem;
-  bottom: 1.1rem;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
@@ -504,22 +559,124 @@ h3 {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   font-size: 0.92rem;
+  isolation: isolate;
   transition:
     color 160ms ease,
     border-color 160ms ease,
-    transform 160ms ease;
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.site-github:hover {
+.site-x::before,
+.site-phone::before,
+.site-github::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  opacity: 0;
+  transform: translateX(-110%);
+  transition:
+    opacity 180ms ease,
+    transform 744ms ease;
+}
+
+.site-x {
+  bottom: 7.8rem;
+}
+
+.site-phone {
+  bottom: 4.45rem;
+}
+
+.site-github {
+  bottom: 1.1rem;
+}
+
+.site-x:hover,
+.site-x.site-floating-link-near,
+.site-phone:hover,
+.site-phone.site-floating-link-near,
+.site-github:hover,
+.site-github.site-floating-link-near {
   color: var(--text);
-  border-color: var(--accent);
   transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
+.site-x:hover,
+.site-x.site-floating-link-near {
+  border-color: #f3f0ea;
+}
+
+.site-x::before {
+  background: linear-gradient(
+    110deg,
+    transparent 12%,
+    rgba(243, 240, 234, 0.08) 34%,
+    rgba(243, 240, 234, 0.32) 50%,
+    rgba(243, 240, 234, 0.08) 66%,
+    transparent 88%
+  );
+}
+
+.site-phone:hover,
+.site-phone.site-floating-link-near {
+  border-color: #f08a24;
+}
+
+.site-phone::before {
+  background: linear-gradient(
+    110deg,
+    transparent 12%,
+    rgba(240, 138, 36, 0.12) 34%,
+    rgba(240, 138, 36, 0.4) 50%,
+    rgba(240, 138, 36, 0.12) 66%,
+    transparent 88%
+  );
+}
+
+.site-github:hover,
+.site-github.site-floating-link-near {
+  border-color: var(--accent);
+}
+
+.site-github::before {
+  background: linear-gradient(
+    110deg,
+    transparent 12%,
+    rgba(209, 168, 111, 0.1) 34%,
+    rgba(209, 168, 111, 0.34) 50%,
+    rgba(209, 168, 111, 0.1) 66%,
+    transparent 88%
+  );
+}
+
+.site-x:hover::before,
+.site-x.site-floating-link-near::before,
+.site-phone:hover::before,
+.site-phone.site-floating-link-near::before,
+.site-github:hover::before,
+.site-github.site-floating-link-near::before {
+  opacity: 1;
+  transform: translateX(110%);
+}
+
+.site-x svg,
+.site-phone svg,
 .site-github svg {
   width: 1rem;
   height: 1rem;
   flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.site-x span,
+.site-phone span,
+.site-github span {
+  position: relative;
+  z-index: 1;
 }
 
 .reading-section {
@@ -676,10 +833,23 @@ h3 {
     line-height: 1.7;
   }
 
+  .site-x,
+  .site-phone,
   .site-github {
     right: 0.9rem;
-    bottom: 0.9rem;
     font-size: 0.86rem;
+  }
+
+  .site-x {
+    bottom: 7.15rem;
+  }
+
+  .site-phone {
+    bottom: 4rem;
+  }
+
+  .site-github {
+    bottom: 0.9rem;
   }
 }
 
