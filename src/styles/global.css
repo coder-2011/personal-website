@@ -82,6 +82,18 @@ a {
   color: var(--text);
 }
 
+.nav-logo {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.25rem;
+}
+
+.nav-logo img {
+  display: block;
+  height: 1.65rem;
+  width: auto;
+}
+
 .essay {
   width: min(100%, 42rem);
   margin-left: clamp(0rem, 10vw, 6.5rem);
@@ -101,7 +113,7 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.26;
+  opacity: 0.34;
   background:
     conic-gradient(
       from 180deg at 50% 70%,
@@ -266,7 +278,7 @@ h3 {
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 999px;
-  background: rgba(9, 9, 9, 0.94);
+  background: rgba(9, 9, 9, 0.86);
   color: var(--soft);
   text-decoration: none;
   backdrop-filter: blur(8px);
@@ -412,6 +424,10 @@ h3 {
   .essay p {
     font-size: 1rem;
     line-height: 1.8;
+  }
+
+  .nav-logo img {
+    height: 1.45rem;
   }
 
   body::before {
