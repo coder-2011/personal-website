@@ -12,10 +12,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <a class="nav-link nav-logo" href="/" aria-label="Naman Chetwani home">
           <img src="/no-circles-logo.png" alt="Naman Chetwani logo" />
         </a>
-        <a class="nav-link current" href="/wrdn">wrdn</a>
         <a class="nav-link" href="/about">About</a>
         <a class="nav-link" href="/things-ive-done">Things I've Done</a>
         <a class="nav-link" href="/reading">Reading</a>
+        <a class="nav-link current" href="/wrdn">wrdn</a>
       </nav>
     </div>
 
@@ -25,21 +25,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <p>
         wrdn is an AI accountability system for your life. It watches your day through ambient
         audio and visual context, builds a long-term model of your goals and values, and tells you
-        when you&apos;re drifting from what you said actually matters.
-      </p>
-
-      <p>
-        The point is not to become another notification machine. The product only works if the
-        messages feel scarce enough to matter. Instead of buzzing you every few minutes, wrdn is
-        supposed to intervene rarely, but at the moments where your local behavior starts to
-        diverge from the person you keep claiming you want to become.
+        when you&apos;re drifting from what actually matters to you.
       </p>
 
       <p>
         There are really two temporal scales here. At high resolution, wrdn handles short-term
-        accountability. If you have an exam tomorrow and you are still sidequesting, it should know
+        accountability. If you have an exam tomorrow and you are still distracted, it should know
         enough about your schedule, habits, and current context to tell you to stop. At low
-        resolution, which is the more interesting part, it becomes a system that has lived enough
+        resolution, which is the more important part, it becomes a system that has lived enough
         of your life with you to help with decisions that are not reducible to task management.
       </p>
 
@@ -51,11 +44,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </p>
 
       <p>
-        The system is hardware-agnostic by design. If a device has a camera and a microphone,
-        wrdn can run on it. Right now that means things like smart glasses or a small clip-on
-        device. Later, as local compute gets good enough, more of the stack moves on-device. I
-        build the stack from kernels to hardware, so I care a lot about not coupling the product to
-        one fragile hardware bet.
+        The default version of the product comes with a small clip-on device. That is the simplest
+        way to make sure anyone can use wrdn immediately, without waiting for a specific hardware
+        platform to win. But the system is not meant to be tied to one device. It also works with
+        other hardware that already exists, like Meta Ray-Bans and Brilliant Labs Halo. The goal is
+        for wrdn to be the software layer, while the input hardware stays flexible.
+      </p>
+
+      <p>
+        The initial hardware is free. The business model is the software subscription layer on top
+        of it.
       </p>
 
       <p>
@@ -75,6 +73,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         Most products in this space are trying to become better memory. That is useful, but it is
         not enough. Memory tells you what happened. wrdn is trying to become the layer that helps
         you decide what to do about it.
+      </p>
+
+      <p>
+        closed-source <u>for now</u>. MVP coming early May.
       </p>
     </article>
   </main>
