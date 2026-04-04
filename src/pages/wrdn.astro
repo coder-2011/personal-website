@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="wrdn | Naman Chetwani"
+  description="wrdn, an AI accountability system for your life."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link nav-logo" href="/" aria-label="Naman Chetwani home">
+          <img src="/no-circles-logo.png" alt="Naman Chetwani logo" />
+        </a>
+        <a class="nav-link current" href="/wrdn">wrdn</a>
+        <a class="nav-link" href="/about">About</a>
+        <a class="nav-link" href="/things-ive-done">Things I've Done</a>
+        <a class="nav-link" href="/reading">Reading</a>
+      </nav>
+    </div>
+
+    <article class="essay about-essay">
+      <h1>wrdn</h1>
+
+      <p>
+        wrdn is an AI accountability system for your life. It watches your day through ambient
+        audio and visual context, builds a long-term model of your goals and values, and tells you
+        when you&apos;re drifting from what you said actually matters.
+      </p>
+
+      <p>
+        The point is not to become another notification machine. The product only works if the
+        messages feel scarce enough to matter. Instead of buzzing you every few minutes, wrdn is
+        supposed to intervene rarely, but at the moments where your local behavior starts to
+        diverge from the person you keep claiming you want to become.
+      </p>
+
+      <p>
+        There are really two temporal scales here. At high resolution, wrdn handles short-term
+        accountability. If you have an exam tomorrow and you are still sidequesting, it should know
+        enough about your schedule, habits, and current context to tell you to stop. At low
+        resolution, which is the more interesting part, it becomes a system that has lived enough
+        of your life with you to help with decisions that are not reducible to task management.
+      </p>
+
+      <p>
+        Most people do not mainly fail because they forgot what their calendar said. They fail
+        because under pressure, fatigue, ambition, or fear, they lose contact with the values they
+        once endorsed. wrdn is meant to close that gap. It helps you make decisions according to
+        the context spanning your life, and proactively executes commands through personal agents.
+      </p>
+
+      <p>
+        The system is hardware-agnostic by design. If a device has a camera and a microphone,
+        wrdn can run on it. Right now that means things like smart glasses or a small clip-on
+        device. Later, as local compute gets good enough, more of the stack moves on-device. I
+        build the stack from kernels to hardware, so I care a lot about not coupling the product to
+        one fragile hardware bet.
+      </p>
+
+      <p>
+        I also think this category only works if it is auditable. If you are going to let a system
+        shape life decisions, it cannot be an opaque black box making vibes-based recommendations.
+        The core should be open source, interpretable where possible, and built in a way that lets
+        technically serious users inspect what it is doing instead of just trusting branding.
+      </p>
+
+      <p>
+        The first users are founders and other high-agency people whose lives are full of
+        consequential decisions. They already understand feedback loops in every other part of their
+        world. wrdn is an attempt to build that same feedback loop for the self.
+      </p>
+
+      <p>
+        Most products in this space are trying to become better memory. That is useful, but it is
+        not enough. Memory tells you what happened. wrdn is trying to become the layer that helps
+        you decide what to do about it.
+      </p>
+    </article>
+  </main>
+</BaseLayout>
