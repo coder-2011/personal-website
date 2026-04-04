@@ -110,6 +110,10 @@ a {
   margin-left: clamp(0rem, 10vw, 6.5rem);
 }
 
+.about-essay {
+  width: min(100%, 58rem);
+}
+
 h1,
 h2,
 h3,
@@ -156,26 +160,84 @@ h3 {
   font-size: 0.98rem;
 }
 
-.theorem-list {
-  margin: 0 0 1.6rem 1.2rem;
-  padding: 0;
-  color: var(--muted);
-}
-
-.plain-list,
-.theorem-list li {
-  color: var(--muted);
-}
-
 .plain-list {
   margin: 0 0 1.6rem 1.2rem;
   padding: 0;
+  color: var(--muted);
 }
 
-.plain-list li,
-.theorem-list li {
+.plain-list li {
   margin-bottom: 0.45rem;
   line-height: 1.75;
+}
+
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.page-card {
+  display: block;
+  padding: 1.05rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.02);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.page-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.page-card-kicker,
+.page-card-title,
+.page-card-copy {
+  display: block;
+}
+
+.page-card-kicker {
+  color: var(--soft);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.page-card-title {
+  margin: 0.45rem 0 0.6rem;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.page-card-copy {
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.project-stack {
+  margin-top: 1.4rem;
+}
+
+.project-panel {
+  padding: 1.2rem 1.2rem 0.35rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 1rem;
+}
+
+.project-panel h2 {
+  margin-top: 0;
+}
+
+.project-bullets {
+  margin-top: 0.4rem;
+  margin-bottom: 1rem;
 }
 
 .reading-section {
@@ -315,12 +377,12 @@ h3 {
     line-height: 1.8;
   }
 
+  .link-grid,
   .reading-grid {
     grid-template-columns: 1fr;
   }
 
-  .plain-list li,
-  .theorem-list li {
+  .plain-list li {
     line-height: 1.7;
   }
 
@@ -338,4 +400,8 @@ h3 {
     radial-gradient(circle at 68% 72%, rgba(21, 19, 17, 0.1) 0 1px, transparent 1.5px),
     radial-gradient(circle at 22% 84%, rgba(21, 19, 17, 0.12) 0 1px, transparent 1.5px),
     var(--bg);
+}
+
+:root[data-theme="light"] .tooltip {
+  background: rgba(242, 237, 229, 0.98);
 }

@@ -10,7 +10,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="page-top">
       <nav class="top-nav" aria-label="Primary">
         <a class="nav-link current" href="/">Naman Chetwani</a>
-        <a class="nav-link" href="/about">About</a>
+        <a class="nav-link" href="/things-ive-done">Things I've Done</a>
+        <a class="nav-link" href="/reading">Reading</a>
       </nav>
       <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
         Light mode
@@ -20,123 +21,63 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <article class="essay">
       <h1>hi, i'm Naman</h1>
 
-      <p>I’m 15 and I am an engineer</p>
+      <p>I’m 15, I go to Dougherty Valley High School, and I think of myself as an engineer.</p>
 
-      <p>I want to figure out how to ask great questions.</p>
-
-      <p>I&apos;ve dabbled across most realms of building things</p>
+      <p>I like coding, building things, physics, philosophy, and reading far outside my lane.</p>
 
       <p>
-        My long-term goal is to build tech that reduces humanity’s existential debt.
+        My long-term goal is to build tech that reduces humanity&apos;s existential debt
+        <span class="tooltip-wrap">
+          <button class="tooltip-trigger" type="button" aria-describedby="existential-debt-tip">
+            ?
+          </button>
+          <span class="tooltip" id="existential-debt-tip" role="tooltip">
+            My shorthand for the preventable long-term risk, fragility, and lost future potential
+            humanity keeps creating for itself.
+          </span>
+        </span>
+        .
       </p>
 
       <p>
-        current interests: ambient AI, mech interp, latent a2a protocols, economics,
-        superforcasting, nihilism, existential lit/phil, fire technology, aerospace,
-        inference-time structures
+        AI safety is the issue I care about most. Amor Fati is the philosophy I try to live by.
+        Nietzsche is my favorite philosopher. Crocker&apos;s Rules make sense to me because direct
+        feedback beats polite fog.
       </p>
-
-      <section class="reading-section" aria-labelledby="favorite-writing">
-        <h2 id="favorite-writing">Favorite writing</h2>
-        <p class="section-note">I really like pretty book covers</p>
-
-        <div class="reading-grid">
-          <a
-            class="reading-card"
-            href="https://www.penguinrandomhouse.com/books/579436/sapiens-a-brief-history-of-humankind-by-yuval-noah-harari/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src="/reading/sapiens.jpg"
-              alt="Cover of Sapiens: A Brief History of Humankind"
-              loading="lazy"
-            />
-            <span class="reading-title">Sapiens: A Brief History of Humankind</span>
-            <span class="reading-meta">Yuval Noah Harari</span>
-          </a>
-
-          <a
-            class="reading-card"
-            href="https://www.hachettebookgroup.com/titles/douglas-r-hofstadter/godel-escher-bach/9780465026562/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src="/reading/geb.jpg"
-              alt="Cover of Gödel, Escher, Bach: An Eternal Golden Braid"
-              loading="lazy"
-            />
-            <span class="reading-title">Gödel, Escher, Bach: An Eternal Golden Braid</span>
-            <span class="reading-meta">Douglas R. Hofstadter</span>
-          </a>
-
-          <a
-            class="reading-card"
-            href="https://press.stripe.com/the-art-of-doing-science-and-engineering"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src="/reading/hamming.jpg"
-              alt="Cover of The Art of Doing Science and Engineering: Learning to Learn"
-              loading="lazy"
-            />
-            <span class="reading-title">The Art of Doing Science and Engineering: Learning to Learn</span>
-            <span class="reading-meta">Richard Hamming</span>
-          </a>
-
-          <a
-            class="reading-card"
-            href="https://www.lesswrong.com/rationality"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src="/reading/sequences.png"
-              alt="Cover image for A Map that Reflects the Territory"
-              loading="lazy"
-            />
-            <span class="reading-title">The Sequences</span>
-            <span class="reading-meta">LessWrong</span>
-          </a>
-        </div>
-
-        <h3>Favorite morsels of wisdom</h3>
-        <ul class="plain-list wisdom-list">
-          <li>
-            <a href="https://paulgraham.com/greatwork.html" target="_blank" rel="noreferrer">
-              Great Work
-            </a>
-            <span class="wisdom-meta">Paul Graham</span>
-          </li>
-          <li>
-            <a
-              href="https://blog.samaltman.com/the-days-are-long-but-the-decades-are-short"
-              target="_blank"
-              rel="noreferrer"
-            >
-              The Days Are Long but the Decades Are Short
-            </a>
-            <span class="wisdom-meta">Sam Altman</span>
-          </li>
-        </ul>
-      </section>
 
       <h2>Some things I think are important:</h2>
       <ul class="plain-list">
-        <li>thinking ruthlessly independently</li>
-        <li>coming up with elegant ideas</li>
-        <li>convincing people what you believe is right</li>
-        <li>sidequesting on occasion</li>
-        <li>doing things that I think about when I am not doing them</li>
+        <li>thinking independently</li>
+        <li>building elegant technology instead of performative technology</li>
+        <li>taking AI risk seriously</li>
+        <li>reading things that expand my frame</li>
+        <li>becoming excellent through repetition, reflection, and real work</li>
       </ul>
 
       <p>
-        my theory is that if I get better at reflecting on how I implement advice and identify
-        what I am bad at, at repeat fast enough, I can recursively improve
+        My theory is that if I keep improving how I implement advice, identify weakness, and notice
+        what actually compounds, I can improve recursively.
       </p>
 
+      <div class="link-grid" aria-label="Site sections">
+        <a class="page-card" href="/things-ive-done">
+          <span class="page-card-kicker">separate page</span>
+          <strong class="page-card-title">Things I&apos;ve Done</strong>
+          <span class="page-card-copy">
+            Wildfire aircraft, fire modeling, science fair work, competitions, and self-study.
+          </span>
+        </a>
+
+        <a class="page-card" href="/reading">
+          <span class="page-card-kicker">separate page</span>
+          <strong class="page-card-title">Reading</strong>
+          <span class="page-card-copy">
+            Favorite books, essays, channels, and the ideas I keep returning to.
+          </span>
+        </a>
+      </div>
+
+      <p>Breakfast: billions of tokens.</p>
     </article>
 
     <a
