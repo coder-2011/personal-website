@@ -1,0 +1,341 @@
+:root {
+  color-scheme: dark;
+  --bg: #090909;
+  --text: #ece9e1;
+  --muted: #b8b2a8;
+  --soft: #8f8a82;
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: #d1a86f;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f2ede5;
+  --text: #151311;
+  --muted: #474039;
+  --soft: #6e655e;
+  --border: rgba(21, 19, 17, 0.12);
+  --accent: #8a4d1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 84% 26%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 72%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 22% 84%, rgba(255, 255, 255, 0.16) 0 1px, transparent 1.5px),
+    var(--bg);
+  background-size: 100% 100%;
+  color: var(--text);
+  font-family: "Space Grotesk", sans-serif;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: rgba(209, 168, 111, 0.55);
+  text-underline-offset: 0.2em;
+}
+
+.page {
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+}
+
+.page-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: var(--soft);
+  text-decoration: none;
+}
+
+.nav-link.current {
+  color: var(--text);
+}
+
+.theme-toggle {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.essay {
+  width: min(100%, 42rem);
+  margin-left: clamp(0rem, 10vw, 6.5rem);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 11ch;
+  margin: 0 0 2rem;
+  font-size: clamp(2.1rem, 4.8vw, 3.2rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+
+h2 {
+  margin: 2.8rem 0 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+h3 {
+  margin: 1.8rem 0 0.75rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.essay p {
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.9;
+  margin-bottom: 1.4rem;
+}
+
+.section-note {
+  margin-top: -0.35rem;
+  color: var(--soft);
+  font-size: 0.98rem;
+}
+
+.theorem-list {
+  margin: 0 0 1.6rem 1.2rem;
+  padding: 0;
+  color: var(--muted);
+}
+
+.plain-list,
+.theorem-list li {
+  color: var(--muted);
+}
+
+.plain-list {
+  margin: 0 0 1.6rem 1.2rem;
+  padding: 0;
+}
+
+.plain-list li,
+.theorem-list li {
+  margin-bottom: 0.45rem;
+  line-height: 1.75;
+}
+
+.reading-section {
+  margin: 2.6rem 0 0;
+}
+
+.reading-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin: 1.2rem 0 2rem;
+}
+
+.reading-card {
+  display: block;
+  text-decoration: none;
+}
+
+.reading-card img {
+  width: 100%;
+  aspect-ratio: 0.74;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.reading-title,
+.reading-meta {
+  display: block;
+}
+
+.reading-title {
+  margin-top: 0.8rem;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.reading-meta,
+.wisdom-meta {
+  color: var(--soft);
+  font-size: 0.92rem;
+}
+
+.wisdom-list {
+  margin-top: 0.9rem;
+}
+
+.wisdom-list li {
+  margin-bottom: 0.7rem;
+}
+
+.wisdom-meta {
+  margin-left: 0.45rem;
+}
+
+.corner-link {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  color: var(--soft);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.corner-link:hover {
+  color: var(--text);
+}
+
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 0.4rem;
+}
+
+.tooltip-trigger {
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: help;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.8rem);
+  width: min(17rem, 70vw);
+  padding: 0.85rem 0.95rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(12, 12, 12, 0.96);
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    visibility 160ms ease;
+}
+
+.tooltip-wrap:hover .tooltip,
+.tooltip-wrap:focus-within .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 860px) {
+  .page {
+    padding: 1.2rem 1rem 4rem;
+  }
+
+  .page-top {
+    margin-bottom: 2.2rem;
+  }
+
+  .essay {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .essay p {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .reading-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .plain-list li,
+  .theorem-list li {
+    line-height: 1.7;
+  }
+
+  .corner-link {
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 0.88rem;
+  }
+}
+
+:root[data-theme="light"] body {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(21, 19, 17, 0.14) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 84% 26%, rgba(21, 19, 17, 0.12) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 68% 72%, rgba(21, 19, 17, 0.1) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 22% 84%, rgba(21, 19, 17, 0.12) 0 1px, transparent 1.5px),
+    var(--bg);
+}

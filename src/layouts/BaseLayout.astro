@@ -1,0 +1,60 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Naman Chetwani",
+  description = "Personal website for Naman Chetwani."
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#090909" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <script is:inline>
+      const savedTheme = localStorage.getItem("theme");
+      const initialTheme = savedTheme === "light" ? "light" : "dark";
+      document.documentElement.dataset.theme = initialTheme;
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      const root = document.documentElement;
+      const toggle = document.querySelector("[data-theme-toggle]");
+
+      const setTheme = (theme) => {
+        root.dataset.theme = theme;
+        localStorage.setItem("theme", theme);
+        if (toggle) {
+          toggle.textContent = theme === "dark" ? "Light mode" : "Dark mode";
+          toggle.setAttribute(
+            "aria-label",
+            theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          );
+        }
+      };
+
+      setTheme(root.dataset.theme === "light" ? "light" : "dark");
+
+      toggle?.addEventListener("click", () => {
+        setTheme(root.dataset.theme === "dark" ? "light" : "dark");
+      });
+    </script>
+  </body>
+</html>

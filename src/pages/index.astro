@@ -1,0 +1,155 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Naman Chetwani"
+  description="Personal website for Naman Chetwani."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link current" href="/">Naman Chetwani</a>
+        <a class="nav-link" href="/about">About</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+        Light mode
+      </button>
+    </div>
+
+    <article class="essay">
+      <h1>hi, i'm Naman</h1>
+
+      <p>I’m 15 and I am an engineer</p>
+
+      <p>I want to figure out how to ask great questions.</p>
+
+      <p>I&apos;ve dabbled across most realms of building things</p>
+
+      <p>
+        My long-term goal is to build tech that reduces humanity’s existential debt.
+      </p>
+
+      <p>
+        current interests: ambient AI, mech interp, latent a2a protocols, economics,
+        superforcasting, nihilism, existential lit/phil, fire technology, aerospace,
+        inference-time structures
+      </p>
+
+      <section class="reading-section" aria-labelledby="favorite-writing">
+        <h2 id="favorite-writing">Favorite writing</h2>
+        <p class="section-note">I really like pretty book covers</p>
+
+        <div class="reading-grid">
+          <a
+            class="reading-card"
+            href="https://www.penguinrandomhouse.com/books/579436/sapiens-a-brief-history-of-humankind-by-yuval-noah-harari/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/sapiens.jpg"
+              alt="Cover of Sapiens: A Brief History of Humankind"
+              loading="lazy"
+            />
+            <span class="reading-title">Sapiens: A Brief History of Humankind</span>
+            <span class="reading-meta">Yuval Noah Harari</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://www.hachettebookgroup.com/titles/douglas-r-hofstadter/godel-escher-bach/9780465026562/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/geb.jpg"
+              alt="Cover of Gödel, Escher, Bach: An Eternal Golden Braid"
+              loading="lazy"
+            />
+            <span class="reading-title">Gödel, Escher, Bach: An Eternal Golden Braid</span>
+            <span class="reading-meta">Douglas R. Hofstadter</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://press.stripe.com/the-art-of-doing-science-and-engineering"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/hamming.jpg"
+              alt="Cover of The Art of Doing Science and Engineering: Learning to Learn"
+              loading="lazy"
+            />
+            <span class="reading-title">The Art of Doing Science and Engineering: Learning to Learn</span>
+            <span class="reading-meta">Richard Hamming</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://www.lesswrong.com/rationality"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/sequences.png"
+              alt="Cover image for A Map that Reflects the Territory"
+              loading="lazy"
+            />
+            <span class="reading-title">The Sequences</span>
+            <span class="reading-meta">LessWrong</span>
+          </a>
+        </div>
+
+        <h3>Favorite morsels of wisdom</h3>
+        <ul class="plain-list wisdom-list">
+          <li>
+            <a href="https://paulgraham.com/greatwork.html" target="_blank" rel="noreferrer">
+              Great Work
+            </a>
+            <span class="wisdom-meta">Paul Graham</span>
+          </li>
+          <li>
+            <a
+              href="https://blog.samaltman.com/the-days-are-long-but-the-decades-are-short"
+              target="_blank"
+              rel="noreferrer"
+            >
+              The Days Are Long but the Decades Are Short
+            </a>
+            <span class="wisdom-meta">Sam Altman</span>
+          </li>
+        </ul>
+      </section>
+
+      <h2>Some things I think are important:</h2>
+      <ul class="plain-list">
+        <li>thinking ruthlessly independently</li>
+        <li>coming up with elegant ideas</li>
+        <li>convincing people what you believe is right</li>
+        <li>sidequesting on occasion</li>
+        <li>doing things that I think about when I am not doing them</li>
+      </ul>
+
+      <p>
+        my theory is that if I get better at reflecting on how I implement advice and identify
+        what I am bad at, at repeat fast enough, I can recursively improve
+      </p>
+
+      <p>
+        I love people so reach out:
+        <a href="mailto:naman.chetwani@gmail.com">naman.chetwani@gmail.com</a>
+      </p>
+    </article>
+
+    <a
+      class="corner-link"
+      href="https://github.com/coder-2011"
+      target="_blank"
+      rel="noreferrer"
+    >
+      github.com/coder-2011
+    </a>
+  </main>
+</BaseLayout>
