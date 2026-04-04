@@ -188,6 +188,87 @@ h3 {
   font-size: 0.98rem;
 }
 
+.waitlist-card {
+  margin: 0 0 2rem;
+  padding: 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.waitlist-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.waitlist-label {
+  color: var(--soft);
+  font-size: 0.88rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.waitlist-row {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.waitlist-input {
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+}
+
+.waitlist-input:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.waitlist-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  min-width: 10rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.waitlist-button:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.waitlist-notice {
+  width: fit-content;
+  padding: 0.65rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.waitlist-notice-success {
+  color: var(--text);
+}
+
+.waitlist-notice-error {
+  color: #ffb0b0;
+  border-color: rgba(255, 120, 120, 0.35);
+}
+
 .plain-list {
   margin: 0 0 1.6rem 1.2rem;
   padding: 0;
@@ -436,6 +517,15 @@ h3 {
 
   .reading-grid {
     grid-template-columns: 1fr;
+  }
+
+  .waitlist-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .waitlist-button {
+    width: 100%;
   }
 
   .project-gallery-multi {
