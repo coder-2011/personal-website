@@ -1,0 +1,130 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Reading | Naman Chetwani"
+  description="Reading page for Naman Chetwani."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link" href="/">Naman Chetwani</a>
+        <a class="nav-link" href="/things-ive-done">Things I've Done</a>
+        <a class="nav-link current" href="/reading">Reading</a>
+      </nav>
+      <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">
+        Light mode
+      </button>
+    </div>
+
+    <article class="essay about-essay">
+      <h1>Reading</h1>
+
+      <p>
+        I mainly read things that are unrelated to what I already know. That usually gives me
+        better questions, better intuitions, and a wider frame to build from.
+      </p>
+
+      <p>
+        The main clusters are philosophy, physics, AI, mathematics, and anything else that feels
+        like it might change how I think.
+      </p>
+
+      <section class="reading-section" aria-labelledby="favorite-writing">
+        <h2 id="favorite-writing">Favorite writing</h2>
+        <p class="section-note">I really like pretty book covers.</p>
+
+        <div class="reading-grid">
+          <a
+            class="reading-card"
+            href="https://www.penguinrandomhouse.com/books/579436/sapiens-a-brief-history-of-humankind-by-yuval-noah-harari/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/sapiens.jpg"
+              alt="Cover of Sapiens: A Brief History of Humankind"
+              loading="lazy"
+            />
+            <span class="reading-title">Sapiens: A Brief History of Humankind</span>
+            <span class="reading-meta">Yuval Noah Harari</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://www.hachettebookgroup.com/titles/douglas-r-hofstadter/godel-escher-bach/9780465026562/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/geb.jpg"
+              alt="Cover of Godel, Escher, Bach: An Eternal Golden Braid"
+              loading="lazy"
+            />
+            <span class="reading-title">Godel, Escher, Bach: An Eternal Golden Braid</span>
+            <span class="reading-meta">Douglas R. Hofstadter</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://press.stripe.com/the-art-of-doing-science-and-engineering"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/hamming.jpg"
+              alt="Cover of The Art of Doing Science and Engineering"
+              loading="lazy"
+            />
+            <span class="reading-title">The Art of Doing Science and Engineering</span>
+            <span class="reading-meta">Richard Hamming</span>
+          </a>
+
+          <a
+            class="reading-card"
+            href="https://www.lesswrong.com/rationality"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="/reading/sequences.png"
+              alt="Cover image for The Sequences"
+              loading="lazy"
+            />
+            <span class="reading-title">The Sequences</span>
+            <span class="reading-meta">LessWrong</span>
+          </a>
+        </div>
+
+        <h2>Favorite morsels of wisdom</h2>
+        <ul class="plain-list wisdom-list">
+          <li>
+            <a href="https://paulgraham.com/greatwork.html" target="_blank" rel="noreferrer">
+              Great Work
+            </a>
+            <span class="wisdom-meta">Paul Graham</span>
+          </li>
+          <li>
+            <a
+              href="https://blog.samaltman.com/the-days-are-long-but-the-decades-are-short"
+              target="_blank"
+              rel="noreferrer"
+            >
+              The Days Are Long but the Decades Are Short
+            </a>
+            <span class="wisdom-meta">Sam Altman</span>
+          </li>
+        </ul>
+      </section>
+
+      <h2>Other recurring inputs</h2>
+      <ul class="plain-list">
+        <li>Nietzsche</li>
+        <li>Two Minute Papers</li>
+        <li>Lex Fridman</li>
+        <li>20VC</li>
+      </ul>
+    </article>
+  </main>
+</BaseLayout>
