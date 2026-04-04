@@ -25,32 +25,6 @@ const error = Astro.url.searchParams.get("error");
     <article class="essay about-essay">
       <h1>wrdn</h1>
 
-      <section class="waitlist-card">
-        <h2>Get updates</h2>
-        <p>
-          If you want early access or updates when wrdn is ready, drop your email here.
-        </p>
-
-        {message && <p class="waitlist-notice waitlist-notice-success">{message}</p>}
-        {error && <p class="waitlist-notice waitlist-notice-error">{error}</p>}
-
-        <form class="waitlist-form" method="post" action="/api/wrdn-waitlist">
-          <label class="waitlist-label" for="waitlist-email">Email</label>
-          <div class="waitlist-row">
-            <input
-              class="waitlist-input"
-              id="waitlist-email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              placeholder="you@domain.com"
-              required
-            />
-            <button class="waitlist-button" type="submit">Join</button>
-          </div>
-        </form>
-      </section>
-
       <p>
         wrdn is an AI accountability system for your life. It watches your day through ambient
         audio and visual context, builds a long-term model of your goals and values, and tells you
@@ -107,6 +81,32 @@ const error = Astro.url.searchParams.get("error");
       <p>
         closed-source <u>for now</u>. MVP coming early May.
       </p>
+
+      <section class="waitlist-card">
+        <h2>Get updates</h2>
+        <p>
+          If you want early access or updates when wrdn is ready, drop your email here.
+        </p>
+
+        {message && <p class="waitlist-notice waitlist-notice-success">{message}</p>}
+        {error && <p class="waitlist-notice waitlist-notice-error">{error}</p>}
+
+        <form class="waitlist-form" method="post" action="/api/wrdn-waitlist">
+          <label class="waitlist-label" for="waitlist-email">Email</label>
+          <div class="waitlist-row">
+            <input
+              class="waitlist-input"
+              id="waitlist-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@domain.com"
+              required
+            />
+            <button class="waitlist-button" type="submit">Join</button>
+          </div>
+        </form>
+      </section>
     </article>
   </main>
 </BaseLayout>
