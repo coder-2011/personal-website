@@ -12,7 +12,9 @@ const randomNotes = [
 const beliefs = [
   "my theory is that if I get better at reflecting on my implementation of advice, and figuring out what I am bad at, I will exponentially improve",
   "most people do much more performative stuff than they think. Humanity's bar for what is performative is suprisingly high",
-  "Cool people make life feel exciting"
+  "Cool people make life feel exciting",
+  "Amor fati",
+  "bci/acc"
 ];
 
 const favoriteTheorems = [
@@ -41,7 +43,21 @@ const favoriteTheorems = [
 
       <h2>Things I believe:</h2>
       <ul class="plain-list about-list">
-        {beliefs.map((belief) => <li>{belief}</li>)}
+        {beliefs.map((belief) => (
+          <li>
+            {belief === "bci/acc" ? (
+              <a
+                href="https://blog.oceanprotocol.com/bci-acc-a-path-to-balance-ai-superintelligence-80bb6f32e39c"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {belief}
+              </a>
+            ) : (
+              belief
+            )}
+          </li>
+        ))}
       </ul>
 
       <h2>My favorite theorems:</h2>
