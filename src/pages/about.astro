@@ -63,7 +63,21 @@ const favoriteTheorems = [
 
       <h2>My favorite theorems:</h2>
       <ul class="plain-list about-list">
-        {favoriteTheorems.map((theorem) => <li>{theorem}</li>)}
+        {favoriteTheorems.map((theorem) => (
+          <li>
+            {theorem === "the second law of thermodynamics" ? (
+              <a
+                href="https://www.lesswrong.com/posts/QkX2bAkwG2EpGvNug/the-second-law-of-thermodynamics-and-engines-of-cognition"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {theorem}
+              </a>
+            ) : (
+              theorem
+            )}
+          </li>
+        ))}
       </ul>
 
       <div class="about-notes">
