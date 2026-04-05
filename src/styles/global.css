@@ -149,7 +149,8 @@ a {
   align-items: center;
   color: var(--soft);
   text-decoration: none;
-  padding: 0.08rem 0.08rem 0.08rem 0.85rem;
+  min-height: 2.5rem;
+  padding: 0.56rem 0.7rem 0.56rem 1.15rem;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -162,7 +163,7 @@ a {
 .nav-link::before {
   content: "";
   position: absolute;
-  left: 0.18rem;
+  left: 0.36rem;
   top: 50%;
   width: 1px;
   height: 0.95rem;
@@ -179,7 +180,7 @@ a {
 .nav-link::after {
   content: "";
   position: absolute;
-  left: 0.18rem;
+  left: 0.36rem;
   top: 50%;
   width: 0.4rem;
   height: 0.4rem;

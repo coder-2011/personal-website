@@ -158,7 +158,7 @@ const {
             const rect = link.getBoundingClientRect();
             const distance = distanceToRect(event.clientX, event.clientY, rect);
 
-            link.classList.toggle("nav-link-near", distance < 54);
+            link.classList.toggle("nav-link-near", distance < 34);
           });
 
           floatingLinks.forEach((link) => {
@@ -169,7 +169,7 @@ const {
             const rect = link.getBoundingClientRect();
             const distance = distanceToRect(event.clientX, event.clientY, rect);
 
-            link.classList.toggle("site-floating-link-near", distance < 60);
+            link.classList.toggle("site-floating-link-near", distance < 36);
           });
         };
 
