@@ -125,6 +125,50 @@ const projects = [
       <h1>Things I&apos;ve Done</h1>
 
       <div class="project-stack">
+        {projects
+          .filter((project) => project.title === "SPARC '26")
+          .map((project) => (
+            <section class="project-panel">
+              <h2>
+                <a href="https://www.sparc.camp/" target="_blank" rel="noreferrer">
+                  {project.title}
+                </a>
+              </h2>
+              {project.images && (
+                <div class:list={["project-gallery", project.images.length > 1 && "project-gallery-multi"]}>
+                  {project.images.map((image) => (
+                    <figure class="project-figure">
+                      <img src={image.src} alt={image.alt} loading="lazy" />
+                      {image.caption && <figcaption>{image.caption}</figcaption>}
+                    </figure>
+                  ))}
+                </div>
+              )}
+              {project.image && (
+                <figure class="project-figure">
+                  <img src={project.image.src} alt={project.image.alt} loading="lazy" />
+                  {project.image.caption && <figcaption>{project.image.caption}</figcaption>}
+                </figure>
+              )}
+              {project.paragraphs.map((paragraph) => <p>{paragraph}</p>)}
+              {project.bullets && (
+                <ul class="plain-list project-bullets">
+                  {project.bullets.map((bullet) => <li>{bullet}</li>)}
+                </ul>
+              )}
+              {project.links && (
+                <p class="project-links">
+                  {project.links.map((link, index) => (
+                    <>
+                      {index > 0 && <span class="link-divider"> · </span>}
+                      <a href={link.href} target="_blank" rel="noreferrer">{link.label}</a>
+                    </>
+                  ))}
+                </p>
+              )}
+            </section>
+          ))}
+
         <section class="project-panel">
           <h2>Contract Work</h2>
           <p>
@@ -132,7 +176,9 @@ const projects = [
           </p>
         </section>
 
-        {projects.map((project) => (
+        {projects
+          .filter((project) => project.title !== "SPARC '26")
+          .map((project) => (
           <section class="project-panel">
             <h2>
               {project.title === "SPARC '26" ? (
