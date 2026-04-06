@@ -586,6 +586,7 @@ h3 {
 }
 
 .site-x,
+.site-discord,
 .site-phone,
 .site-github {
   position: fixed;
@@ -612,6 +613,7 @@ h3 {
 }
 
 .site-x::before,
+.site-discord::before,
 .site-phone::before,
 .site-github::before {
   content: "";
@@ -626,7 +628,11 @@ h3 {
 }
 
 .site-x {
-  bottom: 7.8rem;
+  bottom: 10.95rem;
+}
+
+.site-discord {
+  bottom: 7.7rem;
 }
 
 .site-phone {
@@ -639,6 +645,8 @@ h3 {
 
 .site-x:hover,
 .site-x.site-floating-link-near,
+.site-discord:hover,
+.site-discord.site-floating-link-near,
 .site-phone:hover,
 .site-phone.site-floating-link-near,
 .site-github:hover,
@@ -660,6 +668,22 @@ h3 {
     rgba(243, 240, 234, 0.08) 34%,
     rgba(243, 240, 234, 0.32) 50%,
     rgba(243, 240, 234, 0.08) 66%,
+    transparent 88%
+  );
+}
+
+.site-discord:hover,
+.site-discord.site-floating-link-near {
+  border-color: #5865f2;
+}
+
+.site-discord::before {
+  background: linear-gradient(
+    110deg,
+    transparent 12%,
+    rgba(88, 101, 242, 0.12) 34%,
+    rgba(88, 101, 242, 0.38) 50%,
+    rgba(88, 101, 242, 0.12) 66%,
     transparent 88%
   );
 }
@@ -698,6 +722,8 @@ h3 {
 
 .site-x:hover::before,
 .site-x.site-floating-link-near::before,
+.site-discord:hover::before,
+.site-discord.site-floating-link-near::before,
 .site-phone:hover::before,
 .site-phone.site-floating-link-near::before,
 .site-github:hover::before,
@@ -707,6 +733,7 @@ h3 {
 }
 
 .site-x svg,
+.site-discord svg,
 .site-phone svg,
 .site-github svg {
   width: 1rem;
@@ -717,6 +744,7 @@ h3 {
 }
 
 .site-x span,
+.site-discord span,
 .site-phone span,
 .site-github span {
   position: relative;
@@ -878,6 +906,7 @@ h3 {
   }
 
   .site-x,
+  .site-discord,
   .site-phone,
   .site-github {
     right: 0.9rem;
@@ -885,7 +914,11 @@ h3 {
   }
 
   .site-x {
-    bottom: 7.15rem;
+    bottom: 10.2rem;
+  }
+
+  .site-discord {
+    bottom: 7.05rem;
   }
 
   .site-phone {
