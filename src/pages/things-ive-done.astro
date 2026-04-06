@@ -3,6 +3,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 const projects = [
   {
+    title: "SPARC '26",
+    paragraphs: [
+      "Selected for SPARC '26.",
+      "3% acceptance rate."
+    ]
+  },
+  {
     title: "wrdn",
     paragraphs: [
       "Building wrdn, an AI accountability system for your life. It watches your day through ambient audio and visual context, builds a long-term model of your goals and values, and tells you when you're drifting from what actually matters to you.",
@@ -127,7 +134,15 @@ const projects = [
 
         {projects.map((project) => (
           <section class="project-panel">
-            <h2>{project.title}</h2>
+            <h2>
+              {project.title === "SPARC '26" ? (
+                <a href="https://www.sparc.camp/" target="_blank" rel="noreferrer">
+                  {project.title}
+                </a>
+              ) : (
+                project.title
+              )}
+            </h2>
             {project.images && (
               <div class:list={["project-gallery", project.images.length > 1 && "project-gallery-multi"]}>
                 {project.images.map((image) => (
