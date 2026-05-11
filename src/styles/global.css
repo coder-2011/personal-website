@@ -585,7 +585,6 @@ h3 {
   color: var(--soft);
 }
 
-.site-x,
 .site-discord,
 .site-phone,
 .site-github {
@@ -612,7 +611,6 @@ h3 {
     box-shadow 160ms ease;
 }
 
-.site-x::before,
 .site-discord::before,
 .site-phone::before,
 .site-github::before {
@@ -627,10 +625,6 @@ h3 {
     transform 744ms ease;
 }
 
-.site-x {
-  bottom: 10.95rem;
-}
-
 .site-discord {
   bottom: 7.7rem;
 }
@@ -643,8 +637,6 @@ h3 {
   bottom: 1.1rem;
 }
 
-.site-x:hover,
-.site-x.site-floating-link-near,
 .site-discord:hover,
 .site-discord.site-floating-link-near,
 .site-phone:hover,
@@ -654,22 +646,6 @@ h3 {
   color: var(--text);
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-}
-
-.site-x:hover,
-.site-x.site-floating-link-near {
-  border-color: #f3f0ea;
-}
-
-.site-x::before {
-  background: linear-gradient(
-    110deg,
-    transparent 12%,
-    rgba(243, 240, 234, 0.08) 34%,
-    rgba(243, 240, 234, 0.32) 50%,
-    rgba(243, 240, 234, 0.08) 66%,
-    transparent 88%
-  );
 }
 
 .site-discord:hover,
@@ -720,8 +696,6 @@ h3 {
   );
 }
 
-.site-x:hover::before,
-.site-x.site-floating-link-near::before,
 .site-discord:hover::before,
 .site-discord.site-floating-link-near::before,
 .site-phone:hover::before,
@@ -732,7 +706,6 @@ h3 {
   transform: translateX(110%);
 }
 
-.site-x svg,
 .site-discord svg,
 .site-phone svg,
 .site-github svg {
@@ -743,7 +716,6 @@ h3 {
   z-index: 1;
 }
 
-.site-x span,
 .site-discord span,
 .site-phone span,
 .site-github span {
@@ -905,16 +877,11 @@ h3 {
     line-height: 1.7;
   }
 
-  .site-x,
   .site-discord,
   .site-phone,
   .site-github {
     right: 0.9rem;
     font-size: 0.86rem;
-  }
-
-  .site-x {
-    bottom: 10.2rem;
   }
 
   .site-discord {

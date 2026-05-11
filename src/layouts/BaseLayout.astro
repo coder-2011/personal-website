@@ -42,21 +42,6 @@ const {
     </div>
     <div class="site-cursor" aria-hidden="true"></div>
     <a
-      class="site-x"
-      href="https://x.com/_no_circles"
-      target="_blank"
-      rel="noreferrer"
-      aria-label="_no_circles on X"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M18.9 2H22l-6.77 7.74L23.2 22h-6.26l-4.9-7.45L5.52 22H2.4l7.24-8.27L1.8 2h6.42l4.43 6.76L18.9 2Zm-1.1 18h1.73L7.26 3.9H5.4Z"
-          fill="currentColor"
-        />
-      </svg>
-      <span>no-circles</span>
-    </a>
-    <a
       class="site-discord"
       href="https://discordapp.com/users/904441943298310204"
       target="_blank"
@@ -100,7 +85,7 @@ const {
         const INTERACTIVE_SELECTOR =
           "a, button, input, textarea, select, label, summary, [role='button']";
         const PROXIMITY_SELECTOR = ".top-nav .nav-link";
-        const FLOATING_LINK_SELECTOR = ".site-github, .site-phone, .site-discord, .site-x";
+        const FLOATING_LINK_SELECTOR = ".site-github, .site-phone, .site-discord";
         const cursor = document.querySelector(".site-cursor");
         const tailLayer = document.querySelector(".site-cursor__tail-layer");
         const tailDots = Array.from(
