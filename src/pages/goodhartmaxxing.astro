@@ -1,0 +1,91 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="goodhartmaxxing | Naman Chetwani"
+  description="A note on Goodhart's law and how it shows up in everyday optimization."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
+        <a class="nav-link" href="/about" data-echo="About">About</a>
+        <a class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
+        <a class="nav-link" href="/reading" data-echo="Reading">Reading</a>
+        <a class="nav-link" href="/wrdn" data-echo="wrdn">wrdn</a>
+        <a class="nav-link current" href="/goodhartmaxxing" data-echo="goodhartmaxxing">goodhartmaxxing</a>
+      </nav>
+    </div>
+
+    <article class="essay about-essay">
+      <h1>goodhartmaxxing</h1>
+
+      <p>
+        Goodhart&apos;s law: &quot;When a measure becomes a target, it ceases to be a good
+        measure.&quot;
+      </p>
+
+      <p>
+        A classic example is the Soviet nail factory, which, when rewarded for the number of
+        nails produced, manufactured millions of tiny, useless nails, then pivoted to heavy,
+        oversized nails when rewarded by weight.
+      </p>
+
+      <p>
+        However, the extent to which Goodhart&apos;s law affects the world is tremendous. About
+        half of the world&apos;s problems can be characterized, at least in part, by Goodhart&apos;s
+        law.
+      </p>
+
+      <ol class="plain-list">
+        <li>
+          <strong>Lying:</strong> If the target is possessing a set of characteristics, you
+          gravitate toward seeming like you possess those characteristics.
+        </li>
+        <li>
+          <strong>Greed:</strong> If the target is being important, in a capitalist society
+          where money is the core object of value, one will optimize for making money to feel
+          important.
+        </li>
+        <li>
+          <strong>Social media:</strong> If the target is meaningful human connection, and the
+          measure is engagement, platforms optimize for engagement.
+        </li>
+        <li>
+          <strong>Startup culture:</strong> If the target is building something valuable, and the
+          measure is valuation, founders optimize for valuation.
+        </li>
+        <li>
+          <strong>Motivated reasoning:</strong> If the goal is getting to a true answer, and the
+          metric is having a reasonable-feeling logic chain, one skips the logic, creates an
+          answer, and works on the logic chain after.
+        </li>
+        <li>
+          <strong>Procrastination:</strong> If the target is a good life, and the measure is how
+          good you feel right now, you optimize for present feeling.
+        </li>
+        <li>
+          <strong>Complexity hiding incompetence:</strong> If the target is effective governance
+          or management, and the measure is appearing to be in control, actors optimize for the
+          appearance of control, which is best achieved by increasing complexity.
+        </li>
+        <li>
+          <strong>Fear:</strong> If the target is actual safety, and the measure is the felt sense
+          of threat elimination, security systems optimize for visible threat removal.
+        </li>
+      </ol>
+
+      <p>
+        AI models are a good example of this. They perform
+        <a href="https://metr.org/blog/2025-06-05-recent-reward-hacking/" target="_blank" rel="noreferrer">
+          reward hacking
+        </a>, where they strongly optimize for the score they can win.
+      </p>
+
+      <p>
+        If you passively observe people around you, you will notice this in all kinds of ways.
+      </p>
+    </article>
+  </main>
+</BaseLayout>
