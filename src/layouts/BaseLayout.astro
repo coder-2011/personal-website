@@ -1,8 +1,6 @@
 ---
 import "../styles/global.css";
-import { inject } from '@vercel/analytics';
-
-inject();
+import Analytics from '@vercel/analytics/astro';
 
 interface Props {
   title?: string;
@@ -31,6 +29,7 @@ const {
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
       rel="stylesheet"
     />
+    <Analytics />
   </head>
   <body>
     <slot />
