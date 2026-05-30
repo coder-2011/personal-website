@@ -20,8 +20,7 @@ const projects = [
   {
     title: "STRATUS UAV: Optimizing Prescribed Burning using UAVs and Predictive Modeling",
     paragraphs: [
-      "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance, solving the biggest issues in the field:",
-      "I built in 7 months what they built in 9 years."
+      "Led development of patent-pending autonomous UAV to mitigate wildfire spread. From scratch, 3D-printed a VTOL aircraft designed to conduct autonomous backburning, achieving 15 km range with 1.2 hour endurance, solving the biggest issues in the field:"
     ],
     bullets: [
       "Cost: around $16k/day for helicopters, custom built helicopters, and pilots",
@@ -47,7 +46,8 @@ const projects = [
     paragraphs: [
       "Built a wildfire prediction foundational model that broke SOTA and created the first ML approach to optimizing prescribed burns.",
       "SBON uses a tri-branch multimodal architecture over 13 input modalities spanning fire imagery, weather, and geography, with ConvNeXt and SSMs as encoders, feeding into a larger SSM to create a 4-hour fire-mask prediction.",
-      "We treat the wildfire foundational model as an environment, where we autoregressively rollout to 48 hours to get a longer scale prediction. We then use PPO to optimize the placement of prescribed burns, turning a workflow still driven largely by checklists and operator intuition into an optimization problem."
+      "We treat the wildfire foundational model as an environment, where we autoregressively rollout to 48 hours to get a longer scale prediction. We then use PPO to optimize the placement of prescribed burns, turning a workflow still driven largely by checklists and operator intuition into an optimization problem.",
+      "Optimizing prescribed burns is unfortunately niche with < 20 papers in the last 30 yrs. Mine hit SOTA as the first deep learning approach to it."
     ],
     image: {
       src: "/projects/sbon-diagram.png",
