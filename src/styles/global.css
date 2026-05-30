@@ -1,12 +1,12 @@
 :root {
   color-scheme: dark;
-  --bg: #090909;
-  --text: #ece9e1;
-  --muted: #b8b2a8;
-  --soft: #8f8a82;
-  --border: rgba(255, 255, 255, 0.12);
-  --accent: #d1a86f;
-  --hero-grid-size: 20px;
+  --bg: #030303;
+  --text: #f0eee8;
+  --muted: #aaa49a;
+  --soft: #77726b;
+  --border: rgba(255, 255, 255, 0.09);
+  --accent: #c8a16b;
+  --hero-grid-size: 32px;
 }
 
 @font-face {
@@ -28,10 +28,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.2) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 84% 26%, rgba(255, 255, 255, 0.18) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 68% 72%, rgba(255, 255, 255, 0.14) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 22% 84%, rgba(255, 255, 255, 0.16) 0 1px, transparent 1.5px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), transparent 18rem),
+    linear-gradient(90deg, rgba(200, 161, 107, 0.025), transparent 38%),
     var(--bg);
   background-size: 100% 100%;
   color: var(--text);
@@ -249,28 +247,13 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -1;
-  opacity: 0.34;
+  opacity: 0.16;
   background:
-    conic-gradient(
-      from 180deg at 50% 70%,
-      hsl(0 0% 92%) 0deg,
-      hsl(0 0% 78%) 72deg,
-      hsl(0 0% 58%) 144deg,
-      hsl(0 0% 38%) 216deg,
-      hsl(0 0% 70%) 288deg,
-      hsl(0 0% 92%) 1turn
-    );
-  mask:
-    radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px) 50% 50% /
-      var(--hero-grid-size) var(--hero-grid-size),
-    url("https://assets.codepen.io/605876/noise-mask.png") 256px 50% / 256px 256px;
-  mask-composite: intersect;
-  -webkit-mask:
-    radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px) 50% 50% /
-      var(--hero-grid-size) var(--hero-grid-size),
-    url("https://assets.codepen.io/605876/noise-mask.png") 256px 50% / 256px 256px;
-  -webkit-mask-composite: source-in;
-  animation: flicker 20s infinite linear;
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: var(--hero-grid-size) var(--hero-grid-size);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 68%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 68%);
   pointer-events: none;
 }
 
@@ -328,11 +311,11 @@ h3 {
   position: relative;
   margin: 3.5rem 0 2rem;
   padding: 1.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 28px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
   background:
-    radial-gradient(circle at top left, rgba(209, 168, 111, 0.14), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
+    rgba(255, 255, 255, 0.012);
   overflow: hidden;
 }
 
@@ -340,11 +323,8 @@ h3 {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent),
-    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0 1px, transparent 1.5px);
-  background-size: 100% 100%, 18px 18px;
-  opacity: 0.45;
+  border-top: 1px solid rgba(255, 255, 255, 0.075);
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -421,8 +401,8 @@ h3 {
   gap: 0.7rem;
   padding: 0.45rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(10, 10, 10, 0.72);
+  border-radius: 10px;
+  background: rgba(3, 3, 3, 0.78);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -431,7 +411,7 @@ h3 {
   width: 100%;
   padding: 0.9rem 1rem;
   border: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   background: transparent;
   color: var(--text);
 }
@@ -452,8 +432,8 @@ h3 {
   min-width: 9.5rem;
   padding: 0.95rem 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: linear-gradient(180deg, #f5f0e6, #ddd3c3);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #f0eadf, #d7cbbb);
   color: #101010;
   font-weight: 600;
   text-decoration: none;
@@ -476,7 +456,7 @@ h3 {
 .waitlist-notice {
   width: fit-content;
   padding: 0.65rem 0.9rem;
-  border-radius: 999px;
+  border-radius: 8px;
   border: 1px solid var(--border);
   margin-bottom: 1rem;
 }
@@ -531,8 +511,8 @@ h3 {
 .project-panel {
   padding: 1.2rem 1.2rem 0.35rem;
   border: 1px solid var(--border);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.014);
   margin-bottom: 1rem;
 }
 
@@ -561,9 +541,9 @@ h3 {
 .project-figure img {
   width: 100%;
   display: block;
-  border-radius: 14px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .project-figure figcaption {
@@ -596,8 +576,8 @@ h3 {
   gap: 0.55rem;
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(9, 9, 9, 0.86);
+  border-radius: 8px;
+  background: rgba(3, 3, 3, 0.86);
   color: var(--soft);
   text-decoration: none;
   backdrop-filter: blur(8px);
@@ -745,9 +725,9 @@ h3 {
   object-fit: contain;
   object-position: center;
   display: block;
-  border-radius: 14px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .reading-title,
@@ -806,9 +786,9 @@ h3 {
   bottom: calc(100% + 0.8rem);
   width: min(17rem, 70vw);
   padding: 0.85rem 0.95rem;
-  border-radius: 16px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(12, 12, 12, 0.96);
+  background: rgba(5, 5, 5, 0.96);
   color: var(--text);
   font-size: 0.92rem;
   line-height: 1.45;
@@ -862,7 +842,7 @@ h3 {
   .waitlist-row {
     flex-direction: column;
     align-items: stretch;
-    border-radius: 20px;
+    border-radius: 10px;
   }
 
   .waitlist-button {
@@ -912,12 +892,5 @@ h3 {
 @media (prefers-reduced-motion: reduce) {
   .site-cursor__tail-layer {
     display: none;
-  }
-}
-
-@keyframes flicker {
-  to {
-    mask-position: 50% 50%, 0 50%;
-    -webkit-mask-position: 50% 50%, 0 50%;
   }
 }
