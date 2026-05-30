@@ -1,0 +1,358 @@
+---
+const contactLinks = [
+  { label: "+1 925 895 9674", href: "tel:+19258959674" },
+  { label: "naman.chetwani@gmail.com", href: "mailto:naman.chetwani@gmail.com" },
+  { label: "github.com/coder-2011", href: "https://github.com/coder-2011" },
+  { label: "naman.world", href: "https://naman.world" }
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Naman Chetwani Resume</title>
+    <style>
+      @page {
+        size: letter;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: #f3f3f3;
+        color: #171717;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        width: 8.5in;
+        min-height: 11in;
+        padding: 0.33in 0.55in 0.32in;
+        background: #ffffff;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 0.18in;
+      }
+
+      h1 {
+        margin: 0 0 0.05in;
+        font-size: 28pt;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .contact {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.07in 0.1in;
+        color: #202020;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 10.8pt;
+        line-height: 1.15;
+      }
+
+      .contact a + a::before {
+        content: "|";
+        margin-right: 0.1in;
+        color: #777777;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      section {
+        margin-top: 0.125in;
+      }
+
+      h2 {
+        margin: 0 0 0.055in;
+        padding-bottom: 0.025in;
+        border-bottom: 2.4pt solid #d5d5d5;
+        font-size: 13.6pt;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .entry {
+        margin-bottom: 0.085in;
+      }
+
+      .entry:last-child {
+        margin-bottom: 0;
+      }
+
+      .entry-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.18in;
+        align-items: baseline;
+        margin-bottom: 0.018in;
+      }
+
+      .entry-title {
+        font-size: 11.8pt;
+        line-height: 1.15;
+        font-weight: 800;
+      }
+
+      .entry-meta {
+        flex: 0 0 auto;
+        color: #505050;
+        font-size: 10.7pt;
+        line-height: 1.15;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .entry-role {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.18in;
+        margin-bottom: 0.025in;
+        color: #202020;
+        font-size: 10.8pt;
+        line-height: 1.15;
+        font-style: italic;
+      }
+
+      .entry-location {
+        flex: 0 0 auto;
+        color: #505050;
+        font-style: normal;
+        text-align: right;
+      }
+
+      ul {
+        margin: 0.015in 0 0 0.2in;
+        padding-left: 0.12in;
+      }
+
+      li {
+        margin: 0 0 0.016in;
+        padding-left: 0.02in;
+        font-size: 9.25pt;
+        line-height: 1.14;
+      }
+
+      strong {
+        font-weight: 800;
+      }
+
+      .compact .entry {
+        margin-bottom: 0.06in;
+      }
+
+      .skills-row {
+        margin-bottom: 0.035in;
+        font-size: 9.2pt;
+        line-height: 1.14;
+      }
+
+      .skills-row strong {
+        margin-right: 0.035in;
+      }
+
+      @media print {
+        html,
+        body {
+          background: #ffffff;
+        }
+
+        .page {
+          min-height: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <h1>Naman Chetwani</h1>
+        <nav class="contact" aria-label="Contact">
+          {contactLinks.map((link) => <a href={link.href}>{link.label}</a>)}
+        </nav>
+      </header>
+
+      <section>
+        <h2>Experience</h2>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">wrdn</div>
+            <div class="entry-meta">2026 - Present</div>
+          </div>
+          <div class="entry-role">
+            <div>Founder / Engineer</div>
+            <div class="entry-location">Walnut Creek, CA</div>
+          </div>
+          <ul>
+            <li>
+              Building <strong>wrdn</strong>, an AI accountability system that watches the day
+              through ambient audio and visual context, builds a long-term model of goals and
+              values, and flags drift from what actually matters.
+            </li>
+            <li>
+              Designed the memory layer, personal-agent command execution, and flexible hardware
+              strategy across a clip-on device, Meta Ray-Bans, and Brilliant Labs Halo.
+            </li>
+            <li>
+              Building the stack <strong>from kernels to hardware</strong>, with an auditable core
+              serious users can inspect instead of trusting branding.
+            </li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">Fire Technology Contract Work</div>
+            <div class="entry-meta">2026 - Present</div>
+          </div>
+          <div class="entry-role">
+            <div>Hardware / Systems Engineer</div>
+            <div class="entry-location">Remote</div>
+          </div>
+          <ul>
+            <li>
+              Under contract building machines for fire tech companies, combining autonomous
+              hardware, manufacturing, and field-oriented fire systems.
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="compact">
+        <h2>Projects</h2>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">STRATUS UAV: Optimizing Prescribed Burning using UAVs and Predictive Modeling</div>
+          </div>
+          <ul>
+            <li>
+              Led development of a <strong>patent-pending autonomous UAV</strong> to mitigate
+              wildfire spread; 3D-printed a VTOL aircraft for autonomous backburning with
+              <strong>15 km range</strong> and <strong>1.2 hour endurance</strong>.
+            </li>
+            <li>
+              Targeted core field constraints: helicopter operations around $16k/day, custom
+              aircraft and pilots, and pilot liability; designed for <strong>5x lower price</strong>
+              and <strong>3x higher range</strong> than the closest drone competitor.
+            </li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">SBON (Strategic-Blackline-Optimization-Engine)</div>
+          </div>
+          <ul>
+            <li>
+              Built a wildfire prediction foundational model that <strong>broke SOTA</strong> and
+              created the first ML approach to optimizing prescribed burns.
+            </li>
+            <li>
+              Built a tri-branch multimodal architecture across <strong>13 input modalities</strong>
+              spanning fire imagery, weather, and geography; ConvNeXt and SSM encoders feed a
+              larger SSM for 4-hour fire-mask prediction.
+            </li>
+            <li>
+              Treated the model as an environment, rolled out predictions to <strong>48 hours</strong>,
+              and used PPO to optimize burn placement in a niche field with fewer than 20 papers in
+              the last 30 years.
+            </li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">No Circles</div>
+            <div class="entry-meta"><a href="https://no-circles.com">no-circles.com</a></div>
+          </div>
+          <ul>
+            <li>
+              Built a website-first personalized daily newsletter that learns from what each reader
+              responds to; scaled to <strong>triple-digit users 3 weeks from inception</strong>.
+            </li>
+            <li>
+              Built the memory, brief, and feedback loop from replies and user signals to teach
+              people about tangential fields they know little about.
+            </li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">PHOENIX UAV / Science Fair Results</div>
+          </div>
+          <ul>
+            <li>
+              Built PHOENIX UAV for early wildfire detection; placed <strong>2nd in the California
+              State Science Fair</strong>, <strong>1st at regionals</strong>, and won 5 awards
+              including the Henkel aerospace award and Junior Lemelson-MIT Inventor Award.
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">Independent Study / Competitions</div>
+            <div class="entry-meta">2025 - Present</div>
+          </div>
+          <ul>
+            <li>
+              Independently studied mathematics from high school precalculus to multivariable
+              calculus and linear algebra, plus ML and transformer theory, in under a year.
+            </li>
+            <li>
+              Selected for <strong>SPARC '26</strong> (3% acceptance rate); achieved
+              <strong>USACO Gold</strong> and F=MA qualifying scores in the top 5% nationally.
+            </li>
+            <li>
+              Competed in CALICO, Harker Physics Invitational, and Harker Programming Invitational;
+              held a top 30 national placement in MSPF Debate with elimination rounds at Stanford
+              and TOC.
+            </li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="skills">
+        <h2>Skills</h2>
+        <div class="skills-row">
+          <strong>AI / ML:</strong> multimodal modeling, ConvNeXt, state-space models, PPO, wildfire
+          prediction, transformer theory, mechanistic interpretability, inference-time structures
+        </div>
+        <div class="skills-row">
+          <strong>Engineering:</strong> autonomous UAVs, VTOL airframes, 3D printing, hardware/software systems, ambient AI, personal agents, fire technology
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
