@@ -10,7 +10,9 @@ export const GET: APIRoute = async ({ url }) => {
     return new Response("Resume PDF not found.", { status: 404 });
   }
 
-  return new Response(resumeResponse.body, {
+  const resumePdf = await resumeResponse.arrayBuffer();
+
+  return new Response(resumePdf, {
     headers: {
       "Cache-Control": "public, max-age=3600",
       "Content-Disposition": 'inline; filename="naman-chetwani-resume.pdf"',
