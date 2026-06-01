@@ -27,9 +27,12 @@ const contactLinks = [
       html,
       body {
         margin: 0;
-        background: #f3f3f3;
-        color: #171717;
-        font-family: Arial, Helvetica, sans-serif;
+        background: #030303;
+        color: #f0eee8;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
       body {
@@ -39,25 +42,31 @@ const contactLinks = [
       }
 
       a {
-        color: inherit;
+        color: #f0eee8;
         text-decoration: none;
       }
 
       .page {
         width: 8.5in;
         min-height: 11in;
-        padding: 0.33in 0.55in 0.32in;
-        background: #ffffff;
+        padding: 0.38in 0.58in 0.34in;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 2.1in),
+          linear-gradient(90deg, rgba(200, 161, 107, 0.04), transparent 3.4in),
+          #030303;
       }
 
       .header {
         text-align: center;
         margin-bottom: 0.18in;
+        padding-bottom: 0.105in;
+        border-bottom: 1pt solid rgba(200, 161, 107, 0.48);
       }
 
       h1 {
-        margin: 0 0 0.05in;
-        font-size: 28pt;
+        margin: 0 0 0.055in;
+        color: #f7f2e9;
+        font-size: 26pt;
         line-height: 1;
         font-weight: 800;
         letter-spacing: 0;
@@ -68,8 +77,9 @@ const contactLinks = [
         flex-wrap: wrap;
         justify-content: center;
         gap: 0.07in 0.1in;
-        color: #202020;
-        font-family: "Courier New", Courier, monospace;
+        color: #aaa49a;
+        font-family:
+          "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace;
         font-size: 10.8pt;
         line-height: 1.15;
       }
@@ -77,19 +87,20 @@ const contactLinks = [
       .contact a + a::before {
         content: "|";
         margin-right: 0.1in;
-        color: #777777;
+        color: rgba(200, 161, 107, 0.58);
         font-family: Arial, Helvetica, sans-serif;
       }
 
       section {
-        margin-top: 0.125in;
+        margin-top: 0.12in;
       }
 
       h2 {
         margin: 0 0 0.055in;
-        padding-bottom: 0.025in;
-        border-bottom: 2.4pt solid #d5d5d5;
-        font-size: 13.6pt;
+        padding-bottom: 0.032in;
+        border-bottom: 1pt solid rgba(240, 238, 232, 0.15);
+        color: #c8a16b;
+        font-size: 12.8pt;
         line-height: 1;
         font-weight: 800;
         letter-spacing: 0;
@@ -113,6 +124,7 @@ const contactLinks = [
       }
 
       .entry-title {
+        color: #f7f2e9;
         font-size: 11.8pt;
         line-height: 1.15;
         font-weight: 800;
@@ -120,7 +132,7 @@ const contactLinks = [
 
       .entry-meta {
         flex: 0 0 auto;
-        color: #505050;
+        color: #aaa49a;
         font-size: 10.7pt;
         line-height: 1.15;
         text-align: right;
@@ -132,7 +144,7 @@ const contactLinks = [
         justify-content: space-between;
         gap: 0.18in;
         margin-bottom: 0.025in;
-        color: #202020;
+        color: #aaa49a;
         font-size: 10.8pt;
         line-height: 1.15;
         font-style: italic;
@@ -140,7 +152,7 @@ const contactLinks = [
 
       .entry-location {
         flex: 0 0 auto;
-        color: #505050;
+        color: #aaa49a;
         font-style: normal;
         text-align: right;
       }
@@ -153,11 +165,17 @@ const contactLinks = [
       li {
         margin: 0 0 0.016in;
         padding-left: 0.02in;
+        color: #d8d3c9;
         font-size: 9.25pt;
         line-height: 1.14;
       }
 
+      li::marker {
+        color: rgba(200, 161, 107, 0.72);
+      }
+
       strong {
+        color: #f3eadc;
         font-weight: 800;
       }
 
@@ -178,7 +196,7 @@ const contactLinks = [
       @media print {
         html,
         body {
-          background: #ffffff;
+          background: #030303;
         }
 
         .page {
