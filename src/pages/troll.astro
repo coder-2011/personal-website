@@ -349,6 +349,7 @@ const title = "TROLL TERMINAL";
       const loadingEl = document.querySelector("#loading");
       const errorEl = document.querySelector("#error");
       const audio = document.querySelector("#troll-audio");
+      const audioStartSeconds = 10;
 
       let messages = [];
       let busy = false;
@@ -365,6 +366,10 @@ const title = "TROLL TERMINAL";
       const startAudio = (loud = false) => {
         if (!(audio instanceof HTMLAudioElement)) {
           return;
+        }
+
+        if (audio.currentTime < audioStartSeconds) {
+          audio.currentTime = audioStartSeconds;
         }
 
         audioUnlocked = audioUnlocked || loud;
@@ -525,6 +530,9 @@ const title = "TROLL TERMINAL";
       window.addEventListener("keydown", () => startAudio(true), { once: true });
       window.addEventListener("focus", keepAudioAlive);
       document.addEventListener("visibilitychange", keepAudioAlive);
+      audio.addEventListener("loadedmetadata", () => {
+        audio.currentTime = audioStartSeconds;
+      });
       load();
       startAudio();
       setInterval(keepAudioAlive, 1800);
