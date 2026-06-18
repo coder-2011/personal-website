@@ -6,6 +6,9 @@ const projects = [
     title: "Gemma 4 Inference Megakernel",
     paragraphs: [
       "Most recently, building gemma.c, an experimental inference runtime for Gemma 4 dense models. The goal is a highly specialized CUDA/PTX inference path for Gemma 4 31B on RTX A6000-class GPUs: start with standalone kernels and a correct unfused baseline, benchmark it, then fuse measured hot paths toward a megakernel."
+    ],
+    links: [
+      { href: "https://github.com/coder-2011/gemma.c", label: "GitHub repo" }
     ]
   },
   {
@@ -21,6 +24,9 @@ const projects = [
       "Building wrdn, an AI accountability system for your life. It watches your day through ambient audio and visual context, builds a long-term model of your goals and values, and tells you when you're drifting from what actually matters to you.",
       "It helps you make decisions according to the context spanning your life, and proactively executes commands through personal agents.",
       "I build the stack from kernels to hardware."
+    ],
+    links: [
+      { href: "https://naman.world/wrdn", label: "naman.world/wrdn" }
     ]
   },
   {
@@ -93,7 +99,10 @@ const projects = [
       src: "/projects/phoenix-uav-poster.png",
       alt: "PHOENIX UAV project poster for early wildfire detection.",
       caption: "PHOENIX UAV poster"
-    }
+    },
+    links: [
+      { href: "https://github.com/coder-2011/PHEONIX-UAV-v1", label: "GitHub repo" }
+    ]
   },
   {
     title: "Competitions",
