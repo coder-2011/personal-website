@@ -14,7 +14,8 @@ const projects = [
   {
     title: "LPT",
     paragraphs: [
-      "Built LPT, a language modeling technique that got 4.6% better perplexity for 0.3% overhead. With scale, it should perform better."
+      "Built LPT, a latent planning token experiment for language models. The idea is to give the model small hidden planning steps before it predicts real tokens, then measure whether that extra internal scratchpad is worth the compute.",
+      "In a matched pretraining run, LPT got 4.6% better perplexity for 0.3% overhead. It is still early evidence, but the mechanism should get more useful with scale."
     ],
     links: [
       { href: "https://github.com/coder-2011/lpt", label: "GitHub repo" }
