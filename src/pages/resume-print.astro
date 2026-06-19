@@ -264,8 +264,8 @@ const contactLinks = [
           </div>
           <ul>
             <li>
-              Built a latent planning token path for language models: hidden scratchpad tokens that
-              help condition the next real-token prediction.
+              Built a latent planning token path that injects planning tokens every n rollouts, then
+              adds their final-layer hidden states to the next n rollouts.
             </li>
             <li>
               Improved perplexity by <strong>4.6%</strong> for <strong>0.3% overhead</strong> in a
