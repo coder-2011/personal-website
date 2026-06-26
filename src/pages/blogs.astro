@@ -1,0 +1,34 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Blogs | Naman Chetwani"
+  description="Blog posts by Naman Chetwani."
+>
+  <main class="page">
+    <div class="page-top">
+      <nav class="top-nav" aria-label="Primary">
+        <a class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
+        <a class="nav-link" href="/about" data-echo="About">About</a>
+        <a class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
+        <a class="nav-link" href="/reading" data-echo="Reading">Reading</a>
+        <a class="nav-link current" href="/blogs" data-echo="Blogs">Blogs</a>
+        <a class="nav-link" href="/wrdn" data-echo="wrdn">wrdn</a>
+      </nav>
+    </div>
+
+    <article class="essay about-essay">
+      <h1>Blogs</h1>
+
+      <ul class="plain-list">
+        <li>
+          <a href="/goodhartmaxxing">goodhartmaxxing</a>
+        </li>
+        <li>
+          <a href="/alt-education">Alternative Education</a>
+        </li>
+      </ul>
+    </article>
+  </main>
+</BaseLayout>
