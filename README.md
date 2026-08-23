@@ -1,13 +1,12 @@
 # personal-website
 
-This is Naman Chetwani's personal Astro site. It is a small Vercel-deployed site for biography, projects, reading notes, and a `/kairos` redirect path.
+This is Naman Chetwani's personal Astro site. It is a small Vercel-deployed site for biography, projects, and a `/kairos` redirect path.
 
 ## What the site contains
 
 ```text
 src/pages/index.astro             Home page
 src/pages/things-ive-done.astro   Projects and accomplishments
-src/pages/reading.astro           Reading list and recurring inputs
 src/pages/kairos.ts               Redirect endpoint for /kairos
 src/pages/kairos/[...path].ts     Redirect endpoint for /kairos/*
 src/lib/kairosRedirect.ts         Scraper-aware Kairos redirect helper
@@ -61,4 +60,4 @@ The default dev server binds to host `0.0.0.0` on port `3000` through the Astro 
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
 - Several `.agents/skills` files are tracked in this repo as local skill snapshots; they are not part of the website runtime.
-- Image assets under `public/projects` and `public/reading` support the project and reading pages.
+- Image assets under `public/projects` support the project pages.
