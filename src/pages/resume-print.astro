@@ -13,48 +13,14 @@ const contactLinks = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="robots" content="noindex" />
-    <meta name="theme-color" content="#0a0a0a" />
     <title>Naman Chetwani Resume</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
-    <script is:inline>
-      // Restores the shared theme preference before the resume paints.
-      (() => {
-        try {
-          if (window.localStorage.getItem("naman-theme") === "light") {
-            document.documentElement.dataset.theme = "light";
-            document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#ffffff");
-          }
-        } catch {
-          // Theme preference is optional when storage is unavailable.
-        }
-      })();
-    </script>
     <style>
-      :root {
-        color-scheme: dark;
-        --resume-canvas: #0a0a0a;
-        --resume-surface: #161616;
-        --resume-ink: #ffffff;
-        --resume-muted: rgb(255 255 255 / 70%);
-        --resume-soft: rgb(255 255 255 / 50%);
-        --resume-border: rgb(255 255 255 / 14%);
-      }
-
-      :root[data-theme="light"] {
-        color-scheme: light;
-        --resume-canvas: #ffffff;
-        --resume-surface: #f4f4f4;
-        --resume-ink: #000000;
-        --resume-muted: rgb(0 0 0 / 70%);
-        --resume-soft: rgb(0 0 0 / 56%);
-        --resume-border: rgb(0 0 0 / 14%);
-      }
-
       @page {
         size: letter;
         margin: 0;
@@ -67,10 +33,10 @@ const contactLinks = [
       html,
       body {
         margin: 0;
-        background: var(--resume-canvas);
-        color: var(--resume-ink);
+        background: #030303;
+        color: #f0eee8;
         font-family:
-          "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica,
+          "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica,
           sans-serif;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -83,40 +49,42 @@ const contactLinks = [
       }
 
       a {
-        color: inherit;
-        text-decoration-color: var(--resume-border);
-        text-underline-offset: 0.16em;
+        color: #f0eee8;
+        text-decoration: none;
       }
 
       .page {
         width: 8.5in;
         min-height: 11in;
         padding: 0.38in 0.58in 0.34in;
-        background: var(--resume-canvas);
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 2.1in),
+          linear-gradient(90deg, rgba(200, 161, 107, 0.04), transparent 3.4in),
+          #030303;
       }
 
       .header {
-        text-align: left;
+        text-align: center;
         margin-bottom: 0.18in;
         padding-bottom: 0.105in;
-        border-bottom: 1pt solid var(--resume-border);
+        border-bottom: 1pt solid rgba(200, 161, 107, 0.48);
       }
 
       h1 {
         margin: 0 0 0.055in;
-        color: var(--resume-ink);
+        color: #f7f2e9;
         font-size: 26pt;
         line-height: 1;
-        font-weight: 600;
-        letter-spacing: -0.04em;
+        font-weight: 800;
+        letter-spacing: 0;
       }
 
       .contact {
         display: flex;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: center;
         gap: 0.07in 0.1in;
-        color: var(--resume-muted);
+        color: #aaa49a;
         font-size: 10.2pt;
         font-weight: 400;
         line-height: 1.15;
@@ -125,7 +93,7 @@ const contactLinks = [
       .contact a + a::before {
         content: "|";
         margin-right: 0.1in;
-        color: var(--resume-soft);
+        color: rgba(200, 161, 107, 0.58);
       }
 
       section {
@@ -135,13 +103,13 @@ const contactLinks = [
       h2 {
         margin: 0 0 0.055in;
         padding-bottom: 0.032in;
-        border-bottom: 1pt solid var(--resume-border);
-        color: var(--resume-ink);
+        border-bottom: 1pt solid rgba(240, 238, 232, 0.15);
+        color: #c8a16b;
         font-size: 12.8pt;
         line-height: 1;
-        font-weight: 600;
+        font-weight: 800;
         letter-spacing: 0;
-        text-transform: none;
+        text-transform: uppercase;
       }
 
       .entry {
@@ -161,15 +129,15 @@ const contactLinks = [
       }
 
       .entry-title {
-        color: var(--resume-ink);
+        color: #f7f2e9;
         font-size: 11.8pt;
         line-height: 1.15;
-        font-weight: 600;
+        font-weight: 800;
       }
 
       .entry-meta {
         flex: 0 0 auto;
-        color: var(--resume-muted);
+        color: #aaa49a;
         font-size: 10.7pt;
         line-height: 1.15;
         text-align: right;
@@ -181,7 +149,7 @@ const contactLinks = [
         justify-content: space-between;
         gap: 0.18in;
         margin-bottom: 0.025in;
-        color: var(--resume-muted);
+        color: #aaa49a;
         font-size: 10.8pt;
         line-height: 1.15;
         font-style: italic;
@@ -189,7 +157,7 @@ const contactLinks = [
 
       .entry-location {
         flex: 0 0 auto;
-        color: var(--resume-muted);
+        color: #aaa49a;
         font-style: normal;
         text-align: right;
       }
@@ -202,18 +170,18 @@ const contactLinks = [
       li {
         margin: 0 0 0.016in;
         padding-left: 0.02in;
-        color: var(--resume-muted);
+        color: #d8d3c9;
         font-size: 9.25pt;
         line-height: 1.14;
       }
 
       li::marker {
-        color: var(--resume-soft);
+        color: rgba(200, 161, 107, 0.72);
       }
 
       strong {
-        color: var(--resume-ink);
-        font-weight: 600;
+        color: #f3eadc;
+        font-weight: 800;
       }
 
       .compact .entry {
@@ -230,80 +198,15 @@ const contactLinks = [
         margin-right: 0.035in;
       }
 
-      .theme-toggle {
-        position: fixed;
-        right: 1.5rem;
-        bottom: 1.5rem;
-        min-height: 2.75rem;
-        padding: 0.6rem 0.8rem;
-        border: 1px solid var(--resume-border);
-        border-radius: 6px;
-        background: var(--resume-surface);
-        color: var(--resume-ink);
-        font: inherit;
-        font-size: 0.82rem;
-        font-weight: 500;
-        cursor: pointer;
-      }
-
-      .theme-toggle:focus-visible {
-        outline: 2px solid var(--resume-ink);
-        outline-offset: 3px;
-      }
-
-      @media (max-width: 760px) {
-        body {
-          display: block;
-        }
-
-        .page {
-          width: 100%;
-          min-height: 100vh;
-          padding: 1.5rem 1rem 5rem;
-        }
-
-        .entry-head,
-        .entry-role {
-          align-items: flex-start;
-          flex-direction: column;
-          gap: 0.04in;
-        }
-
-        .entry-meta,
-        .entry-location {
-          text-align: left;
-          white-space: normal;
-        }
-
-        .theme-toggle {
-          right: 1rem;
-          bottom: 1rem;
-        }
-      }
-
       @media print {
-        :root {
-          color-scheme: light;
-          --resume-canvas: #ffffff;
-          --resume-surface: #ffffff;
-          --resume-ink: #000000;
-          --resume-muted: rgb(0 0 0 / 76%);
-          --resume-soft: rgb(0 0 0 / 56%);
-          --resume-border: rgb(0 0 0 / 16%);
-        }
-
         html,
         body {
-          background: #ffffff;
+          background: #030303;
         }
 
         .page {
           min-height: 0;
           box-shadow: none;
-        }
-
-        .theme-toggle {
-          display: none;
         }
       }
     </style>
@@ -477,44 +380,5 @@ const contactLinks = [
       </section>
 
     </main>
-    <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
-      <span data-theme-label>Light mode</span>
-    </button>
-    <script>
-      // Synchronizes the resume with the site's persisted theme preference.
-      (() => {
-        const root = document.documentElement;
-        const button = document.querySelector("#theme-toggle");
-        const label = document.querySelector("[data-theme-label]");
-        const themeColor = document.querySelector('meta[name="theme-color"]');
-
-        if (!(button instanceof HTMLButtonElement) || !(label instanceof HTMLElement)) {
-          return;
-        }
-
-        // Applies the selected theme and keeps the control label accurate.
-        const setTheme = (theme) => {
-          const isLight = theme === "light";
-          root.dataset.theme = isLight ? "light" : "dark";
-          button.setAttribute("aria-pressed", String(isLight));
-          button.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
-          label.textContent = isLight ? "Dark mode" : "Light mode";
-          themeColor?.setAttribute("content", isLight ? "#ffffff" : "#0a0a0a");
-
-          try {
-            window.localStorage.setItem("naman-theme", isLight ? "light" : "dark");
-          } catch {
-            // The theme still works for this page view when storage is unavailable.
-          }
-        };
-
-        setTheme(root.dataset.theme === "light" ? "light" : "dark");
-
-        // Toggles between the two supported themes.
-        button.addEventListener("click", () => {
-          setTheme(root.dataset.theme === "light" ? "dark" : "light");
-        });
-      })();
-    </script>
   </body>
 </html>
