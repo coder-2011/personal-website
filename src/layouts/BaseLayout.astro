@@ -1,15 +1,17 @@
 ---
 import "../styles/global.css";
-import Analytics from '@vercel/analytics/astro';
+import Analytics from "@vercel/analytics/astro";
 
 interface Props {
   title?: string;
   description?: string;
+  noindex?: boolean;
 }
 
 const {
   title = "Naman Chetwani",
-  description = "Personal website for Naman Chetwani."
+  description = "Personal website for Naman Chetwani.",
+  noindex = false
 } = Astro.props;
 ---
 
@@ -19,234 +21,83 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#090909" />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#0a0a0a" />
     <link rel="icon" type="image/png" href="/no-circles-logo.png" />
     <link rel="apple-touch-icon" href="/no-circles-logo.png" />
     <title>{title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Instrument+Serif:ital@0;1&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script is:inline>
+      // Restores the chosen theme before the page paints.
+      (() => {
+        try {
+          if (window.localStorage.getItem("naman-theme") === "light") {
+            document.documentElement.dataset.theme = "light";
+            document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#ffffff");
+          }
+        } catch {
+          // Theme preference is optional when storage is unavailable.
+        }
+      })();
+    </script>
     <Analytics />
   </head>
   <body>
     <slot />
-    <div class="site-cursor__tail-layer" aria-hidden="true">
-      <span class="site-cursor__tail-dot"></span>
-      <span class="site-cursor__tail-dot"></span>
-      <span class="site-cursor__tail-dot"></span>
-      <span class="site-cursor__tail-dot"></span>
-    </div>
-    <div class="site-cursor" aria-hidden="true"></div>
-    <a
-      class="site-discord"
-      href="https://discordapp.com/users/904441943298310204"
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Discord profile"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.191.328-.404.769-.553 1.116a18.27 18.27 0 0 0-5.334 0A12.64 12.64 0 0 0 9.445 3a19.736 19.736 0 0 0-4.433 1.369C2.207 8.523 1.447 12.574 1.824 16.57a19.9 19.9 0 0 0 5.438 2.756c.433-.591.818-1.216 1.148-1.87a12.977 12.977 0 0 1-1.808-.871c.152-.112.301-.23.445-.352 3.487 1.637 7.273 1.637 10.72 0 .146.122.294.24.446.352a12.94 12.94 0 0 1-1.81.872c.33.652.714 1.277 1.148 1.868a19.86 19.86 0 0 0 5.44-2.755c.442-4.632-.757-8.646-3.676-12.201ZM9.349 14.11c-1.045 0-1.9-.95-1.9-2.119 0-1.17.84-2.12 1.9-2.12 1.068 0 1.915.96 1.9 2.12 0 1.169-.847 2.119-1.9 2.119Zm5.302 0c-1.045 0-1.9-.95-1.9-2.119 0-1.17.84-2.12 1.9-2.12 1.068 0 1.915.96 1.9 2.12 0 1.169-.832 2.119-1.9 2.119Z"
-          fill="currentColor"
-        />
-      </svg>
-      <span>discord</span>
-    </a>
-    <a class="site-phone" href="tel:+19258959674" aria-label="Call +1 925 895 9674">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24 11.36 11.36 0 0 0 3.57.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.61 21 3 13.39 3 4a1 1 0 0 1 1-1h3.49a1 1 0 0 1 1 1 11.36 11.36 0 0 0 .57 3.57 1 1 0 0 1-.24 1.02Z"
-          fill="currentColor"
-        />
-      </svg>
-      <span>+1 925 895 9674</span>
-    </a>
-    <a
-      class="site-github"
-      href="https://github.com/coder-2011"
-      target="_blank"
-      rel="noreferrer"
-      aria-label="coder-2011 on GitHub"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          d="M12 2C6.48 2 2 6.58 2 12.24c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.05-.01-1.91-2.78.62-3.37-1.21-3.37-1.21-.46-1.2-1.11-1.52-1.11-1.52-.91-.64.07-.63.07-.63 1 .08 1.53 1.06 1.53 1.06.9 1.57 2.35 1.12 2.92.85.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.14-4.56-5.09 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85 0 1.71.12 2.51.35 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.96-2.34 4.83-4.57 5.08.36.32.68.95.68 1.92 0 1.39-.01 2.5-.01 2.84 0 .27.18.59.69.49A10.22 10.22 0 0 0 22 12.24C22 6.58 17.52 2 12 2Z"
-          fill="currentColor"
-        />
-      </svg>
-      <span>github.com/coder-2011</span>
-    </a>
-    <script is:inline>
-      (() => {
-        const INTERACTIVE_SELECTOR =
-          "a, button, input, textarea, select, label, summary, [role='button']";
-        const PROXIMITY_SELECTOR = ".top-nav .nav-link";
-        const FLOATING_LINK_SELECTOR = ".site-github, .site-phone, .site-discord";
-        const cursor = document.querySelector(".site-cursor");
-        const tailLayer = document.querySelector(".site-cursor__tail-layer");
-        const tailDots = Array.from(
-          document.querySelectorAll(".site-cursor__tail-dot")
-        );
-        const proximityLinks = Array.from(document.querySelectorAll(PROXIMITY_SELECTOR));
-        const floatingLinks = Array.from(
-          document.querySelectorAll(FLOATING_LINK_SELECTOR)
-        );
 
-        if (!(cursor instanceof HTMLDivElement) || !(tailLayer instanceof HTMLDivElement)) {
+    <footer class="site-footer">
+      <span>Naman Chetwani</span>
+      <nav aria-label="Contact">
+        <a href="mailto:naman.chetwani@gmail.com">Email</a>
+        <a href="tel:+19258959674">Call</a>
+        <a href="https://github.com/coder-2011" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://discordapp.com/users/904441943298310204" target="_blank" rel="noreferrer">Discord</a>
+      </nav>
+    </footer>
+
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+      <span data-theme-label>Light mode</span>
+    </button>
+
+    <script is:inline>
+      // Synchronizes the global theme state with its only persistent control.
+      (() => {
+        const root = document.documentElement;
+        const button = document.querySelector("#theme-toggle");
+        const label = document.querySelector("[data-theme-label]");
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+
+        if (!(button instanceof HTMLButtonElement) || !(label instanceof HTMLElement)) {
           return;
         }
 
-        const pointerMediaQuery = window.matchMedia("(pointer: fine) and (hover: hover)");
-        const motionMediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-        const trail = tailDots.map(() => ({ x: -999, y: -999 }));
+        // Applies a theme and updates the control's accessible label.
+        const setTheme = (theme) => {
+          const isLight = theme === "light";
+          root.dataset.theme = isLight ? "light" : "dark";
+          button.setAttribute("aria-pressed", String(isLight));
+          button.setAttribute("aria-label", isLight ? "Switch to dark mode" : "Switch to light mode");
+          label.textContent = isLight ? "Dark mode" : "Light mode";
+          themeColor?.setAttribute("content", isLight ? "#ffffff" : "#0a0a0a");
 
-        let pointerEffectsEnabled = false;
-        let prefersReducedMotion = motionMediaQuery.matches;
-        let visible = false;
-        let cursorX = -999;
-        let cursorY = -999;
-        let targetX = -999;
-        let targetY = -999;
-        let frameId = 0;
-
-        const setEnabledState = () => {
-          pointerEffectsEnabled = pointerMediaQuery.matches;
-          prefersReducedMotion = motionMediaQuery.matches;
-          document.body.classList.toggle("site-cursor-active", pointerEffectsEnabled);
-          tailLayer.style.display =
-            pointerEffectsEnabled && !prefersReducedMotion ? "block" : "none";
-
-          if (!pointerEffectsEnabled) {
-            visible = false;
-            cursor.style.opacity = "0";
-            tailDots.forEach((dot) => {
-              dot.style.opacity = "0";
-            });
+          try {
+            window.localStorage.setItem("naman-theme", isLight ? "light" : "dark");
+          } catch {
+            // The page remains fully usable when storage is unavailable.
           }
         };
 
-        const distanceToRect = (x, y, rect) => {
-          const dx = Math.max(rect.left - x, 0, x - rect.right);
-          const dy = Math.max(rect.top - y, 0, y - rect.bottom);
-          return Math.hypot(dx, dy);
-        };
+        setTheme(root.dataset.theme === "light" ? "light" : "dark");
 
-        const updatePointerState = (target) => {
-          const isPointer = target instanceof Element && target.closest(INTERACTIVE_SELECTOR);
-          cursor.classList.toggle("site-cursor--pointer", Boolean(isPointer));
-        };
-
-        const handleMouseMove = (event) => {
-          if (!pointerEffectsEnabled) {
-            return;
-          }
-
-          targetX = event.clientX;
-          targetY = event.clientY;
-          visible = true;
-          updatePointerState(event.target);
-
-          proximityLinks.forEach((link) => {
-            if (!(link instanceof HTMLElement)) {
-              return;
-            }
-
-            const rect = link.getBoundingClientRect();
-            const distance = distanceToRect(event.clientX, event.clientY, rect);
-
-            link.classList.toggle("nav-link-near", distance < 34);
-          });
-
-          floatingLinks.forEach((link) => {
-            if (!(link instanceof HTMLElement)) {
-              return;
-            }
-
-            const rect = link.getBoundingClientRect();
-            const distance = distanceToRect(event.clientX, event.clientY, rect);
-
-            link.classList.toggle("site-floating-link-near", distance < 36);
-          });
-        };
-
-        const handleMouseLeave = () => {
-          visible = false;
-          cursor.classList.remove("site-cursor--pointer");
-          proximityLinks.forEach((link) => {
-            if (link instanceof HTMLElement) {
-              link.classList.remove("nav-link-near");
-            }
-          });
-          floatingLinks.forEach((link) => {
-            if (link instanceof HTMLElement) {
-              link.classList.remove("site-floating-link-near");
-            }
-          });
-        };
-
-        const render = () => {
-          cursorX += (targetX - cursorX) * 0.28;
-          cursorY += (targetY - cursorY) * 0.28;
-          cursor.style.opacity = pointerEffectsEnabled && visible ? "1" : "0";
-          cursor.style.transform =
-            "translate3d(" +
-            cursorX +
-            "px, " +
-            cursorY +
-            "px, 0) translate(-50%, -50%)";
-
-          if (pointerEffectsEnabled && !prefersReducedMotion) {
-            for (let index = 0; index < trail.length; index += 1) {
-              const point = trail[index];
-              const leader = index === 0 ? { x: targetX, y: targetY } : trail[index - 1];
-              const easing = index === 0 ? 0.3 : 0.23;
-              const dot = tailDots[index];
-              const opacity = visible ? Math.max(0, 0.66 - index * 0.065) : 0;
-              const scale = 1 - index * 0.08;
-              const rotation = 45 + index * 7;
-
-              point.x += (leader.x - point.x) * easing;
-              point.y += (leader.y - point.y) * easing;
-
-              dot.style.opacity = String(opacity);
-              dot.style.transform =
-                "translate3d(" +
-                (point.x - 7) +
-                "px, " +
-                (point.y - 7) +
-                "px, 0) rotate(" +
-                rotation +
-                "deg) scale(" +
-                scale +
-                ")";
-            }
-          }
-
-          frameId = window.requestAnimationFrame(render);
-        };
-
-        setEnabledState();
-        pointerMediaQuery.addEventListener("change", setEnabledState);
-        motionMediaQuery.addEventListener("change", setEnabledState);
-        window.addEventListener("mousemove", handleMouseMove, { passive: true });
-        window.addEventListener("mouseleave", handleMouseLeave, { passive: true });
-        frameId = window.requestAnimationFrame(render);
-
-        window.addEventListener(
-          "pagehide",
-          () => {
-            window.cancelAnimationFrame(frameId);
-            pointerMediaQuery.removeEventListener("change", setEnabledState);
-            motionMediaQuery.removeEventListener("change", setEnabledState);
-            window.removeEventListener("mousemove", handleMouseMove);
-            window.removeEventListener("mouseleave", handleMouseLeave);
-            document.body.classList.remove("site-cursor-active");
-          },
-          { once: true }
-        );
+        // Switches to the opposite theme when the control is activated.
+        button.addEventListener("click", () => {
+          setTheme(root.dataset.theme === "light" ? "dark" : "light");
+        });
       })();
     </script>
   </body>
