@@ -6,7 +6,6 @@ This is Naman Chetwani's personal Astro site. It is a small Vercel-deployed site
 
 ```text
 src/pages/index.astro             Home page
-src/pages/about.astro             Personal notes, beliefs, contact
 src/pages/things-ive-done.astro   Projects and accomplishments
 src/pages/reading.astro           Reading list and recurring inputs
 src/pages/kairos.ts               Redirect endpoint for /kairos
