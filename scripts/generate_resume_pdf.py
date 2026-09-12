@@ -67,8 +67,10 @@ PROJECTS = [
     ),
 ]
 
+ASTRA_NOVA_URL = "https://www.astranova.org/home"
+
 EDUCATION = [
-    ("Astra Nova High School", "2026-2028", []),
+    ("Astra Nova High School", "2026-2028", [], ASTRA_NOVA_URL),
     (
         "Independent Study / Competitions",
         "",
@@ -76,16 +78,26 @@ EDUCATION = [
             "Selected for SPARC '26 (3% acceptance rate); achieved USACO Gold and F=MA qualifying scores in the top 5% nationally.",
             "Competed in CALICO, Harker Physics Invitational, and Harker Programming Invitational; held a top 30 national placement in MSPF Debate with 2 tournament wins and elimination rounds at Stanford and TOC.",
         ],
+        None,
     ),
 ]
 
 
-def paragraph(text: str, style: ParagraphStyle) -> Paragraph:
-    return Paragraph(escape(text), style)
+def paragraph(text: str, style: ParagraphStyle, link: str | None = None) -> Paragraph:
+    content = escape(text)
+    if link:
+        content = f'<link href="{link}">{content}</link>'
+    return Paragraph(content, style)
 
 
-def entry(title: str, meta: str, bullets: list[str], styles: dict[str, ParagraphStyle]) -> list[object]:
-    title_cell = paragraph(title, styles["entry_title"])
+def entry(
+    title: str,
+    meta: str,
+    bullets: list[str],
+    styles: dict[str, ParagraphStyle],
+    title_link: str | None = None,
+) -> list[object]:
+    title_cell = paragraph(title, styles["entry_title"], title_link)
     cells = [title_cell]
     col_widths = [7.4 * inch]
     if meta:
@@ -206,8 +218,8 @@ def build(output: Path) -> None:
     for project in PROJECTS:
         story.extend(entry(*project, styles))
     story.extend(section("Education", styles))
-    for school, years, bullets in EDUCATION:
-        story.extend(entry(school, years, bullets, styles))
+    for school, years, bullets, school_url in EDUCATION:
+        story.extend(entry(school, years, bullets, styles, school_url))
 
     doc.build(story)
 
