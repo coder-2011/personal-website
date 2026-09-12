@@ -9,6 +9,11 @@
       "source": "/diffs/:path*",
       "destination": "https://diffs.naman.world/:path*",
       "permanent": false
+    },
+    {
+      "source": "/resume",
+      "destination": "/resume.pdf",
+      "permanent": false
     }
   ]
 }
