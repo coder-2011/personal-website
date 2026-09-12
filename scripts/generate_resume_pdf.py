@@ -21,9 +21,23 @@ PROJECTS = [
         ["Writing gemma.c, a Gemma 4 megakernel written in CUDA and PTX. Full forward pass is one kernel."],
     ),
     (
+        "Sinter",
+        "GitHub repo",
+        [
+            "Building an experimental H100 (sm_90) LLM inference engine that compiles declared model products into standalone CUDA serving repositories.",
+        ],
+    ),
+    (
         "Writing Kernels",
         "",
         ["Writing custom GPU kernels in CUDA, PTX, and ThunderKittens, including flash attention, KDA, LatentMOE, etc."],
+    ),
+    (
+        "Snaptokens",
+        "GitHub repo",
+        [
+            "Built a Hugging Face-compatible Rust BPE tokenizer with exact token-ID parity; 2.04x faster than Gigatoken and 46.41x faster than Hugging Face across a 12-tokenizer, 15-host paired-median comparison.",
+        ],
     ),
     (
         "LPT",
