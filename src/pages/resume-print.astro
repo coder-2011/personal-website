@@ -209,6 +209,82 @@ const contactLinks = [
           box-shadow: none;
         }
       }
+
+      /* The public PDF uses this compact white-and-blue resume treatment. */
+      html,
+      body {
+        background: #f3f3f3;
+        color: #171717;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .page {
+        padding: 0.33in 0.55in 0.32in;
+        background: #ffffff;
+      }
+
+      .header {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      h1 {
+        color: #172033;
+        font-size: 24pt;
+      }
+
+      .contact,
+      .entry-meta,
+      .entry-role,
+      .entry-location {
+        color: #505050;
+      }
+
+      .contact {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 9.5pt;
+      }
+
+      .contact a + a::before {
+        color: #777777;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      h2 {
+        border-bottom-color: #b8c3d0;
+        color: #47779d;
+        font-size: 12pt;
+      }
+
+      .entry-title {
+        color: #1d2632;
+        font-size: 10.8pt;
+      }
+
+      li {
+        color: #313b47;
+        font-size: 8.5pt;
+        line-height: 1.14;
+      }
+
+      li::marker {
+        color: #47779d;
+      }
+
+      strong {
+        color: #171717;
+      }
+
+      @media print {
+        html,
+        body {
+          background: #ffffff;
+        }
+      }
     </style>
   </head>
   <body>
@@ -232,6 +308,18 @@ const contactLinks = [
             <li>
               Writing <strong>gemma.c</strong>, a Gemma 4 megakernel written in CUDA and PTX. Full
               forward pass is one kernel.
+            </li>
+          </ul>
+        </article>
+
+        <article class="entry">
+          <div class="entry-head">
+            <div class="entry-title">Writing Kernels</div>
+          </div>
+          <ul>
+            <li>
+              Writing custom GPU kernels in CUDA, PTX, and Triton, including flash attention, KDA,
+              LatentMOE, etc.
             </li>
           </ul>
         </article>

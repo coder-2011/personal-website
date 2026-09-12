@@ -21,6 +21,11 @@ PROJECTS = [
         ["Writing gemma.c, a Gemma 4 megakernel written in CUDA and PTX. Full forward pass is one kernel."],
     ),
     (
+        "Writing Kernels",
+        "",
+        ["Writing custom GPU kernels in CUDA, PTX, and Triton, including flash attention, KDA, LatentMOE, etc."],
+    ),
+    (
         "LPT",
         "GitHub repo",
         [
@@ -81,10 +86,10 @@ def paragraph(text: str, style: ParagraphStyle) -> Paragraph:
 def entry(title: str, meta: str, bullets: list[str], styles: dict[str, ParagraphStyle]) -> list[object]:
     title_cell = paragraph(title, styles["entry_title"])
     cells = [title_cell]
-    col_widths = [6.87 * inch]
+    col_widths = [7.4 * inch]
     if meta:
         cells.append(paragraph(meta, styles["entry_meta"]))
-        col_widths = [5.15 * inch, 1.72 * inch]
+        col_widths = [5.55 * inch, 1.85 * inch]
     heading = Table(
         [cells],
         colWidths=col_widths,
@@ -119,10 +124,10 @@ def build(output: Path) -> None:
     doc = SimpleDocTemplate(
         str(output),
         pagesize=letter,
-        leftMargin=0.46 * inch,
-        rightMargin=0.46 * inch,
-        topMargin=0.36 * inch,
-        bottomMargin=0.34 * inch,
+        leftMargin=0.55 * inch,
+        rightMargin=0.55 * inch,
+        topMargin=0.33 * inch,
+        bottomMargin=0.32 * inch,
         title="Naman Chetwani Resume",
         author="Naman Chetwani",
     )
@@ -133,8 +138,8 @@ def build(output: Path) -> None:
             parent=base["Normal"],
             alignment=1,
             fontName="Helvetica-Bold",
-            fontSize=18.5,
-            leading=21,
+            fontSize=24,
+            leading=26,
             textColor=colors.HexColor("#172033"),
             spaceAfter=2,
         ),
@@ -143,8 +148,8 @@ def build(output: Path) -> None:
             parent=base["Normal"],
             alignment=1,
             fontName="Helvetica",
-            fontSize=7.3,
-            leading=8.5,
+            fontSize=9.5,
+            leading=10.8,
             textColor=colors.HexColor("#4D5865"),
             spaceAfter=7,
         ),
@@ -152,9 +157,9 @@ def build(output: Path) -> None:
             "Section",
             parent=base["Normal"],
             fontName="Helvetica-Bold",
-            fontSize=8.9,
-            leading=10,
-            textColor=colors.HexColor("#35658F"),
+            fontSize=12,
+            leading=13.5,
+            textColor=colors.HexColor("#47779D"),
             spaceBefore=2.5,
             spaceAfter=1.2,
         ),
@@ -162,8 +167,8 @@ def build(output: Path) -> None:
             "EntryTitle",
             parent=base["Normal"],
             fontName="Helvetica-Bold",
-            fontSize=7.9,
-            leading=9.2,
+            fontSize=10.8,
+            leading=12.2,
             textColor=colors.HexColor("#1D2632"),
         ),
         "entry_meta": ParagraphStyle(
@@ -171,16 +176,16 @@ def build(output: Path) -> None:
             parent=base["Normal"],
             alignment=2,
             fontName="Helvetica",
-            fontSize=6.9,
-            leading=8.1,
+            fontSize=9.5,
+            leading=10.8,
             textColor=colors.HexColor("#4D5865"),
         ),
         "bullet": ParagraphStyle(
             "Bullet",
             parent=base["Normal"],
             fontName="Helvetica",
-            fontSize=6.95,
-            leading=8.0,
+            fontSize=8.5,
+            leading=9.7,
             leftIndent=12,
             firstLineIndent=-7,
             bulletIndent=3.5,
