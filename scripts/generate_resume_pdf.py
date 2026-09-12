@@ -23,7 +23,7 @@ PROJECTS = [
     (
         "Writing Kernels",
         "",
-        ["Writing custom GPU kernels in CUDA, PTX, and Triton, including flash attention, KDA, LatentMOE, etc."],
+        ["Writing custom GPU kernels in CUDA, PTX, and ThunderKittens, including flash attention, KDA, LatentMOE, etc."],
     ),
     (
         "LPT",
