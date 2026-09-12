@@ -68,9 +68,10 @@ PROJECTS = [
 ]
 
 EDUCATION = [
-    ("Astra Nova High School", []),
+    ("Astra Nova High School", "2026-2028", []),
     (
         "Independent Study / Competitions",
+        "",
         [
             "Selected for SPARC '26 (3% acceptance rate); achieved USACO Gold and F=MA qualifying scores in the top 5% nationally.",
             "Competed in CALICO, Harker Physics Invitational, and Harker Programming Invitational; held a top 30 national placement in MSPF Debate with 2 tournament wins and elimination rounds at Stanford and TOC.",
@@ -205,8 +206,8 @@ def build(output: Path) -> None:
     for project in PROJECTS:
         story.extend(entry(*project, styles))
     story.extend(section("Education", styles))
-    for school, bullets in EDUCATION:
-        story.extend(entry(school, "", bullets, styles))
+    for school, years, bullets in EDUCATION:
+        story.extend(entry(school, years, bullets, styles))
 
     doc.build(story)
 
