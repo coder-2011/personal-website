@@ -25,8 +25,6 @@ PROJECTS = [
         "GitHub repo",
         [
             "Building an experimental H100 (sm_90) LLM inference engine that compiles declared model products into standalone CUDA serving repositories.",
-            "Rust owns HTTP, tokenization, continuous batching, and paged or radix KV metadata. C++ owns semantic graphs, resource plans, and source emission. CUDA C++ and ThunderKittens own H100 physical forms.",
-            "An offline build selects a verified exact cover of legal graph regions. Model load validates the declared product against configuration and checkpoint metadata without searching, compiling, tuning, or benchmarking variants.",
         ],
     ),
     (
@@ -38,9 +36,7 @@ PROJECTS = [
         "Snaptokens",
         "GitHub repo",
         [
-            "Built a Hugging Face-compatible Rust BPE tokenizer with exact token-ID parity. It is 2.04x faster than Gigatoken and 46.41x faster than Hugging Face across a 12-tokenizer, 15-host paired-median comparison.",
-            "Hand-written scanners, fused ByteLevel and BPE paths, precomputed flat lookups, contiguous pre-tokenization, and warmed Rayon caches remove generic-regex work and allocation.",
-            "Optional .tkz sidecars cache validated native construction data. Direct .tkz loads are 1.58x faster and artifacts are 24.9% smaller than Snaptokens JSON by geometric mean.",
+            "Built a Hugging Face-compatible Rust BPE tokenizer with exact token-ID parity; 2.04x faster than Gigatoken and 46.41x faster than Hugging Face across a 12-tokenizer, 15-host paired-median comparison.",
         ],
     ),
     (
