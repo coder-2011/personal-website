@@ -24,7 +24,10 @@ PROJECTS = [
         "Sinter",
         "GitHub repo",
         [
-            "Building an experimental H100 (sm_90) LLM inference engine that compiles declared model products into standalone CUDA serving repositories.",
+            "Sinter is a search-based megakernel compiler and inference engine written in C++ and Rust, aiming for something between Luminal and Slang.",
+            "We define 13 semantic ops, such as GEMM, softmax, and convolution, allowing us to compose complex architectural primitives. Each semantic op has chip-specific lowerings, in which we also specify how lowerings interact via smem tiles, gmem counters, and mbarriers.",
+            "Sinter emits a standalone inference engine repository for the selected hardware configuration, making it much easier to hillclimb performance and creating much more hackable and digestible code.",
+            "In Rust, we implement the core serving shell, including tokenization, continuous batching, and paged and radix attention, while C++ owns CUDA and the compiler.",
         ],
     ),
     (
