@@ -39,7 +39,7 @@ PROJECTS = [
         "Snaptokens",
         "GitHub repo",
         [
-            "Built a Hugging Face-compatible Rust BPE tokenizer with exact token-ID parity; 2.04x faster than Gigatoken and 46.41x faster than Hugging Face across a 12-tokenizer, 15-host paired-median comparison.",
+            "Built a tokenizer in rust. Achieves exact token-ID and API-level parity, while being 46.41x faster than than Hugging Face and 2.04x faster than Gigatoken. Current fastest OSS tokenizer in the world.",
         ],
     ),
     (
