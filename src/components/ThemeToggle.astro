@@ -12,6 +12,7 @@
   const toggle = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
   const root = document.documentElement;
   const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
+  let fadeTimeout: ReturnType<typeof setTimeout>;
   let chosenTheme: string | null = null;
   try { chosenTheme = localStorage.getItem("theme"); } catch {}
 
@@ -25,8 +26,11 @@
 
   applyTheme(root.dataset.theme ?? "dark");
   toggle.addEventListener("click", () => {
+    clearTimeout(fadeTimeout);
+    root.classList.add("theme-changing");
     chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
     applyTheme(chosenTheme);
+    fadeTimeout = setTimeout(() => root.classList.remove("theme-changing"), 200);
     try { localStorage.setItem("theme", chosenTheme); } catch {}
   });
   systemTheme.addEventListener("change", () => {

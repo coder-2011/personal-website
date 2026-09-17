@@ -33,6 +33,17 @@
   background: none;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  :root.theme-changing,
+  :root.theme-changing *,
+  :root.theme-changing *::before,
+  :root.theme-changing *::after {
+    transition-property: background-color, color, border-color, fill, stroke !important;
+    transition-duration: 180ms !important;
+    transition-timing-function: ease-out !important;
+  }
+}
+
 @font-face {
   font-family: "Geist";
   src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
