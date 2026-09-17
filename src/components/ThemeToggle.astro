@@ -21,7 +21,7 @@
     root.dataset.theme = theme;
     toggle.setAttribute("aria-checked", String(dark));
     toggle.title = `Switch to ${dark ? "light" : "dark"} mode`;
-    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#030303" : "#faf9f6";
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#030303" : "#f7f2ed";
   }
 
   applyTheme(root.dataset.theme ?? "dark");
