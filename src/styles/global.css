@@ -8,7 +8,6 @@
   --accent: #c8a16b;
   --hero-grid-size: 32px;
   --floating-bg: rgba(3, 3, 3, 0.86);
-  --toggle-selected: #292724;
   --cursor-fill: rgba(236, 233, 225, 0.9);
   --cursor-ring: rgba(9, 9, 9, 0.72);
 }
@@ -22,7 +21,6 @@
   --border: rgba(44, 37, 28, 0.14);
   --accent: #94652d;
   --floating-bg: rgba(247, 242, 237, 0.94);
-  --toggle-selected: #ffffff;
   --cursor-fill: #494238;
   --cursor-ring: rgba(247, 242, 237, 0.8);
 }
