@@ -5,7 +5,7 @@ const projects = [
   {
     title: "Gemma 4 Inference Megakernel",
     paragraphs: [
-      "Most recently, building gemma.c, an experimental inference runtime for Gemma 4 dense models. The goal is a highly specialized CUDA/PTX inference path for Gemma 4 31B on RTX A6000-class GPUs: start with standalone kernels and a correct unfused baseline, benchmark it, then fuse measured hot paths toward a megakernel."
+      "An specialized inference runtime for gemma 4 dense models. The inference engine optimizes for low batch-size on A6000s."
     ],
     links: [
       { href: "https://github.com/coder-2011/gemma.c", label: "GitHub repo" }
