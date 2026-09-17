@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-/rx2zM9Tm3f94PGZd1NJUZf9rahc2eOCyKPi1G0bHgk='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-mP1ytF+MuInIyoD07cIk919JwYv6ayQg2HucK7JYfIA='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BPE, one merge at a time</title>
 <style>
@@ -169,7 +169,7 @@ async function encodeInput() {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError'
       ? 'Request timed out. Check your connection and try again.'
-      : error instanceof TypeError ? 'Could not reach the tokenizer. Check your connection and try again.' : error.message;
+      : error instanceof TypeError ? 'Could not reach the tokenizer. Check your connection or wait a minute if rate-limited.' : error.message;
   } finally {
     clearTimeout(timeout);
     if (activeRequest === controller) {
