@@ -92,7 +92,7 @@ export function createBPE(model) {
     let text;
     try { text = decoder.decode(bytes); }
     catch { return Array.from(bytes, byte => '\\x' + byte.toString(16).padStart(2,'0').toUpperCase()).join(''); }
-    return text.replaceAll(' ', '␠').replaceAll('\n', '↵').replaceAll('\r', '␍').replaceAll('\t', '⇥')
+    return text.replaceAll(' ', '␣').replaceAll('\n', '↵').replaceAll('\r', '␍').replaceAll('\t', '⇥')
       .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, char => '\\u{' + char.codePointAt(0).toString(16).toUpperCase() + '}');
   }
   return {trace, visible};

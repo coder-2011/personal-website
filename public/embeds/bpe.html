@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-mP1ytF+MuInIyoD07cIk919JwYv6ayQg2HucK7JYfIA='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dcTGQ9HgQxF+fD2UshQZuL/N31CmQAluZCVo0RoEU0w='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -76,7 +76,7 @@ function render(oldRects = new Map()) {
   } else $('explanation').textContent = 'No more merges within the text pieces. These are the final GPT-2 tokens.';
   $('pieces').replaceChildren(...pieces.map((piece, i) => {
     const chip = document.createElement('span');
-    chip.textContent = piece.replaceAll(' ', '␠').replaceAll('\n', '↵').replaceAll('\t', '⇥');
+    chip.textContent = piece.replaceAll(' ', '␣').replaceAll('\n', '↵').replaceAll('\t', '⇥');
     chip.className = candidate?.piece === i ? 'active' : '';
     chip.title = `Piece ${i + 1}`;
     return chip;
