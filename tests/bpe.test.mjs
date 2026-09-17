@@ -1,10 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { handleBpeRequest } from '../src/lib/bpe/api.mjs';
 
 const request = (body, headers = {}, method = 'POST') => new Request('https://naman.world/api/bpe', {
   method, headers: { 'Content-Type': 'application/json', ...headers },
   ...(body === undefined ? {} : { body }),
+});
+
+test('standalone frontend CSP permits exactly its current inline script', () => {
+  const html = readFileSync(new URL('../public/embeds/bpe.html', import.meta.url), 'utf8');
+  const script = html.split('<script>')[1].split('</script>')[0];
+  const hash = createHash('sha256').update(script).digest('base64');
+  assert.ok(html.includes(`script-src 'sha256-${hash}'`));
 });
 
 test('real GPT-2 trace preserves bytes and pre-tokenizer boundaries', async () => {

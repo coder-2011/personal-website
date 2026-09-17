@@ -82,6 +82,11 @@ For a native Obsidian embed, paste raw HTML rather than a fenced code block:
 <iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE animation" style="width:100%; height:900px; border:0;"></iframe>
 ```
 
+`node scripts/bpe-embed.mjs | pbcopy` copies an iframe with the full frontend
+in `srcdoc` and the hosted page in `src` as a fallback. Obsidian removes
+`srcdoc` when sanitizing notes, so it uses the hosted frontend instead.
+Both versions call the same API and need an internet connection.
+
 ## Notes
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
