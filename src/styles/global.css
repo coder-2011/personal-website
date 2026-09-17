@@ -187,68 +187,16 @@ a {
   border: 0;
   border-radius: 0;
   background: transparent;
-  transition:
-    color 160ms ease,
-    transform 180ms ease,
-    opacity 180ms ease;
-}
-
-.nav-link::before {
-  content: "";
-  position: absolute;
-  left: 0.36rem;
-  top: 50%;
-  width: 1px;
-  height: 0.95rem;
-  background: linear-gradient(180deg, transparent, var(--accent) 28%, #f4efe6 52%, var(--accent) 76%, transparent);
-  border-radius: 999px;
-  opacity: 0;
-  transform: translateY(-50%) scaleY(0.35);
-  transition:
-    opacity 180ms ease,
-    transform 220ms ease;
-  pointer-events: none;
-}
-
-.nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0.36rem;
-  top: 50%;
-  width: 0.4rem;
-  height: 0.4rem;
-  border-radius: 999px;
-  background: rgba(209, 168, 111, 0.14);
-  opacity: 0;
-  transform: translateY(-50%) scale(0.5);
-  transition:
-    opacity 180ms ease,
-    transform 220ms ease;
-  pointer-events: none;
-}
-
-.nav-link:hover,
-.nav-link.nav-link-near {
-  color: var(--text);
-  transform: translateX(0.18rem);
-}
-
-.nav-link:hover::before,
-.nav-link.nav-link-near::before,
-.nav-link.current::before {
-  opacity: 1;
-  transform: translateY(-50%) scaleY(1);
-}
-
-.nav-link:hover::after,
-.nav-link.nav-link-near::after,
-.nav-link.current::after {
-  opacity: 1;
-  transform: translateY(-50%) scale(1);
+  transition: color 160ms ease;
 }
 
 .nav-link.current {
   color: var(--text);
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: #ffffff;
 }
 
 .nav-logo {

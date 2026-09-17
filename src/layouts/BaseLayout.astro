@@ -96,14 +96,12 @@ const {
       (() => {
         const INTERACTIVE_SELECTOR =
           "a, button, input, textarea, select, label, summary, [role='button']";
-        const PROXIMITY_SELECTOR = ".top-nav .nav-link";
         const FLOATING_LINK_SELECTOR = ".site-github, .site-phone, .site-discord";
         const cursor = document.querySelector(".site-cursor");
         const tailLayer = document.querySelector(".site-cursor__tail-layer");
         const tailDots = Array.from(
           document.querySelectorAll(".site-cursor__tail-dot")
         );
-        const proximityLinks = Array.from(document.querySelectorAll(PROXIMITY_SELECTOR));
         const floatingLinks = Array.from(
           document.querySelectorAll(FLOATING_LINK_SELECTOR)
         );
@@ -162,17 +160,6 @@ const {
           visible = true;
           updatePointerState(event.target);
 
-          proximityLinks.forEach((link) => {
-            if (!(link instanceof HTMLElement)) {
-              return;
-            }
-
-            const rect = link.getBoundingClientRect();
-            const distance = distanceToRect(event.clientX, event.clientY, rect);
-
-            link.classList.toggle("nav-link-near", distance < 34);
-          });
-
           floatingLinks.forEach((link) => {
             if (!(link instanceof HTMLElement)) {
               return;
@@ -188,11 +175,6 @@ const {
         const handleMouseLeave = () => {
           visible = false;
           cursor.classList.remove("site-cursor--pointer");
-          proximityLinks.forEach((link) => {
-            if (link instanceof HTMLElement) {
-              link.classList.remove("nav-link-near");
-            }
-          });
           floatingLinks.forEach((link) => {
             if (link instanceof HTMLElement) {
               link.classList.remove("site-floating-link-near");
