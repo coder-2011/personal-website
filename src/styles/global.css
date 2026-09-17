@@ -7,6 +7,24 @@
   --border: rgba(255, 255, 255, 0.09);
   --accent: #c8a16b;
   --hero-grid-size: 32px;
+  --floating-bg: rgba(3, 3, 3, 0.86);
+  --toggle-selected: #292724;
+  --cursor-fill: rgba(236, 233, 225, 0.9);
+  --cursor-ring: rgba(9, 9, 9, 0.72);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #faf9f6;
+  --text: #24221f;
+  --muted: #625d55;
+  --soft: #726b61;
+  --border: rgba(44, 37, 28, 0.14);
+  --accent: #94652d;
+  --floating-bg: rgba(250, 249, 246, 0.94);
+  --toggle-selected: #ffffff;
+  --cursor-fill: #494238;
+  --cursor-ring: rgba(250, 249, 246, 0.8);
 }
 
 @font-face {
@@ -75,9 +93,9 @@ a {
   width: 10px;
   height: 10px;
   border-radius: 3px;
-  background: rgba(236, 233, 225, 0.9);
+  background: var(--cursor-fill);
   box-shadow:
-    0 0 0 4px rgba(9, 9, 9, 0.72),
+    0 0 0 4px var(--cursor-ring),
     0 10px 24px rgba(0, 0, 0, 0.24);
   transform: translate(-50%, -50%) rotate(45deg);
   transition:
@@ -95,7 +113,7 @@ a {
   border-radius: 5px;
   background: rgba(209, 168, 111, 0.96);
   box-shadow:
-    0 0 0 5px rgba(9, 9, 9, 0.82),
+    0 0 0 5px var(--cursor-ring),
     0 12px 28px rgba(0, 0, 0, 0.28);
   transform: translate(-50%, -50%) rotate(45deg) scale(1.04);
 }
@@ -563,7 +581,7 @@ h3 {
   padding: 0.55rem 0.8rem;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: rgba(3, 3, 3, 0.86);
+  background: var(--floating-bg);
   color: var(--soft);
   text-decoration: none;
   backdrop-filter: blur(8px);
@@ -727,7 +745,7 @@ h3 {
   padding: 0.85rem 0.95rem;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: rgba(5, 5, 5, 0.96);
+  background: var(--floating-bg);
   color: var(--text);
   font-size: 0.92rem;
   line-height: 1.45;
@@ -810,6 +828,28 @@ h3 {
   .site-github {
     bottom: 0.9rem;
   }
+}
+
+@media (max-width: 480px) {
+  .page { padding-bottom: 6rem; }
+
+  .site-discord,
+  .site-phone,
+  .site-github {
+    bottom: max(0.9rem, env(safe-area-inset-bottom));
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    z-index: 40;
+  }
+
+  .site-discord { right: 7.4rem; }
+  .site-phone { right: 4.15rem; }
+  .site-github { right: 0.9rem; }
+  .site-discord span,
+  .site-phone span,
+  .site-github span { display: none; }
 }
 
 @media (pointer: coarse) {

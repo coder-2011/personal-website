@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Analytics from '@vercel/analytics/astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 interface Props {
   title?: string;
@@ -20,6 +21,17 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#090909" />
+    <script is:inline>
+      (() => {
+        let theme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        try {
+          const saved = localStorage.getItem("theme");
+          if (saved === "light" || saved === "dark") theme = saved;
+        } catch {}
+        document.documentElement.dataset.theme = theme;
+        document.querySelector('meta[name="theme-color"]').content = theme === "light" ? "#faf9f6" : "#030303";
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/no-circles-logo.png" />
     <link rel="apple-touch-icon" href="/no-circles-logo.png" />
     <title>{title}</title>
@@ -33,6 +45,7 @@ const {
   </head>
   <body>
     <slot />
+    <ThemeToggle />
     <div class="site-cursor__tail-layer" aria-hidden="true">
       <span class="site-cursor__tail-dot"></span>
       <span class="site-cursor__tail-dot"></span>

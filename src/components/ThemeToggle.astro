@@ -1,0 +1,98 @@
+<button class="theme-toggle" type="button" role="switch" aria-label="Dark mode" aria-checked="true" title="Switch to light mode">
+  <span class="theme-toggle__indicator" aria-hidden="true"></span>
+  <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="3.75" />
+    <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+  </svg>
+  <svg class="theme-toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M20.5 13.1A8.6 8.6 0 0 1 10.9 3.5a8.6 8.6 0 1 0 9.6 9.6Z" />
+  </svg>
+</button>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
+  const root = document.documentElement;
+  const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
+  let chosenTheme: string | null = null;
+  try { chosenTheme = localStorage.getItem("theme"); } catch {}
+
+  function applyTheme(theme: string) {
+    const dark = theme === "dark";
+    root.dataset.theme = theme;
+    toggle.setAttribute("aria-checked", String(dark));
+    toggle.title = `Switch to ${dark ? "light" : "dark"} mode`;
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#030303" : "#faf9f6";
+  }
+
+  applyTheme(root.dataset.theme ?? "dark");
+  toggle.addEventListener("click", () => {
+    chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
+    applyTheme(chosenTheme);
+    try { localStorage.setItem("theme", chosenTheme); } catch {}
+  });
+  systemTheme.addEventListener("change", () => {
+    if (chosenTheme !== "light" && chosenTheme !== "dark") {
+      applyTheme(systemTheme.matches ? "light" : "dark");
+    }
+  });
+</script>
+
+<style>
+  .theme-toggle {
+    position: fixed;
+    bottom: max(1.1rem, env(safe-area-inset-bottom));
+    left: max(1.25rem, env(safe-area-inset-left));
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 104px;
+    height: 52px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--floating-bg);
+    color: var(--soft);
+    box-shadow: 0 4px 16px rgb(0 0 0 / 8%);
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .theme-toggle__indicator {
+    position: absolute;
+    top: 4px;
+    left: 6.5px;
+    width: 42px;
+    height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--toggle-selected);
+    box-shadow: 0 2px 5px rgb(0 0 0 / 10%);
+    transform: translateX(47px);
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), background-color 180ms ease;
+  }
+
+  .theme-toggle svg {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    transition: color 180ms ease;
+  }
+
+  .theme-toggle__moon { color: var(--text); }
+  :global([data-theme="light"]) .theme-toggle__indicator { transform: translateX(0); }
+  :global([data-theme="light"]) .theme-toggle__sun { color: var(--text); }
+  :global([data-theme="light"]) .theme-toggle__moon { color: var(--soft); }
+  .theme-toggle:hover { border-color: var(--accent); box-shadow: 0 4px 20px rgb(0 0 0 / 14%); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+  @media (max-width: 860px) {
+    .theme-toggle { left: max(0.9rem, env(safe-area-inset-left)); bottom: max(0.9rem, env(safe-area-inset-bottom)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle, .theme-toggle__indicator, .theme-toggle svg { transition: none; }
+  }
+  @media print { .theme-toggle { display: none; } }
+</style>
