@@ -56,6 +56,32 @@ npm run build
 
 The default dev server binds to host `0.0.0.0` on port `3000` through the Astro config and package scripts.
 
+## BPE animation
+
+`/embeds/bpe.html` is a standalone HTML frontend. It uses `/api/bpe` on
+localhost and `https://naman.world/api/bpe` when embedded elsewhere. The API
+runs in the existing Vercel Node function and uses the pinned GPT-2 vocabulary
+in `src/data/`; the browser only renders the returned merge trace.
+
+Send `POST /api/bpe` with `Content-Type: application/json` and
+`{"text":"my name is naman"}`. The result contains GPT-2 token IDs, text pieces,
+and animation frames. Input is limited to 160 UTF-8 bytes, with a 2 KiB body
+limit and a three-second body-read deadline. Requests are not stored or logged
+by this handler, and responses use `Cache-Control: no-store`.
+
+This is intentionally a public, credential-free API. Wildcard CORS permits
+standalone and sandboxed iframe frontends; it is not an authentication barrier.
+Vercel Firewall rule `BPE API rate limit` caps `/api/bpe` requests at 30 per
+60 seconds per IP before function execution. The rule is managed in Vercel,
+separately from deployments. Do not replace it with an in-memory counter.
+
+Run API validation with `node --test tests/bpe.test.mjs`, then `npm run build`.
+For a native Obsidian embed, paste raw HTML rather than a fenced code block:
+
+```html
+<iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE animation" style="width:100%; height:900px; border:0;"></iframe>
+```
+
 ## Notes
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
