@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dcTGQ9HgQxF+fD2UshQZuL/N31CmQAluZCVo0RoEU0w='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Ocqs12gO4cc+Nh57MggJxAsd5N34Kd4B8p+EZsTaiXI='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -34,7 +34,7 @@
   </section>
   <div class="bottom">
     <section><div class="section-title"><h2>Available merges</h2><span class="subtle">current piece · lowest ranks</span></div><div id="rules" class="rules"></div></section>
-    <section><div class="section-title"><h2>Token IDs</h2><span id="output-label" class="subtle">in progress</span></div><div id="output" class="readout"></div></section>
+    <section><div class="section-title"><h2>Token IDs</h2><span id="output-label" class="subtle"></span></div><div id="output" class="readout"></div></section>
   </div>
 </main>
 <script>
@@ -67,7 +67,7 @@ function render(oldRects = new Map()) {
   $('step').textContent = position === frames.length - 1 ? 'Encoding complete' : `Merge ${position + 1} of ${frames.length - 1}`;
   $('count').textContent = `${byteLength} bytes → ${tokens.length} tokens`;
   $('output').textContent = '[ ' + tokens.map(token => token.id).join(', ') + ' ]';
-  $('output-label').textContent = candidate ? 'in progress' : 'final output';
+  $('output-label').textContent = candidate ? '' : 'final output';
   $('explanation').replaceChildren();
   if (candidate) {
     const code = document.createElement('code');
