@@ -86,9 +86,9 @@ For a native Obsidian embed, paste raw HTML rather than a fenced code block:
 internet connection and no Obsidian plugin. Its fixed fallback height can
 be adjusted in the embed when using a narrower note or longer input.
 
-The animation follows the embedding page's CSS `color-scheme`. The website's
-theme toggle already sets this to `light` or `dark`, so the iframe follows
-the user's selection without a plugin or its own theme toggle.
+Both animations default to light mode. Dark styles are retained behind
+`data-theme="dark"` on the document root; automatic theme detection and website
+toggle integration are deferred until publication.
 
 ## Unigram animation
 
@@ -103,7 +103,7 @@ at 320 characters to bound trace size. T5's task-level end token is not appended
 The vocabulary and normalization map are pinned in `src/data/T5-SOURCE.md`.
 
 `node scripts/unigram-embed.mjs | pbcopy` copies the standalone hosted iframe.
-It uses the same page-controlled light/dark theme and requires no plugin.
+It uses the same deferred theme setup as BPE and requires no plugin.
 Run both suites with `node --test tests/bpe.test.mjs tests/unigram.test.mjs`.
 
 Both endpoints share the Vercel firewall limit described above.
