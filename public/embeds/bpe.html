@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TP4Rkg3muzqW9mYeCsB5yr4Ql1orW/Vjs0m531bkaTg='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-UwUka3zaQ/calpIWobBKxi4HZThFbfZ/uBQ88o8P4t0='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -31,7 +31,7 @@
       <button id="play" class="play">▶ Play</button>
       <button id="next" class="icon-button" aria-label="Next step"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l8 6-8 6z"/></svg></button>
       <div class="progress" role="progressbar" aria-label="Encoding progress" aria-valuemin="0" aria-valuemax="100" id="progress"><span id="progress-fill"></span></div>
-      <label class="speed"><span>Speed</span><select id="speed" aria-label="Animation speed"><option value="2200">0.5×</option><option value="1100" selected>1×</option><option value="550">2×</option></select></label>
+      <label class="speed"><span>Speed</span><select id="speed" aria-label="Animation speed"><option value="4400">0.5×</option><option value="2200" selected>1×</option><option value="1100">2×</option></select></label>
     </div>
   </section>
   <div class="bottom">
@@ -121,8 +121,7 @@ function render(oldRects = new Map()) {
     return element;
   }));
   $('step').textContent = phase === 'return' ? 'Encoding complete' : `Step ${position + 1} of ${steps.length}`;
-  $('count').textContent = phase === 'return' ? `${byteLength} bytes → ${tokens.length} tokens`
-    : `${byteLength} bytes` + (piece === null ? '' : ` · Piece ${piece + 1} / ${pieces.length}`);
+  $('count').textContent = `${byteLength} bytes → ${tokens.length} tokens`;
   $('output').textContent = '[ ' + tokens.filter(token => token.piece < completed).map(token => token.id).join(', ') + ' ]';
   $('output-label').textContent = phase === 'return' ? 'final output' : '';
   $('explanation').replaceChildren();
@@ -132,7 +131,7 @@ function render(oldRects = new Map()) {
     piece:`Begin piece ${(piece ?? 0) + 1}.`,
     bytes:tokens.some(token => token.piece === piece && token.special)
       ? 'Keep this special token intact.' : 'Represent this piece as UTF-8 byte tokens.',
-    check:candidate ? 'A ranked adjacent pair exists. Enter the merge loop.' : 'No ranked adjacent pair remains in this piece. Exit the merge loop.',
+    check:candidate ? 'Choose lowest ranked adjacent pair.' : 'No ranked adjacent pair remains in this piece. Exit the merge loop.',
     append:'Append this piece’s remaining token IDs to the output.',
     return:'All pieces are encoded. Return the token IDs in their original order.',
   };
