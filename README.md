@@ -93,9 +93,11 @@ the user's selection without a plugin or its own theme toggle.
 ## Unigram animation
 
 `/embeds/unigram.html` shows deterministic T5 Unigram encoding, with candidate
-token scores, the best score at each position, backward path selection, and
-synchronized pseudocode. `POST /api/unigram` accepts the same `{ "text": "..." }`
-body as the BPE API. Both APIs share request size, timeout, Unicode validation,
+token spans, log-score calculations, comparisons against the saved score at the
+same endpoint, and backward path selection with synchronized pseudocode. It also
+shows unknown-character fallback, combines adjacent unknown IDs (including
+`<unk>` spellings produced by normalization), and preserves explicit special tokens.
+`POST /api/unigram` accepts the same `{ "text": "..." }` body as the BPE API. Both APIs share request size, timeout, Unicode validation,
 and credential-free CORS handling. Unigram additionally caps normalized input
 at 320 characters to bound trace size. T5's task-level end token is not appended.
 The vocabulary and normalization map are pinned in `src/data/T5-SOURCE.md`.

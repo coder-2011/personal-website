@@ -42,7 +42,7 @@ export function createUnigram(model) {
       if (!node.has(char)) node.set(char, new Map());
       node = node.get(char);
     }
-    node.token = {id, text, score};
+    node.token = {id, text, score, unknown:id === unkId};
   });
   const added = new Map(model.added_tokens.map(token => [token.content, token.id]));
   const specials = added.size ? new RegExp('(' + [...added.keys()].sort((a,b) => b.length - a.length)
@@ -79,7 +79,7 @@ export function createUnigram(model) {
         if (node.token) matches.push({...node.token, start, end:end + 1});
       }
       if (!matches.some(token => token.end === start + 1))
-        matches.push({id:unkId, text:chars[start], start, end:start + 1, score:unknownScore, unknown:true});
+        matches.push({id:unkId, text:chars[start], start, end:start + 1, score:unknownScore, unknown:true, fallback:true});
       for (const token of matches) {
         token.total = best[start] + token.score;
         token.previousScore = best[token.end];
@@ -101,7 +101,8 @@ export function createUnigram(model) {
     const tokens = [];
     for (const token of path) {
       const last = tokens.at(-1);
-      if (token.unknown && last?.unknown) { last.text += token.text; last.end = token.end; }
+      // Normalization can produce the vocabulary spelling <unk>; fuse by ID too.
+      if (token.id === unkId && last?.id === unkId) { last.text += token.text; last.end = token.end; }
       else tokens.push({id:token.id, text:token.text, start:token.start, end:token.end, unknown:!!token.unknown});
     }
     return {...piece, chars, visits, path, tokens, score:best.at(-1)};

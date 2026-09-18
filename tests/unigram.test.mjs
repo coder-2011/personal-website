@@ -18,6 +18,8 @@ const fixtures = [
   ['🙂🙂x🙂', [3,2,226,2]],
   ['  a\tb\n c  ', [3,9,3,115,3,75]],
   [' ', []],
+  ['＜unk＞＜unk＞', [3,2]],
+  ['🙂＜unk＞🙂', [3,2]],
 ];
 
 test('T5 traces match Hugging Face fixtures, including normalization and unknown fusion', () => {
@@ -60,13 +62,24 @@ test('frontend CSP and reversible playback cover scoring, backtracking, and ever
   assert.ok(html.includes(`script-src 'sha256-${createHash('sha256').update(script).digest('base64')}'`));
   const source = script.match(/function makeSteps\(pieces\) \{[\s\S]*?\n\}/)[0];
   const makeSteps = new Function(`return (${source})`)();
+  const savedPath = new Function(`return (${script.match(/function savedPath\(piece, end, visitCount\) \{[\s\S]*?\n\}/)[0]})`)();
   for (const [text] of fixtures) {
     const {pieces} = trace(text), steps = makeSteps(pieces);
     assert.equal(steps.at(-1).completed,pieces.length);
-    assert.deepEqual(steps.filter(step => step.phase === 'append').map(step => step.piece),pieces.map((_,i) => i));
+    assert.deepEqual(steps.filter(step => ['append','special'].includes(step.phase)).map(step => step.piece),pieces.map((_,i) => i));
+    for (const piece of pieces.filter(piece => !piece.special)) {
+      assert.deepEqual(savedPath(piece, piece.chars.length, piece.visits.length), piece.path);
+      for (let index = 0; index < piece.visits.length; index++) {
+        const visit = piece.visits[index], path = savedPath(piece, visit.start, index);
+        assert.equal(path.map(token => token.text).join(''), piece.chars.slice(0, visit.start).join(''));
+        assert.equal(path.reduce((sum, token) => sum + token.score, 0), index ? piece.visits[index - 1].best[visit.start] : 0);
+      }
+    }
+    assert.equal(steps.filter(step => step.phase === 'unknown').length,
+      pieces.reduce((n,p) => n + p.visits.filter(v => v.matches.some(t => t.fallback)).length, 0));
     assert.equal(steps.filter(step => step.phase === 'keep').length,pieces.reduce((n,p) => n+p.visits.length,0));
     for (let i=1;i<steps.length;i++) {
-      if (steps[i].completed !== steps[i-1].completed) assert.equal(steps[i].phase,'append');
+      if (steps[i].completed !== steps[i-1].completed) assert.ok(['append','special'].includes(steps[i].phase));
       if (steps[i].phase === 'keep') assert.equal(steps[i-1].phase,'score');
       if (steps[i].phase === 'backtrack') assert.ok(steps[i].count <= pieces[steps[i].piece].path.length);
     }

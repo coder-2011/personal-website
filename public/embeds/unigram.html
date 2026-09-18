@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-u9FG7hNRpq1DpiUh1f8tZmEyslvcW9hGYIe12AWVOmc='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ZmrusaA6cwGScX68SuqceYeWCX9JYNXpTeB/WYcxixI='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <style>
@@ -38,6 +38,11 @@
   .validation{color:#efac9b}
 }
 .stage-label{padding:0 24px 10px;font:10px var(--mono);color:var(--muted)}.stage-label:empty{display:none}.token small{font-size:10px;white-space:nowrap}.rules{display:block}.candidate{display:grid;grid-template-columns:minmax(0,1fr) 55px 60px 15px;align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:4px;margin-bottom:5px;font:11px var(--mono)}.candidate code{overflow-wrap:anywhere}.candidate span{text-align:right}.candidate.heading{border:0;padding-top:0;color:var(--muted);font-size:10px}.candidate.heading span:first-child{text-align:left}.candidate.active{background:var(--sage);border-color:var(--accent)}.bottom{gap:28px}.token-area{padding-bottom:42px}.token{min-width:42px}.tokens{gap:10px;row-gap:34px}@media(max-width:700px){.bottom{gap:22px}.token{min-width:35px}.candidate{grid-template-columns:minmax(0,1fr) 50px 55px 14px}}
+.route{padding:0 24px 16px;font:11px/1.7 var(--mono);color:var(--muted);overflow-wrap:anywhere}.route:empty{display:none}
+.token{min-width:68px}.token.unencoded{height:auto;min-height:54px;padding:12px;white-space:pre-wrap;word-break:break-word}
+.candidate{grid-template-columns:minmax(0,1fr) 105px 90px}.candidate small{display:block;margin-top:6px;font:9px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}.candidate span:first-child{text-align:left}
+.section-title{gap:12px}.section-title .subtle{text-align:right}.bottom{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:700px){.bottom{grid-template-columns:minmax(0,1fr)}.token{min-width:62px}.route{padding:0 16px 14px}}
 </style>
 </head>
 <body>
@@ -48,6 +53,7 @@
   <section class="canvas" aria-label="Unigram encoding animation">
     <div class="stage-top"><span id="step" class="step-number"></span><span id="count"></span></div>
     <div class="piece-strip"><span class="eyebrow">Text pieces</span><div id="pieces"></div></div><div id="stage-label" class="stage-label"></div><div class="token-area"><div id="tokens" class="tokens" aria-label="Current tokens"></div></div>
+    <div id="route" class="route"></div>
     <div id="explanation" class="explanation" aria-live="polite"></div>
     <div class="transport">
       <button id="reset" class="icon-button" aria-label="Restart"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6a7 7 0 1 1-1 6M4 2v4h4"/></svg></button>
@@ -59,20 +65,22 @@
     </div>
   </section>
   <div class="bottom">
-    <section><div class="section-title"><h2>Matching tokens</h2><span class="subtle">Higher total score wins</span></div><div id="rules" class="rules"></div></section>
+    <section><div class="section-title"><h2>Matching tokens</h2><span class="subtle">Compare at the same end position</span></div><div id="rules" class="rules"></div></section>
     <section><div class="section-title"><h2>Token IDs</h2><span id="output-label" class="subtle"></span></div><div id="output" class="readout"></div></section>
   </div>
   <section class="pseudocode" aria-label="Encoding pseudocode">
     <div class="section-title"><h2>Encoding</h2></div>
-    <pre><code><span data-line="load">load the vocabulary and token scores    <i># learned during training</i></span>
+    <pre><code><span data-line="load">load the vocabulary and log scores     <i># add scores along a path</i></span>
 <span data-line="normalize">normalize the text and mark word starts <i># "my name" → ["␣my", "␣name"]</i></span>
-<span data-line="piece">for each text piece:                   <i># preserve special tokens</i></span>
+<span data-line="piece">for each text piece:</span>
+<span data-line="special">    if it is a special token, append its ID and continue</span>
 <span data-line="init">    best[0] = 0; all other scores = −∞</span>
 <span data-line="match">    for each position, find all tokens that start here:</span>
+<span data-line="unknown">        if no single-character token exists, add an unknown</span>
 <span data-line="score">        score each match = best[position] + token_score</span>
-<span data-line="keep">        save any higher score at its end, and remember the token</span>
+<span data-line="keep">        if score &gt; best[end], save score and this token</span>
 <span data-line="backtrack">    follow saved tokens backward from the end</span>
-<span data-line="append">    append their token IDs in reading order</span>
+<span data-line="append">    combine adjacent unknowns; append IDs in reading order</span>
 <span data-line="return">return the token IDs</span></code></pre>
   </section>
 </main>
@@ -92,20 +100,37 @@ function makeSteps(pieces) {
   pieces.forEach((piece, i) => {
     const add = (phase, extra = {}) => result.push({phase, piece:i, completed:i, ...extra});
     add('piece');
-    if (!piece.special) {
+    if (piece.special) add('special', {completed:i + 1});
+    else {
       add('init');
-      piece.visits.forEach((_, visit) => {
-        add('match', {visit}); add('score', {visit}); add('keep', {visit});
+      piece.visits.forEach((item, visit) => {
+        add('match', {visit});
+        if (item.matches.some(token => token.fallback)) add('unknown', {visit});
+        add('score', {visit}); add('keep', {visit});
       });
       for (let count = 1; count <= piece.path.length; count++) add('backtrack', {count});
+      add('append', {completed:i + 1});
     }
-    add('append', {completed:i + 1});
   });
   result.push({phase:'return', completed:pieces.length});
   return result;
 }
 
 function pause() { clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; }
+
+// Rebuild only the predecessors saved by this step, never the final winning path.
+function savedPath(piece, end, visitCount) {
+  const previous = [];
+  for (const visit of piece.visits.slice(0, visitCount))
+    for (const token of visit.matches) if (token.improved) previous[token.end] = token;
+  const path = [];
+  while (end > 0) {
+    const token = previous[end];
+    if (!token) return [];
+    path.unshift(token); end = token.start;
+  }
+  return path;
+}
 
 function render() {
   const step = steps[position], {phase, completed} = step;
@@ -127,8 +152,9 @@ function render() {
   };
   if (phase === 'load') addToken(data.input, undefined, 'unencoded');
   else if (phase === 'normalize') data.pieces.forEach(item => addToken(item.text, undefined, 'unencoded'));
-  else if (phase === 'return' || phase === 'append') {
-    output.forEach(token => addToken(token.text, token.id, 'merged', token.unknown ? 'Unknown token' : ''));
+  else if (phase === 'return' || phase === 'append' || phase === 'special') {
+    output.forEach(token => addToken(token.unknown ? '<unk>' : token.text, token.id, 'merged',
+      token.unknown ? `Unknown token for ${visible(token.text)}` : ''));
     $('stage-label').textContent = 'Selected tokens';
   } else if (piece.special || phase === 'piece') {
     addToken(piece.text, piece.special ? piece.id : undefined, piece.special ? 'merged' : 'unencoded');
@@ -141,40 +167,50 @@ function render() {
     const before = step.visit > 0 ? piece.visits[step.visit - 1].best : [0,...piece.chars.map(() => null)];
     const best = phase === 'keep' ? visit.best : before;
     const changed = new Set(phase === 'keep' ? visit.matches.filter(token => token.improved).map(token => token.end) : []);
-    $('stage-label').textContent = 'Best total score at each boundary';
-    addToken('∅', score(best[0]), visit?.start === 0 ? 'chosen' : '', 'Start of this piece');
-    piece.chars.forEach((char, i) => addToken(char, score(best[i + 1]),
+    $('stage-label').textContent = 'Position · best score after this character';
+    addToken('∅', '0 · ' + score(best[0]), visit?.start === 0 ? 'chosen' : '', 'Start of this piece');
+    piece.chars.forEach((char, i) => addToken(char, `${i + 1} · ${score(best[i + 1])}`,
       changed.has(i + 1) || visit?.start === i + 1 ? 'chosen' : '', `Boundary ${i + 1}`));
   }
   if (!$('tokens').children.length) $('tokens').textContent = 'No tokens';
   if (!reducedMotion.matches) $('tokens').animate([{opacity:.5},{opacity:1}], {duration:180});
   const explanations = {
-    load:'Use T5’s learned vocabulary and token scores.',
-    normalize:'Normalize the input and mark the start of each word with ␣.',
+    load:'Token scores are learned log-probabilities. Adding them scores a whole path; higher (less negative) is better. This walkthrough chooses the best path without sampling.',
+    normalize:'Normalize the text, split on whitespace, and add a word-start marker—even before the first word. ␣ displays T5’s ▁ marker; original spacing is not preserved.',
     piece:piece?.special ? 'Preserve this special token as one token.' : `Encode ${piece ? visible(piece.text) : ''}.`,
+    special:'Append this explicit special token directly; it does not take part in the score search.',
     init:'Start with score 0. Other boundaries have not been reached yet.',
-    match:`Find every vocabulary token starting at position ${visit?.start ?? 0}.`,
+    match:`Find every vocabulary token starting at position ${visit?.start ?? 0}. Positions count normalized characters, not input bytes.`,
+    unknown:'No vocabulary token covers this single character. Add <unk> with the minimum vocabulary score minus 10 so every position remains reachable.',
     score:`Add each token’s score to ${visit ? score((step.visit ? piece.visits[step.visit - 1].best : [0])[visit.start]) : '0'}, the best score at this position.`,
-    keep:'Keep an update only when its total score is higher. Save that token as the predecessor.',
-    backtrack:'Follow the saved predecessor from the end toward the start.',
+    keep:'Compare each new total with the saved score at that token’s end position. Keep the higher score and its path; ties keep the existing path.',
+    backtrack:phase === 'backtrack' ? `Follow position ${piece.path.at(-step.count).end} back to ${piece.path.at(-step.count).start} using its saved token. The best complete piece score is ${score(piece.score)}.` : '',
     append:piece?.tokens.some(token => token.unknown)
       ? 'Append these token IDs. Adjacent unknown characters share one unknown token.' : 'Append this piece’s selected token IDs in reading order.',
-    return:'All pieces are encoded. These are the final T5 token IDs.',
+    return:'These are the content token IDs. T5 normally appends </s> (ID 1) for model input; this walkthrough leaves automatic special tokens off.',
   };
   $('explanation').textContent = explanations[phase];
+  $('route').textContent = visit
+    ? `Best path to position ${visit.start}: ${savedPath(piece, visit.start, step.visit).map(token => visible(token.text)).join(' → ') || 'start'} · score ${score(visit.start === 0 ? 0 : piece.visits[step.visit - 1].best[visit.start])}`
+    : phase === 'backtrack' ? `Read the selected tokens left to right; recover them right to left.` : '';
   $('rules').replaceChildren();
   if (visit) {
     const heading = document.createElement('div'); heading.className = 'candidate heading';
-    for (const text of ['Token','Score','Total','']) {const cell = document.createElement('span'); cell.textContent = text; heading.append(cell);}
+    for (const text of ['Token · span','New total','Saved at end']) {const cell = document.createElement('span'); cell.textContent = text; heading.append(cell);}
     $('rules').append(heading);
-    visit.matches.forEach(token => {
+    visit.matches.filter(token => phase !== 'match' || !token.fallback).forEach(token => {
       const row = document.createElement('div'); row.className = 'candidate' + (phase === 'keep' && token.improved ? ' active' : '');
-      const text = document.createElement('code'); text.textContent = visible(token.text) + (token.unknown ? ' <unk>' : '');
-      const value = document.createElement('span'); value.textContent = score(token.score);
-      const total = document.createElement('span'); total.textContent = phase === 'match' ? '—' : score(token.total);
-      const kept = document.createElement('span'); kept.textContent = phase === 'keep' ? token.improved ? '✓' : '—' : '';
-      kept.title = token.improved ? 'Saved a better path' : 'Existing path is at least as good';
-      row.append(text,value,total,kept); $('rules').append(row);
+      const text = document.createElement('code'); text.textContent = visible(token.text) + (token.unknown && token.text !== '<unk>' ? ' <unk>' : '');
+      const detail = (parent, value) => { const small = document.createElement('small'); small.textContent = value; parent.append(small); };
+      detail(text, `${token.start} → ${token.end}${token.fallback ? ' · fallback' : ''}`);
+      const total = document.createElement('span');
+      const scoring = phase === 'score' || phase === 'keep';
+      total.textContent = scoring ? score(token.total) : '—';
+      detail(total, scoring ? `${score(visit.start === 0 ? 0 : piece.visits[step.visit - 1].best[visit.start])} + (${score(token.score)})` : `token ${score(token.score)}`);
+      const saved = document.createElement('span'); saved.textContent = score(token.previousScore);
+      if (phase === 'keep') detail(saved, token.improved ? '↑ replace' : token.total === token.previousScore ? '= keep' : 'keep');
+      row.title = `Token score ${token.score}; new total ${token.total}; previous ${token.previousScore ?? 'unreached'}. Comparisons use full precision.`;
+      row.append(text,total,saved); $('rules').append(row);
     });
   } else $('rules').textContent = phase === 'return' ? 'All pieces are encoded.' : '—';
   $('output').textContent = '[ ' + output.map(token => token.id).join(', ') + ' ]';
