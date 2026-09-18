@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-606D/pFk6ornK+bcJFO9bsZYJ2mRCLJ0AiDHqJLnwGM='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BvSctYedwNfIi+PURetarofNt+B8km0sygTqRsxPAvs='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <style>
@@ -285,9 +285,12 @@ function play() {
   if (timer !== null) { pause(); return; }
   if (position === steps.length - 1) restart();
   $('play').textContent = 'Ⅱ Pause';
-  const tick = () => {
-    advance();
-    if (timer !== null) timer = setTimeout(tick,Number($('speed').value));
+  const tick = async () => {
+    const scheduled = timer, started = performance.now();
+    await advance();
+    // Include rendering and merge motion in the selected interval.
+    if (timer !== null && timer === scheduled)
+      timer = setTimeout(tick, Math.max(0, Number($('speed').value) - (performance.now() - started)));
   };
   timer = setTimeout(tick,Number($('speed').value));
 }

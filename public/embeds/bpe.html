@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-UwUka3zaQ/calpIWobBKxi4HZThFbfZ/uBQ88o8P4t0='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BUGpMJmV5R9EE3kuLMsatGsf7xRzHTHbJyV65o4l+dY='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -222,9 +222,11 @@ function play() {
   if (steps.length === 1) return;
   $('play').textContent = 'Ⅱ Pause';
   const tick = async () => {
-    const scheduled = timer;
+    const scheduled = timer, started = performance.now();
     await advance();
-    if (timer !== null && timer === scheduled) timer = setTimeout(tick, Number($('speed').value));
+    // Include rendering and merge motion in the selected interval.
+    if (timer !== null && timer === scheduled)
+      timer = setTimeout(tick, Math.max(0, Number($('speed').value) - (performance.now() - started)));
   };
   timer = setTimeout(tick, Number($('speed').value));
 }
