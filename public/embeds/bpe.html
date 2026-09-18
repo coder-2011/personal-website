@@ -41,7 +41,7 @@
   <section class="pseudocode" aria-label="Encoding pseudocode">
     <div class="section-title"><h2>Encoding</h2></div>
     <pre><code><span data-line="load">load the vocabulary and merge ranks      <i># learned during training</i></span>
-<span data-line="split">split the input text into words</span>
+<span data-line="split">split the input text into words         <i># "my name" → ["my", " name"]</i></span>
 <span data-line="piece">for each piece, from left to right:     <i># outer loop</i></span>
 <span data-line="bytes">    start with its byte tokens          <i># preserve special tokens</i></span>
 <span data-line="check">    while an adjacent pair has a merge rank:</span>
