@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BvSctYedwNfIi+PURetarofNt+B8km0sygTqRsxPAvs='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-p3cLldbodC28DvoLuaQblnJ3uoXgqYyt9Nkq5YDLiqA='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <style>
@@ -41,13 +41,14 @@
 .candidate{grid-template-columns:minmax(0,1fr) 105px 90px}.candidate small{display:block;margin-top:6px;font:9px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}.candidate span:first-child{text-align:left}
 .section-title{gap:12px}.section-title .subtle{text-align:right}.bottom{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:700px){.bottom{grid-template-columns:minmax(0,1fr)}.token{min-width:62px}.route{padding:0 16px 14px}}
-/* Reserve the changing labels and comparisons so playback does not move the controls. */
+/* Keep the controls steady as the current labels change. */
 .piece-strip{min-height:46px}
 .stage-label{min-height:23px}.stage-label:empty{display:block}
 .route{min-height:36px;padding-bottom:12px}.route:empty{display:block}
 .explanation{min-height:82px}.token-area{align-items:center}
 .candidate{transition:background .25s,border-color .25s}
 .token{transform-origin:center}.token small{font-variant-numeric:tabular-nums}
+main{padding-bottom:8px}
 </style>
 </head>
 <body>
@@ -317,8 +318,6 @@ async function encodeInput() {
     if (result.model !== 't5-small' || result.version !== 1 || !Array.isArray(result.pieces)) throw Error('Unexpected tokenizer response.');
     if (activeRequest !== controller) return;
     data = {...result,input:text}; steps = makeSteps(data.pieces); position = 0;
-    const candidateCount = Math.max(1, ...data.pieces.flatMap(piece => piece.visits.map(visit => visit.matches.length)));
-    $('rules').style.minHeight = `${24 + candidateCount * 60}px`;
   } catch (error) {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError' ? 'Request timed out. Try again.'
