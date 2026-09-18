@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-u9FG7hNRpq1DpiUh1f8tZmEyslvcW9hGYIe12AWVOmc='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T5 Unigram tokenization</title>
+<style>
+:root{color-scheme:light;--paper:#f8f7f3;--ink:#292b28;--muted:#777b73;--line:#dddfd6;--accent:#647650;--sage:#e4ebd9;--lavender:#e8e3f0;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,select{cursor:pointer}button:disabled{cursor:default;opacity:.35}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:4px}main{max-width:1120px;margin:auto;padding:24px 40px 28px}.top{border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:24px}.eyebrow{font:10px var(--mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}h1{font-size:20px;font-weight:500;letter-spacing:-.4px;line-height:1.3;margin:0}.input-row{display:flex;align-items:center;gap:14px;margin-bottom:28px}.input-row label{font-size:12px;color:var(--muted);flex:none}.input-wrap{display:flex;flex:1;max-width:430px;gap:8px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:5px 5px 5px 13px}input{min-width:0;flex:1;background:none;border:0;outline:none;font:14px var(--mono);color:var(--ink)}button{border:1px solid var(--line);background:transparent;border-radius:5px;padding:9px 13px;color:var(--ink);font-size:12px;transition:background .15s}button:hover:not(:disabled){background:#ebede5}.input-wrap button{padding:7px 10px;background:var(--paper)}.canvas{border:1px solid var(--line);border-radius:9px;background:#fffefa;overflow:hidden}.stage-top{display:flex;justify-content:space-between;padding:20px 24px;font:11px var(--mono);color:var(--muted)}.step-number{color:var(--ink)}.token-area{min-height:190px;display:flex;align-items:center;justify-content:center;padding:25px 24px 46px;background-image:radial-gradient(#e8e8df .8px,transparent .8px);background-size:16px 16px}.tokens{display:flex;gap:7px;align-items:center;min-width:min-content;margin:auto}.token{position:relative;flex:none;min-width:49px;height:64px;padding:0 13px;display:flex;align-items:center;justify-content:center;font:21px var(--mono);background:#f4f3ee;border:1px solid #d9dbd1;border-radius:5px;transition:background .25s,border-color .25s,box-shadow .25s}.token small{position:absolute;top:75px;left:0;right:0;text-align:center;font:9px var(--mono);color:#8b8e86}.token.merged{background:var(--lavender);border-color:#cfc5df}.token.chosen{background:var(--sage);border-color:#8c9d76;box-shadow:0 0 0 3px #e4ebd955}.token.chosen.first:after{content:'+';position:absolute;right:-9px;z-index:2;font:12px var(--mono);background:var(--sage);border-radius:50%;width:11px;text-align:center;color:#586b43}.explanation{min-height:62px;border-top:1px solid var(--line);display:flex;justify-content:center;align-items:center;gap:8px;padding:14px 24px;font-size:13px;line-height:1.6;text-align:center}.explanation code{font:12px var(--mono);background:var(--sage);padding:4px 7px;border-radius:3px}.transport{display:flex;align-items:center;gap:8px;padding:16px 24px;border-top:1px solid var(--line);background:#f6f6f0}.play{background:#343e2c;color:white;border-color:#343e2c;min-width:96px}.play:hover:not(:disabled){background:#4b5a3f}.icon-button{width:36px;height:35px;padding:8px;display:grid;place-items:center}svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.progress{height:3px;background:#dfe3d7;flex:1;margin:0 14px;border-radius:2px;overflow:hidden}.progress span{display:block;height:100%;background:#8e9f76;width:0;transition:width .35s}.speed{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}select{border:0;background:transparent;color:var(--ink);font-size:12px;padding:6px}.bottom{display:grid;grid-template-columns:1fr 1fr;gap:42px;margin-top:30px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}.section-title h2{font-weight:500;font-size:13px;margin:0}.subtle{font:10px var(--mono);color:var(--muted)}.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.rule{padding:11px 9px;border:1px solid var(--line);border-radius:4px;display:flex;gap:9px;align-items:center;transition:background .25s,border-color .25s}.rule .rank{font:10px var(--mono);color:#9a9f92}.rule code{font:11px var(--mono);white-space:nowrap}.rule.active{border-color:#94a77a;background:var(--sage)}.readout{background:#eeece5;border-radius:5px;padding:15px 17px;font:13px/1.8 var(--mono);min-height:83px;overflow-wrap:anywhere}.readout span{color:#717768}.validation{color:#9a4536;font-size:12px;margin-top:-17px;margin-bottom:18px}.validation:empty{display:none}
+@media(max-width:700px){main{padding:24px 18px}.input-row{gap:10px}.bottom{grid-template-columns:1fr;gap:22px}.token-area{justify-content:flex-start;padding-left:18px;padding-right:18px}.token{min-width:37px;padding:0 9px;font-size:17px}.tokens{gap:5px}.stage-top,.transport{padding:16px}.progress{margin:0 4px}.speed>span{display:none}.explanation{font-size:12px;padding:12px;flex-wrap:wrap;gap:4px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
+
+.piece-strip{padding:0 24px 18px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}.piece-strip .eyebrow{font-size:9px}#pieces{display:flex;flex-wrap:wrap;gap:5px}#pieces span{font:11px var(--mono);padding:5px 7px;border-radius:3px;border:1px solid var(--line);white-space:pre-wrap}#pieces .active{background:var(--sage);border-color:#9bab87}.tokens{flex-wrap:wrap;min-width:0;justify-content:center;row-gap:34px;width:100%}.token-area{min-height:180px;align-items:flex-start}.token{font-size:17px;min-width:38px;padding:0 9px;height:54px;max-width:100%;overflow-wrap:anywhere}.token small{top:62px}.token.piece-start{margin-left:13px;border-left-width:3px}.rules{grid-template-columns:repeat(2,minmax(0,1fr));color:var(--muted);font-size:12px}.rule{min-width:0}.rule code{white-space:normal;overflow-wrap:anywhere;font-size:11px}.rule .rank{min-width:35px}.piece-strip+.token-area{border-top:1px solid var(--line)}
+
+.pseudocode{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}.pseudocode pre{margin:0;padding:0 0 6px;font:12px/1.85 var(--mono);color:#777b73;tab-size:4}.pseudocode code>span{display:block;min-height:1.85em;transition:color .16s}.pseudocode code{font:inherit;white-space:normal}.pseudocode code>span{white-space:pre-wrap;overflow-wrap:anywhere}.pseudocode i{font:inherit;opacity:.7}.pseudocode .active{color:#28783b;font-weight:600}.token.unencoded{background:transparent;border-style:dashed;color:var(--muted);font-size:14px}.token.unencoded small{display:none}.token-area{min-height:160px}
+/* In an iframe, this follows the embedding element's color-scheme. */
+@media(prefers-color-scheme:dark){
+  :root{color-scheme:dark;--paper:#1e211d;--ink:#e5e8df;--muted:#a7aea0;--line:#3b4237;--accent:#acc78f;--sage:#34452f;--lavender:#3c3549}
+  .input-wrap{background:#272c24}
+  .canvas{background:#242822}
+  button:hover:not(:disabled){background:#343d2e}
+  .token-area{background-image:radial-gradient(#3c4436 .8px,transparent .8px)}
+  .token{background:#30372a;border-color:#535d49}
+  .token small,.rule .rank{color:#adb6a1}
+  .token.merged{border-color:#746483}
+  .token.chosen{border-color:#a3c087;box-shadow:0 0 0 3px #a3c08722}
+  .token.chosen.first:after{color:#d0e6b7}
+  .transport{background:#22271f}
+  .play{background:#b7cd9e;border-color:#b7cd9e;color:#202a18}
+  .play:hover:not(:disabled){background:#c8ddb1}
+  .progress{background:#3b4433}
+  .progress span{background:#aec990}
+  .rule.active,#pieces .active{border-color:#8eaa74}
+  .readout{background:#282d24}
+  .readout span,.pseudocode pre{color:var(--muted)}
+  .pseudocode .active{color:#a2df93}
+  .validation{color:#efac9b}
+}
+.stage-label{padding:0 24px 10px;font:10px var(--mono);color:var(--muted)}.stage-label:empty{display:none}.token small{font-size:10px;white-space:nowrap}.rules{display:block}.candidate{display:grid;grid-template-columns:minmax(0,1fr) 55px 60px 15px;align-items:center;gap:8px;padding:9px;border:1px solid var(--line);border-radius:4px;margin-bottom:5px;font:11px var(--mono)}.candidate code{overflow-wrap:anywhere}.candidate span{text-align:right}.candidate.heading{border:0;padding-top:0;color:var(--muted);font-size:10px}.candidate.heading span:first-child{text-align:left}.candidate.active{background:var(--sage);border-color:var(--accent)}.bottom{gap:28px}.token-area{padding-bottom:42px}.token{min-width:42px}.tokens{gap:10px;row-gap:34px}@media(max-width:700px){.bottom{gap:22px}.token{min-width:35px}.candidate{grid-template-columns:minmax(0,1fr) 50px 55px 14px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="top"><h1>T5 Unigram tokenization</h1></header>
+  <form id="input-form" class="input-row"><label for="input">Your text</label><div class="input-wrap"><input id="input" value="snaptokens is the best!" maxlength="160" autocomplete="off" spellcheck="false" aria-describedby="input-error"><button type="submit">Encode ↗</button></div></form>
+  <p id="input-error" class="validation" role="alert"></p>
+  <section class="canvas" aria-label="Unigram encoding animation">
+    <div class="stage-top"><span id="step" class="step-number"></span><span id="count"></span></div>
+    <div class="piece-strip"><span class="eyebrow">Text pieces</span><div id="pieces"></div></div><div id="stage-label" class="stage-label"></div><div class="token-area"><div id="tokens" class="tokens" aria-label="Current tokens"></div></div>
+    <div id="explanation" class="explanation" aria-live="polite"></div>
+    <div class="transport">
+      <button id="reset" class="icon-button" aria-label="Restart"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6a7 7 0 1 1-1 6M4 2v4h4"/></svg></button>
+      <button id="back" class="icon-button" aria-label="Previous step"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-8 6 8 6z"/></svg></button>
+      <button id="play" class="play">▶ Play</button>
+      <button id="next" class="icon-button" aria-label="Next step"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l8 6-8 6z"/></svg></button>
+      <div class="progress" role="progressbar" aria-label="Encoding progress" aria-valuemin="0" aria-valuemax="100" id="progress"><span id="progress-fill"></span></div>
+      <label class="speed"><span>Speed</span><select id="speed" aria-label="Animation speed"><option value="4400">0.5×</option><option value="2200" selected>1×</option><option value="1100">2×</option></select></label>
+    </div>
+  </section>
+  <div class="bottom">
+    <section><div class="section-title"><h2>Matching tokens</h2><span class="subtle">Higher total score wins</span></div><div id="rules" class="rules"></div></section>
+    <section><div class="section-title"><h2>Token IDs</h2><span id="output-label" class="subtle"></span></div><div id="output" class="readout"></div></section>
+  </div>
+  <section class="pseudocode" aria-label="Encoding pseudocode">
+    <div class="section-title"><h2>Encoding</h2></div>
+    <pre><code><span data-line="load">load the vocabulary and token scores    <i># learned during training</i></span>
+<span data-line="normalize">normalize the text and mark word starts <i># "my name" → ["␣my", "␣name"]</i></span>
+<span data-line="piece">for each text piece:                   <i># preserve special tokens</i></span>
+<span data-line="init">    best[0] = 0; all other scores = −∞</span>
+<span data-line="match">    for each position, find all tokens that start here:</span>
+<span data-line="score">        score each match = best[position] + token_score</span>
+<span data-line="keep">        save any higher score at its end, and remember the token</span>
+<span data-line="backtrack">    follow saved tokens backward from the end</span>
+<span data-line="append">    append their token IDs in reading order</span>
+<span data-line="return">return the token IDs</span></code></pre>
+  </section>
+</main>
+<script>
+const API_URL = ['localhost','127.0.0.1'].includes(location.hostname)
+  ? new URL('/api/unigram', location.href).href : 'https://naman.world/api/unigram';
+const $ = id => document.getElementById(id);
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+let data = null, steps = [], position = 0, timer = null, activeRequest = null;
+const visible = text => text.replaceAll('▁','␣').replaceAll(' ','␣')
+  .replace(/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/gu, char => '\\u{' + char.codePointAt(0).toString(16).toUpperCase() + '}');
+const score = value => value === null ? '−∞' : (value === 0 ? '0' : value.toFixed(2).replace('-', '−'));
+
+// Each snapshot refers to a completed position update, keeping backward steps reversible.
+function makeSteps(pieces) {
+  const result = [{phase:'load', completed:0}, {phase:'normalize', completed:0}];
+  pieces.forEach((piece, i) => {
+    const add = (phase, extra = {}) => result.push({phase, piece:i, completed:i, ...extra});
+    add('piece');
+    if (!piece.special) {
+      add('init');
+      piece.visits.forEach((_, visit) => {
+        add('match', {visit}); add('score', {visit}); add('keep', {visit});
+      });
+      for (let count = 1; count <= piece.path.length; count++) add('backtrack', {count});
+    }
+    add('append', {completed:i + 1});
+  });
+  result.push({phase:'return', completed:pieces.length});
+  return result;
+}
+
+function pause() { clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; }
+
+function render() {
+  const step = steps[position], {phase, completed} = step;
+  const piece = data.pieces[step.piece], visit = piece?.visits[step.visit];
+  const output = data.pieces.slice(0, completed).flatMap(item => item.tokens);
+  $('step').textContent = phase === 'return' ? 'Encoding complete' : `Step ${position + 1} of ${steps.length}`;
+  $('count').textContent = `${data.byteLength} bytes → ${data.tokens.length} tokens`;
+  $('pieces').replaceChildren(...(phase === 'load' ? [] : data.pieces).map((item, i) => {
+    const chip = document.createElement('span'); chip.textContent = visible(item.text);
+    chip.className = i === step.piece ? 'active' : ''; return chip;
+  }));
+  $('tokens').replaceChildren();
+  $('stage-label').textContent = '';
+  const addToken = (text, subtext, classes = '', title = '') => {
+    const el = document.createElement('div'); el.className = 'token ' + classes;
+    el.textContent = visible(text); el.title = title;
+    if (subtext !== undefined) { const small = document.createElement('small'); small.textContent = subtext; el.append(small); }
+    $('tokens').append(el);
+  };
+  if (phase === 'load') addToken(data.input, undefined, 'unencoded');
+  else if (phase === 'normalize') data.pieces.forEach(item => addToken(item.text, undefined, 'unencoded'));
+  else if (phase === 'return' || phase === 'append') {
+    output.forEach(token => addToken(token.text, token.id, 'merged', token.unknown ? 'Unknown token' : ''));
+    $('stage-label').textContent = 'Selected tokens';
+  } else if (piece.special || phase === 'piece') {
+    addToken(piece.text, piece.special ? piece.id : undefined, piece.special ? 'merged' : 'unencoded');
+  } else if (phase === 'backtrack') {
+    const selected = piece.path.slice(-step.count), first = selected[0];
+    if (first.start) addToken(piece.chars.slice(0, first.start).join(''), undefined, 'unencoded');
+    selected.forEach((token, i) => addToken(token.text, token.id, i === 0 ? 'chosen' : 'merged'));
+    $('stage-label').textContent = 'Trace the best path backward';
+  } else {
+    const before = step.visit > 0 ? piece.visits[step.visit - 1].best : [0,...piece.chars.map(() => null)];
+    const best = phase === 'keep' ? visit.best : before;
+    const changed = new Set(phase === 'keep' ? visit.matches.filter(token => token.improved).map(token => token.end) : []);
+    $('stage-label').textContent = 'Best total score at each boundary';
+    addToken('∅', score(best[0]), visit?.start === 0 ? 'chosen' : '', 'Start of this piece');
+    piece.chars.forEach((char, i) => addToken(char, score(best[i + 1]),
+      changed.has(i + 1) || visit?.start === i + 1 ? 'chosen' : '', `Boundary ${i + 1}`));
+  }
+  if (!$('tokens').children.length) $('tokens').textContent = 'No tokens';
+  if (!reducedMotion.matches) $('tokens').animate([{opacity:.5},{opacity:1}], {duration:180});
+  const explanations = {
+    load:'Use T5’s learned vocabulary and token scores.',
+    normalize:'Normalize the input and mark the start of each word with ␣.',
+    piece:piece?.special ? 'Preserve this special token as one token.' : `Encode ${piece ? visible(piece.text) : ''}.`,
+    init:'Start with score 0. Other boundaries have not been reached yet.',
+    match:`Find every vocabulary token starting at position ${visit?.start ?? 0}.`,
+    score:`Add each token’s score to ${visit ? score((step.visit ? piece.visits[step.visit - 1].best : [0])[visit.start]) : '0'}, the best score at this position.`,
+    keep:'Keep an update only when its total score is higher. Save that token as the predecessor.',
+    backtrack:'Follow the saved predecessor from the end toward the start.',
+    append:piece?.tokens.some(token => token.unknown)
+      ? 'Append these token IDs. Adjacent unknown characters share one unknown token.' : 'Append this piece’s selected token IDs in reading order.',
+    return:'All pieces are encoded. These are the final T5 token IDs.',
+  };
+  $('explanation').textContent = explanations[phase];
+  $('rules').replaceChildren();
+  if (visit) {
+    const heading = document.createElement('div'); heading.className = 'candidate heading';
+    for (const text of ['Token','Score','Total','']) {const cell = document.createElement('span'); cell.textContent = text; heading.append(cell);}
+    $('rules').append(heading);
+    visit.matches.forEach(token => {
+      const row = document.createElement('div'); row.className = 'candidate' + (phase === 'keep' && token.improved ? ' active' : '');
+      const text = document.createElement('code'); text.textContent = visible(token.text) + (token.unknown ? ' <unk>' : '');
+      const value = document.createElement('span'); value.textContent = score(token.score);
+      const total = document.createElement('span'); total.textContent = phase === 'match' ? '—' : score(token.total);
+      const kept = document.createElement('span'); kept.textContent = phase === 'keep' ? token.improved ? '✓' : '—' : '';
+      kept.title = token.improved ? 'Saved a better path' : 'Existing path is at least as good';
+      row.append(text,value,total,kept); $('rules').append(row);
+    });
+  } else $('rules').textContent = phase === 'return' ? 'All pieces are encoded.' : '—';
+  $('output').textContent = '[ ' + output.map(token => token.id).join(', ') + ' ]';
+  $('output-label').textContent = phase === 'return' ? 'final output' : '';
+  document.querySelectorAll('[data-line]').forEach(line => {
+    const active = line.dataset.line === phase;
+    line.classList.toggle('active', active);
+    if (active) line.setAttribute('aria-current','step'); else line.removeAttribute('aria-current');
+  });
+  $('back').disabled = position === 0;
+  $('next').disabled = position === steps.length - 1;
+  const progress = 100 * position / (steps.length - 1);
+  $('progress-fill').style.width = progress + '%'; $('progress').setAttribute('aria-valuenow',Math.round(progress));
+}
+
+function advance() {
+  if (activeRequest || position >= steps.length - 1) return;
+  position++; render(); if (position === steps.length - 1) pause();
+}
+function stepBack() { if (!data || activeRequest) return; pause(); position = Math.max(0,position - 1); render(); }
+function restart() { if (!data || activeRequest) return; pause(); position = 0; render(); }
+function play() {
+  if (!data || activeRequest) return;
+  if (timer !== null) { pause(); return; }
+  if (position === steps.length - 1) restart();
+  $('play').textContent = 'Ⅱ Pause';
+  const tick = () => {
+    advance();
+    if (timer !== null) timer = setTimeout(tick,Number($('speed').value));
+  };
+  timer = setTimeout(tick,Number($('speed').value));
+}
+
+async function encodeInput() {
+  pause(); activeRequest?.abort();
+  const text = $('input').value, byteLength = new TextEncoder().encode(text).length;
+  if (byteLength < 1 || byteLength > 160) {
+    activeRequest = null;
+    $('input-error').textContent = 'Use between 1 and 160 UTF-8 bytes.';
+    document.querySelectorAll('.transport button').forEach(button => button.disabled = !data);
+    if (data) render();
+    return;
+  }
+  const controller = new AbortController(); activeRequest = controller;
+  const timeout = setTimeout(() => controller.abort(),15000);
+  $('input-error').textContent = ''; $('step').textContent = 'Encoding…';
+  document.querySelectorAll('.transport button').forEach(button => button.disabled = true);
+  try {
+    const response = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text}),signal:controller.signal,credentials:'omit'});
+    if (response.status === 429) throw Error('Too many requests. Try again in a minute.');
+    const result = await response.json();
+    if (!response.ok) throw Error(result.error || 'Could not encode this text.');
+    if (result.model !== 't5-small' || result.version !== 1 || !Array.isArray(result.pieces)) throw Error('Unexpected tokenizer response.');
+    if (activeRequest !== controller) return;
+    data = {...result,input:text}; steps = makeSteps(data.pieces); position = 0;
+  } catch (error) {
+    if (activeRequest !== controller) return;
+    $('input-error').textContent = error.name === 'AbortError' ? 'Request timed out. Try again.'
+      : error instanceof TypeError ? 'Could not reach the tokenizer. Check your connection or try again in a minute.' : error.message;
+  } finally {
+    clearTimeout(timeout);
+    if (activeRequest === controller) {
+      activeRequest = null;
+      document.querySelectorAll('.transport button').forEach(button => button.disabled = !data);
+      if (data) render(); else $('step').textContent = 'Waiting for tokenizer';
+    }
+  }
+}
+$('input-form').addEventListener('submit',event => {event.preventDefault();encodeInput();});
+$('play').addEventListener('click',play);
+$('next').addEventListener('click',() => {pause();advance();});
+$('back').addEventListener('click',stepBack);
+$('reset').addEventListener('click',restart);
+document.addEventListener('keydown',event => {
+  if (event.target.closest('input,select,button,textarea') || event.altKey || event.metaKey || event.ctrlKey) return;
+  if (event.code === 'Space') {event.preventDefault();play();}
+  if (event.code === 'ArrowRight') {event.preventDefault();pause();advance();}
+  if (event.code === 'ArrowLeft') {event.preventDefault();stepBack();}
+});
+encodeInput();
+</script>
+</body>
+</html>
