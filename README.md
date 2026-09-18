@@ -86,6 +86,10 @@ For a native Obsidian embed, paste raw HTML rather than a fenced code block:
 internet connection and no Obsidian plugin. Its fixed fallback height can
 be adjusted in the embed when using a narrower note or longer input.
 
+The animation follows the embedding page's CSS `color-scheme`. The website's
+theme toggle already sets this to `light` or `dark`, so the iframe follows
+the user's selection without a plugin or its own theme toggle.
+
 ## Notes
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
