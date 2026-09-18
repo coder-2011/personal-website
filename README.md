@@ -79,7 +79,7 @@ Run API validation with `node --test tests/bpe.test.mjs`, then `npm run build`.
 For a native Obsidian embed, paste raw HTML rather than a fenced code block:
 
 ```html
-<iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE animation" style="width:100%; height:900px; border:0;"></iframe>
+<iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE animation" style="width:100%; height:1400px; border:0;"></iframe>
 ```
 
 `node scripts/bpe-embed.mjs | pbcopy` copies an iframe with the full frontend
