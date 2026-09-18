@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Ocqs12gO4cc+Nh57MggJxAsd5N34Kd4B8p+EZsTaiXI='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TP4Rkg3muzqW9mYeCsB5yr4Ql1orW/Vjs0m531bkaTg='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -12,6 +12,8 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;animation:none!important}}
 
 .piece-strip{padding:0 24px 18px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}.piece-strip .eyebrow{font-size:9px}#pieces{display:flex;flex-wrap:wrap;gap:5px}#pieces span{font:11px var(--mono);padding:5px 7px;border-radius:3px;border:1px solid var(--line);white-space:pre-wrap}#pieces .active{background:var(--sage);border-color:#9bab87}.tokens{flex-wrap:wrap;min-width:0;justify-content:center;row-gap:34px;width:100%}.token-area{max-height:320px;min-height:180px;align-items:flex-start}.token{font-size:17px;min-width:38px;padding:0 9px;height:54px;max-width:100%;overflow-wrap:anywhere}.token small{top:62px}.token.piece-start{margin-left:13px;border-left-width:3px}.rules{grid-template-columns:repeat(2,minmax(0,1fr));color:var(--muted);font-size:12px}.rule{min-width:0}.rule code{white-space:normal;overflow-wrap:anywhere;font-size:11px}.rule .rank{min-width:35px}.piece-strip+.token-area{border-top:1px solid var(--line)}
+
+.pseudocode{margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}.pseudocode pre{margin:0;overflow-x:auto;padding:0 0 6px;font:12px/1.85 var(--mono);color:#777b73;tab-size:4}.pseudocode code>span{display:block;min-height:1.85em;transition:color .16s}.pseudocode code{font:inherit;white-space:normal}.pseudocode code>span{white-space:pre}.pseudocode i{font:inherit;opacity:.7}.pseudocode .active{color:#28783b;font-weight:600}.token.unencoded{background:transparent;border-style:dashed;color:var(--muted);font-size:14px}.token.unencoded small{display:none}.token-area{min-height:160px}
 </style>
 </head>
 <body>
@@ -25,9 +27,9 @@
     <div id="explanation" class="explanation" aria-live="polite"></div>
     <div class="transport">
       <button id="reset" class="icon-button" aria-label="Restart"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6a7 7 0 1 1-1 6M4 2v4h4"/></svg></button>
-      <button id="back" class="icon-button" aria-label="Previous merge"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-8 6 8 6z"/></svg></button>
+      <button id="back" class="icon-button" aria-label="Previous step"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4v12M15 4l-8 6 8 6z"/></svg></button>
       <button id="play" class="play">▶ Play</button>
-      <button id="next" class="icon-button" aria-label="Next merge"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l8 6-8 6z"/></svg></button>
+      <button id="next" class="icon-button" aria-label="Next step"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4v12M5 4l8 6-8 6z"/></svg></button>
       <div class="progress" role="progressbar" aria-label="Encoding progress" aria-valuemin="0" aria-valuemax="100" id="progress"><span id="progress-fill"></span></div>
       <label class="speed"><span>Speed</span><select id="speed" aria-label="Animation speed"><option value="2200">0.5×</option><option value="1100" selected>1×</option><option value="550">2×</option></select></label>
     </div>
@@ -36,61 +38,132 @@
     <section><div class="section-title"><h2>Available merges</h2><span class="subtle">Always choose lowest rank</span></div><div id="rules" class="rules"></div></section>
     <section><div class="section-title"><h2>Token IDs</h2><span id="output-label" class="subtle"></span></div><div id="output" class="readout"></div></section>
   </div>
+  <section class="pseudocode" aria-label="Encoding pseudocode">
+    <div class="section-title"><h2>Encoding</h2></div>
+    <pre><code><span data-line="load">load the vocabulary and merge ranks      <i># learned during training</i></span>
+<span data-line="split">split the text into pieces              <i># keep their boundaries</i></span>
+<span data-line="piece">for each piece, from left to right:     <i># outer loop</i></span>
+<span data-line="bytes">    start with its byte tokens          <i># preserve special tokens</i></span>
+<span data-line="check">    while an adjacent pair has a merge rank:</span>
+<span data-line="choose">        take the pair with the lowest rank</span>
+<span data-line="merge">        merge its non-overlapping occurrences in this piece</span>
+<span data-line="append">    append the remaining token IDs to the output</span>
+<span data-line="return">return the token IDs</span></code></pre>
+  </section>
 </main>
 <script>
 const API_URL = ['localhost', '127.0.0.1'].includes(location.hostname)
   ? new URL('/api/bpe', location.href).href : 'https://naman.world/api/bpe';
-const visible = text => text;
 const encoder = new TextEncoder();
 const $ = id => document.getElementById(id);
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-let frames = [], position = 0, timer = null, busy = false, generation = 0;
+let frames = [], steps = [], position = 0, timer = null, busy = false, generation = 0;
 let activeRequest = null;
 
 function pause() { clearTimeout(timer); timer = null; $('play').textContent = '▶ Play'; }
 
+// Expand the server's merge snapshots into an exact, reversible pseudocode walkthrough.
+function makeSteps(frames) {
+  const steps = [{phase:'load', frame:0, piece:null, completed:0},
+    {phase:'split', frame:0, piece:null, completed:0}];
+  let frame = 0;
+  for (let piece = 0; piece < frames[0].pieces.length; piece++) {
+    const add = (phase, completed = piece) => steps.push({phase, frame, piece, completed});
+    add('piece'); add('bytes'); add('check');
+    while (frames[frame].candidate?.piece === piece) {
+      add('choose');
+      frame++;
+      add('merge'); add('check');
+    }
+    add('append', piece + 1);
+  }
+  steps.push({phase:'return', frame, piece:null, completed:frames[0].pieces.length});
+  return steps;
+}
+
+function pieceLabel(text) {
+  return text.replaceAll(' ', '␣').replaceAll('\n', '↵').replaceAll('\t', '⇥');
+}
+
 function render(oldRects = new Map()) {
-  const {tokens, candidate, pieces, byteLength} = frames[position];
-  const selected = new Set(candidate?.indices.flatMap(i => [i, i + 1]) ?? []);
-  $('tokens').replaceChildren(...tokens.map((token, i) => {
+  const step = steps[position], {phase, piece, completed} = step;
+  const {tokens, candidate:nextCandidate, pieces, byteLength} = frames[step.frame];
+  const candidate = phase === 'merge' ? frames[step.frame - 1].candidate
+    : nextCandidate?.piece === piece ? nextCandidate : null;
+  const selected = new Set(phase === 'choose' ? candidate.indices.flatMap(i => [i, i + 1]) : []);
+  const mergedStarts = new Set(phase === 'merge'
+    ? candidate.indices.map(i => frames[step.frame - 1].tokens[i].start) : []);
+  let displayTokens;
+  if (phase === 'load') {
+    displayTokens = [{text:pieceLabel(pieces.join('')), start:0, piece:0, unencoded:true}];
+  } else {
+    displayTokens = pieces.flatMap((text, i) => {
+      const group = tokens.filter(token => token.piece === i);
+      const expanded = phase === 'return' || i < piece ||
+        (i === piece && phase !== 'piece');
+      return expanded ? group : [{text:pieceLabel(text), start:group[0].start, piece:i, unencoded:true}];
+    });
+  }
+  const selectedStarts = new Set([...selected].map(i => tokens[i].start));
+  const firstStarts = new Set(phase === 'choose' ? candidate.indices.map(i => tokens[i].start) : []);
+  $('tokens').replaceChildren(...displayTokens.map((token, i) => {
     const element = document.createElement('div');
-    element.className = 'token' + (token.end - token.start > 1 ? ' merged' : '') +
-      (selected.has(i) ? ' chosen' : '') +
-      (candidate?.indices.includes(i) ? ' first' : '') +
-      (i > 0 && tokens[i - 1].piece !== token.piece ? ' piece-start' : '');
+    element.className = 'token' + (token.unencoded ? ' unencoded' : token.end - token.start > 1 ? ' merged' : '') +
+      (selectedStarts.has(token.start) || mergedStarts.has(token.start) ? ' chosen' : '') +
+      (firstStarts.has(token.start) ? ' first' : '') +
+      (i > 0 && displayTokens[i - 1].piece !== token.piece ? ' piece-start' : '');
     element.dataset.start = token.start;
-    element.textContent = visible(token.text);
-    element.setAttribute('aria-label', `${visible(token.text)}, token ID ${token.id}`);
-    const id = document.createElement('small'); id.textContent = token.id; element.append(id);
+    element.textContent = token.text;
+    element.setAttribute('aria-label', token.unencoded ? `Text: ${token.text}` : `${token.text}, token ID ${token.id}`);
+    if (!token.unencoded) {
+      const id = document.createElement('small'); id.textContent = token.id; element.append(id);
+    }
     return element;
   }));
-  $('step').textContent = position === frames.length - 1 ? 'Encoding complete' : `Merge ${position + 1} of ${frames.length - 1}`;
-  $('count').textContent = `${byteLength} bytes → ${tokens.length} tokens`;
-  $('output').textContent = '[ ' + tokens.map(token => token.id).join(', ') + ' ]';
-  $('output-label').textContent = candidate ? '' : 'final output';
+  $('step').textContent = phase === 'return' ? 'Encoding complete' : `Step ${position + 1} of ${steps.length}`;
+  $('count').textContent = phase === 'return' ? `${byteLength} bytes → ${tokens.length} tokens`
+    : `${byteLength} bytes` + (piece === null ? '' : ` · Piece ${piece + 1} / ${pieces.length}`);
+  $('output').textContent = '[ ' + tokens.filter(token => token.piece < completed).map(token => token.id).join(', ') + ' ]';
+  $('output-label').textContent = phase === 'return' ? 'final output' : '';
   $('explanation').replaceChildren();
-  if (candidate) {
+  const explanations = {
+    load:'Use the fixed GPT-2 vocabulary and the merge ranks learned during training.',
+    split:'Split the text into pieces. Merges cannot cross these boundaries.',
+    piece:`Begin piece ${(piece ?? 0) + 1}.`,
+    bytes:tokens.some(token => token.piece === piece && token.special)
+      ? 'Keep this special token intact.' : 'Represent this piece as UTF-8 byte tokens.',
+    check:candidate ? 'A ranked adjacent pair exists. Enter the merge loop.' : 'No ranked adjacent pair remains in this piece. Exit the merge loop.',
+    append:'Append this piece’s remaining token IDs to the output.',
+    return:'All pieces are encoded. Return the token IDs in their original order.',
+  };
+  if (phase === 'choose' || phase === 'merge') {
     const code = document.createElement('code');
-    code.textContent = `${visible(candidate.left)} + ${visible(candidate.right)} → ${candidate.merged}`;
-    $('explanation').append(code, `Rank ${candidate.rank.toLocaleString()} wins in piece ${candidate.piece + 1}.`);
-  } else $('explanation').textContent = 'No more merges within the text pieces. These are the final GPT-2 tokens.';
-  $('pieces').replaceChildren(...pieces.map((piece, i) => {
-    const chip = document.createElement('span');
-    chip.textContent = piece.replaceAll(' ', '␣').replaceAll('\n', '↵').replaceAll('\t', '⇥');
-    chip.className = candidate?.piece === i ? 'active' : '';
-    chip.title = `Piece ${i + 1}`;
+    code.textContent = `${candidate.left} + ${candidate.right} → ${candidate.merged}`;
+    $('explanation').append(code, phase === 'choose' ? `Rank ${candidate.rank.toLocaleString()} is the lowest available.`
+      : `Merged ${candidate.indices.length} non-overlapping ${candidate.indices.length === 1 ? 'occurrence' : 'occurrences'} in this piece.`);
+  } else $('explanation').textContent = explanations[phase];
+  $('pieces').replaceChildren(...(phase === 'load' ? [] : pieces).map((text, i) => {
+    const chip = document.createElement('span'); chip.textContent = pieceLabel(text);
+    chip.className = piece === i ? 'active' : ''; chip.title = `Piece ${i + 1}`;
     return chip;
   }));
-  $('rules').replaceChildren(...(candidate?.choices.slice(0, 6) ?? []).map((choice, i) => {
-    const row = document.createElement('div'); row.className = 'rule' + (i === 0 ? ' active' : '');
+  const showChoices = ['check','choose','merge'].includes(phase);
+  $('rules').replaceChildren(...(showChoices ? candidate?.choices ?? [] : []).map((choice, i) => {
+    const row = document.createElement('div'); row.className = 'rule' + (i === 0 && phase !== 'check' ? ' active' : '');
     const number = document.createElement('span'); number.className = 'rank'; number.textContent = choice.rank.toLocaleString();
-    const pair = document.createElement('code'); pair.textContent = `${visible(choice.left)} + ${visible(choice.right)}`;
+    const pair = document.createElement('code'); pair.textContent = `${choice.left} + ${choice.right}`;
     row.append(number, pair); return row;
   }));
-  if (!candidate) $('rules').textContent = 'All pieces are encoded.';
+  if (!showChoices) $('rules').textContent = phase === 'return' ? 'All pieces are encoded.' : '—';
+  else if (!candidate) $('rules').textContent = 'No available merges in this piece.';
+  document.querySelectorAll('[data-line]').forEach(line => {
+    const active = line.dataset.line === phase;
+    line.classList.toggle('active', active);
+    if (active) line.setAttribute('aria-current', 'step'); else line.removeAttribute('aria-current');
+  });
   $('back').disabled = position === 0;
-  $('next').disabled = !candidate;
-  const progress = frames.length === 1 ? 100 : 100 * position / (frames.length - 1);
+  $('next').disabled = phase === 'return';
+  const progress = 100 * position / (steps.length - 1);
   $('progress-fill').style.width = `${progress}%`;
   $('progress').setAttribute('aria-valuenow', Math.round(progress));
   if (!reducedMotion.matches) for (const element of $('tokens').children) {
@@ -103,11 +176,11 @@ function render(oldRects = new Map()) {
 }
 
 async function advance() {
-  if (activeRequest || busy || position >= frames.length - 1) return;
+  if (activeRequest || busy || position >= steps.length - 1) return;
   busy = true;
   const currentGeneration = generation;
   const rects = new Map(Array.from($('tokens').children, el => [Number(el.dataset.start), el.getBoundingClientRect()]));
-  if (!reducedMotion.matches) {
+  if (!reducedMotion.matches && steps[position + 1].phase === 'merge') {
     const pair = Array.from($('tokens').querySelectorAll('.chosen'));
     await Promise.all(pair.map((el, i) => el.animate([
       {transform:'translateX(0)',filter:'brightness(1)'},
@@ -117,7 +190,7 @@ async function advance() {
   // Restarting or stepping back cancels any in-flight transition.
   if (currentGeneration !== generation) return;
   position++; render(rects); busy = false;
-  if (position === frames.length - 1) pause();
+  if (position === steps.length - 1) pause();
 }
 
 function stepBack() { if (!frames.length || activeRequest) return; pause(); generation++; busy = false; position = Math.max(0, position - 1); render(); }
@@ -125,8 +198,8 @@ function restart() { if (!frames.length || activeRequest) return; pause(); gener
 function play() {
   if (!frames.length || activeRequest) return;
   if (timer !== null) { pause(); return; }
-  if (position === frames.length - 1) restart();
-  if (frames.length === 1) return;
+  if (position === steps.length - 1) restart();
+  if (steps.length === 1) return;
   $('play').textContent = 'Ⅱ Pause';
   const tick = async () => {
     const scheduled = timer;
@@ -161,7 +234,7 @@ async function encodeInput() {
     if (data.model !== 'gpt2' || data.version !== 1 || !Array.isArray(data.frames) || !data.frames.length)
       throw Error('The tokenizer returned an unexpected response.');
     if (activeRequest !== controller) return;
-    frames = data.frames; position = 0;
+    frames = data.frames; steps = makeSteps(frames); position = 0;
   } catch (error) {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError'

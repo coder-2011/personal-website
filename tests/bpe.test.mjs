@@ -16,6 +16,35 @@ test('standalone frontend CSP permits exactly its current inline script', () => 
   assert.ok(html.includes(`script-src 'sha256-${hash}'`));
 });
 
+test('pseudocode playback visits every piece and only changes tokens on a merge step', async () => {
+  const html = readFileSync(new URL('../public/embeds/bpe.html', import.meta.url), 'utf8');
+  const source = html.match(/function makeSteps\(frames\) \{[\s\S]*?\n\}/)[0];
+  const makeSteps = new Function(`return (${source})`)();
+  for (const text of ['x', 'my name is naman', 'aaaa café 🙂', '<|endoftext|>x']) {
+    const response = await handleBpeRequest(request(JSON.stringify({ text })));
+    const { frames } = await response.json();
+    const steps = makeSteps(frames);
+    assert.deepEqual(steps.slice(0, 2).map(step => step.phase), ['load', 'split']);
+    assert.equal(steps.at(-1).phase, 'return');
+    assert.equal(steps.at(-1).frame, frames.length - 1);
+    assert.deepEqual(steps.filter(step => step.phase === 'append').map(step => step.piece),
+      frames[0].pieces.map((_, i) => i));
+    for (let i = 1; i < steps.length; i++) {
+      const before = steps[i - 1], step = steps[i];
+      assert.equal(step.frame - before.frame, step.phase === 'merge' ? 1 : 0);
+      if (step.phase === 'merge') {
+        assert.equal(before.phase, 'choose');
+        assert.equal(frames[before.frame].candidate.piece, step.piece);
+        assert.equal(steps[i + 1].phase, 'check');
+      }
+      if (step.completed !== before.completed) {
+        assert.equal(step.phase, 'append');
+        assert.equal(step.completed, before.completed + 1);
+      }
+    }
+  }
+});
+
 test('real GPT-2 trace preserves bytes and pre-tokenizer boundaries', async () => {
   const response = await handleBpeRequest(request(JSON.stringify({ text: 'my name is naman' })));
   assert.equal(response.status, 200);
