@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ZmrusaA6cwGScX68SuqceYeWCX9JYNXpTeB/WYcxixI='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-606D/pFk6ornK+bcJFO9bsZYJ2mRCLJ0AiDHqJLnwGM='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <style>
@@ -41,6 +41,13 @@
 .candidate{grid-template-columns:minmax(0,1fr) 105px 90px}.candidate small{display:block;margin-top:6px;font:9px/1.5 var(--mono);color:var(--muted);overflow-wrap:anywhere}.candidate span:first-child{text-align:left}
 .section-title{gap:12px}.section-title .subtle{text-align:right}.bottom{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:700px){.bottom{grid-template-columns:minmax(0,1fr)}.token{min-width:62px}.route{padding:0 16px 14px}}
+/* Reserve the changing labels and comparisons so playback does not move the controls. */
+.piece-strip{min-height:46px}
+.stage-label{min-height:23px}.stage-label:empty{display:block}
+.route{min-height:36px;padding-bottom:12px}.route:empty{display:block}
+.explanation{min-height:82px}.token-area{align-items:center}
+.candidate{transition:background .25s,border-color .25s}
+.token{transform-origin:center}.token small{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -130,48 +137,84 @@ function savedPath(piece, end, visitCount) {
   return path;
 }
 
+// Keep each boundary's card alive so scoring changes its highlight instead of flashing the row.
+function renderTokens(tokens) {
+  const container = $('tokens');
+  const old = new Map(Array.from(container.children, el => [el.dataset.key,
+    {el, rect:el.getBoundingClientRect()}]));
+  const kept = new Set();
+  if (!container.children.length) container.replaceChildren();
+  for (const token of tokens) {
+    const previous = old.get(token.key);
+    const el = previous?.el ?? document.createElement('div');
+    for (const animation of el.getAnimations()) animation.cancel();
+    if (!previous) el.append(document.createElement('span'), document.createElement('small'));
+    el.dataset.key = token.key; kept.add(el);
+    el.className = 'token ' + token.classes;
+    el.title = token.title;
+    const [label, detail] = el.children;
+    const changedScore = previous && detail.textContent !== String(token.subtext ?? '');
+    if (label.textContent !== visible(token.text)) label.textContent = visible(token.text);
+    if (detail.textContent !== String(token.subtext ?? '')) detail.textContent = token.subtext ?? '';
+    detail.hidden = token.subtext === undefined;
+    container.append(el);
+    if (changedScore && !reducedMotion.matches)
+      detail.animate([{opacity:.3},{opacity:1}], {duration:280});
+  }
+  for (const el of Array.from(container.children)) if (!kept.has(el)) el.remove();
+  if (!tokens.length) { container.textContent = 'No tokens'; return; }
+  if (reducedMotion.matches) return;
+  for (const el of container.children) {
+    const before = old.get(el.dataset.key)?.rect, after = el.getBoundingClientRect();
+    if (before) {
+      const dx = before.left - after.left, dy = before.top - after.top;
+      if (Math.abs(dx) > .5 || Math.abs(dy) > .5 || Math.abs(before.width - after.width) > .5)
+        el.animate([{transform:`translate(${dx}px, ${dy}px) scaleX(${before.width / after.width})`},
+          {transform:'none'}], {duration:380,easing:'cubic-bezier(.2,.8,.2,1)'});
+    } else el.animate([{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'none'}],
+      {duration:240,easing:'ease-out'});
+  }
+}
+
 function render() {
   const step = steps[position], {phase, completed} = step;
   const piece = data.pieces[step.piece], visit = piece?.visits[step.visit];
-  const output = data.pieces.slice(0, completed).flatMap(item => item.tokens);
+  const output = data.pieces.slice(0, completed).flatMap((item, i) => item.tokens.map(token => ({...token, piece:i})));
   $('step').textContent = phase === 'return' ? 'Encoding complete' : `Step ${position + 1} of ${steps.length}`;
   $('count').textContent = `${data.byteLength} bytes → ${data.tokens.length} tokens`;
   $('pieces').replaceChildren(...(phase === 'load' ? [] : data.pieces).map((item, i) => {
     const chip = document.createElement('span'); chip.textContent = visible(item.text);
     chip.className = i === step.piece ? 'active' : ''; return chip;
   }));
-  $('tokens').replaceChildren();
+  const display = [];
   $('stage-label').textContent = '';
-  const addToken = (text, subtext, classes = '', title = '') => {
-    const el = document.createElement('div'); el.className = 'token ' + classes;
-    el.textContent = visible(text); el.title = title;
-    if (subtext !== undefined) { const small = document.createElement('small'); small.textContent = subtext; el.append(small); }
-    $('tokens').append(el);
+  const addToken = (text, subtext, classes = '', title = '', key = 'input') => {
+    display.push({key,text,subtext,classes,title});
   };
   if (phase === 'load') addToken(data.input, undefined, 'unencoded');
-  else if (phase === 'normalize') data.pieces.forEach(item => addToken(item.text, undefined, 'unencoded'));
+  else if (phase === 'normalize') data.pieces.forEach((item, i) =>
+    addToken(item.text, undefined, 'unencoded', '', `${i}:${item.chars?.length ?? 0}`));
   else if (phase === 'return' || phase === 'append' || phase === 'special') {
     output.forEach(token => addToken(token.unknown ? '<unk>' : token.text, token.id, 'merged',
-      token.unknown ? `Unknown token for ${visible(token.text)}` : ''));
+      token.unknown ? `Unknown token for ${visible(token.text)}` : '', `${token.piece}:${token.end ?? 0}`));
     $('stage-label').textContent = 'Selected tokens';
   } else if (piece.special || phase === 'piece') {
-    addToken(piece.text, piece.special ? piece.id : undefined, piece.special ? 'merged' : 'unencoded');
+    addToken(piece.text, piece.special ? piece.id : undefined, piece.special ? 'merged' : 'unencoded', '', `${step.piece}:${piece.chars?.length ?? 0}`);
   } else if (phase === 'backtrack') {
     const selected = piece.path.slice(-step.count), first = selected[0];
-    if (first.start) addToken(piece.chars.slice(0, first.start).join(''), undefined, 'unencoded');
-    selected.forEach((token, i) => addToken(token.text, token.id, i === 0 ? 'chosen' : 'merged'));
+    if (first.start) addToken(piece.chars.slice(0, first.start).join(''), undefined, 'unencoded', '', `${step.piece}:${first.start}`);
+    selected.forEach((token, i) => addToken(token.text, token.id, i === 0 ? 'chosen' : 'merged', '', `${step.piece}:${token.end}`));
     $('stage-label').textContent = 'Trace the best path backward';
   } else {
     const before = step.visit > 0 ? piece.visits[step.visit - 1].best : [0,...piece.chars.map(() => null)];
     const best = phase === 'keep' ? visit.best : before;
     const changed = new Set(phase === 'keep' ? visit.matches.filter(token => token.improved).map(token => token.end) : []);
     $('stage-label').textContent = 'Position · best score after this character';
-    addToken('∅', '0 · ' + score(best[0]), visit?.start === 0 ? 'chosen' : '', 'Start of this piece');
+    addToken('∅', '0 · ' + score(best[0]), visit?.start === 0 ? 'chosen' : '', 'Start of this piece', `${step.piece}:0`);
     piece.chars.forEach((char, i) => addToken(char, `${i + 1} · ${score(best[i + 1])}`,
-      changed.has(i + 1) || visit?.start === i + 1 ? 'chosen' : '', `Boundary ${i + 1}`));
+      changed.has(i + 1) || visit?.start === i + 1 ? 'chosen' : '', `Boundary ${i + 1}`, `${step.piece}:${i + 1}`));
   }
-  if (!$('tokens').children.length) $('tokens').textContent = 'No tokens';
-  if (!reducedMotion.matches) $('tokens').animate([{opacity:.5},{opacity:1}], {duration:180});
+  renderTokens(display);
   const explanations = {
     load:'Token scores are learned log-probabilities. Adding them scores a whole path; higher (less negative) is better. This walkthrough chooses the best path without sampling.',
     normalize:'Normalize the text, split on whitespace, and add a word-start marker—even before the first word. ␣ displays T5’s ▁ marker; original spacing is not preserved.',
@@ -191,13 +234,18 @@ function render() {
   $('route').textContent = visit
     ? `Best path to position ${visit.start}: ${savedPath(piece, visit.start, step.visit).map(token => visible(token.text)).join(' → ') || 'start'} · score ${score(visit.start === 0 ? 0 : piece.visits[step.visit - 1].best[visit.start])}`
     : phase === 'backtrack' ? `Read the selected tokens left to right; recover them right to left.` : '';
-  $('rules').replaceChildren();
+  const oldRows = new Map(Array.from($('rules').children, el => [el.dataset.key, el]));
+  const rows = [];
   if (visit) {
-    const heading = document.createElement('div'); heading.className = 'candidate heading';
-    for (const text of ['Token · span','New total','Saved at end']) {const cell = document.createElement('span'); cell.textContent = text; heading.append(cell);}
-    $('rules').append(heading);
+    const heading = oldRows.get('heading') ?? document.createElement('div');
+    heading.className = 'candidate heading'; heading.dataset.key = 'heading';
+    if (!heading.children.length)
+      for (const text of ['Token · span','New total','Saved at end']) {const cell = document.createElement('span'); cell.textContent = text; heading.append(cell);}
+    rows.push(heading);
     visit.matches.filter(token => phase !== 'match' || !token.fallback).forEach(token => {
-      const row = document.createElement('div'); row.className = 'candidate' + (phase === 'keep' && token.improved ? ' active' : '');
+      const key = `${step.piece}:${token.start}:${token.end}`;
+      const row = oldRows.get(key) ?? document.createElement('div'); row.dataset.key = key;
+      row.className = 'candidate' + (phase === 'keep' && token.improved ? ' active' : '');
       const text = document.createElement('code'); text.textContent = visible(token.text) + (token.unknown && token.text !== '<unk>' ? ' <unk>' : '');
       const detail = (parent, value) => { const small = document.createElement('small'); small.textContent = value; parent.append(small); };
       detail(text, `${token.start} → ${token.end}${token.fallback ? ' · fallback' : ''}`);
@@ -208,9 +256,11 @@ function render() {
       const saved = document.createElement('span'); saved.textContent = score(token.previousScore);
       if (phase === 'keep') detail(saved, token.improved ? '↑ replace' : token.total === token.previousScore ? '= keep' : 'keep');
       row.title = `Token score ${token.score}; new total ${token.total}; previous ${token.previousScore ?? 'unreached'}. Comparisons use full precision.`;
-      row.append(text,total,saved); $('rules').append(row);
+      row.replaceChildren(text,total,saved); rows.push(row);
     });
-  } else $('rules').textContent = phase === 'return' ? 'All pieces are encoded.' : '—';
+  }
+  $('rules').replaceChildren(...rows);
+  if (!rows.length) $('rules').textContent = phase === 'return' ? 'All pieces are encoded.' : '—';
   $('output').textContent = '[ ' + output.map(token => token.id).join(', ') + ' ]';
   $('output-label').textContent = phase === 'return' ? 'final output' : '';
   document.querySelectorAll('[data-line]').forEach(line => {
@@ -264,6 +314,8 @@ async function encodeInput() {
     if (result.model !== 't5-small' || result.version !== 1 || !Array.isArray(result.pieces)) throw Error('Unexpected tokenizer response.');
     if (activeRequest !== controller) return;
     data = {...result,input:text}; steps = makeSteps(data.pieces); position = 0;
+    const candidateCount = Math.max(1, ...data.pieces.flatMap(piece => piece.visits.map(visit => visit.matches.length)));
+    $('rules').style.minHeight = `${24 + candidateCount * 60}px`;
   } catch (error) {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError' ? 'Request timed out. Try again.'
