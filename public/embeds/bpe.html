@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-wmSRXOmX1ib2+1Z3/1cf9NvsCtAj+J1ZKvfR0ICdaYM='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-UwUka3zaQ/calpIWobBKxi4HZThFbfZ/uBQ88o8P4t0='; style-src 'unsafe-inline'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>
@@ -261,17 +261,6 @@ document.addEventListener('keydown', event => {
   if (event.code === 'ArrowRight') { event.preventDefault(); pause(); advance(); }
   if (event.code === 'ArrowLeft') { event.preventDefault(); stepBack(); }
 });
-// Measure content rather than the viewport so the parent can also shrink the iframe.
-if (window.parent !== window) {
-  const main = document.querySelector('main');
-  const reportHeight = () => window.parent.postMessage({
-    type:'bpe:height', height:Math.ceil(main.getBoundingClientRect().height),
-  }, '*');
-  new ResizeObserver(reportHeight).observe(main);
-  window.addEventListener('message', event => {
-    if (event.source === window.parent && event.data?.type === 'bpe:measure') reportHeight();
-  });
-}
 encodeInput();
 </script>
 </body>
