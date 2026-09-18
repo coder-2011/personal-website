@@ -1,0 +1,9 @@
+{
+  "id": "bpe-embed-resize",
+  "name": "BPE Embed Resize",
+  "version": "1.0.0",
+  "minAppVersion": "1.5.0",
+  "description": "Fits the naman.world BPE animation to its content without internal scrolling.",
+  "author": "Naman Chetwani",
+  "isDesktopOnly": false
+}

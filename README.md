@@ -79,13 +79,16 @@ Run API validation with `node --test tests/bpe.test.mjs`, then `npm run build`.
 For a native Obsidian embed, paste raw HTML rather than a fenced code block:
 
 ```html
-<iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE animation" style="width:100%; height:1400px; border:0;"></iframe>
+<iframe src="https://naman.world/embeds/bpe.html" title="GPT-2 BPE tokenization" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" style="width:100%; height:980px; border:0; border-radius:8px;"></iframe>
 ```
 
-`node scripts/bpe-embed.mjs | pbcopy` copies an iframe with the full frontend
-in `srcdoc` and the hosted page in `src` as a fallback. Obsidian removes
-`srcdoc` when sanitizing notes, so it uses the hosted frontend instead.
-Both versions call the same API and need an internet connection.
+`node scripts/bpe-embed.mjs | pbcopy` copies the hosted iframe. It needs an
+internet connection. Install the two files in
+`integrations/obsidian/bpe-embed-resize/` into your vault's
+`.obsidian/plugins/bpe-embed-resize/`, then enable **BPE Embed Resize** in
+Obsidian. The helper automatically grows and shrinks this iframe as the
+animation or note width changes. Other Markdown hosts retain the fallback
+height unless they implement the same `bpe:height` message handler.
 
 ## Notes
 
