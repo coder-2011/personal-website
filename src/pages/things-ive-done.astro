@@ -1,4 +1,10 @@
 ---
+import { Image } from 'astro:assets';
+import stratusPoster from '../../public/projects/stratus-poster-real.png';
+import stratusAircraft from '../../public/projects/stratus-poster.jpg';
+import sbonDiagram from '../../public/projects/sbon-diagram.png';
+import noCircles from '../../public/reading/no-circles.png';
+import phoenixPoster from '../../public/projects/phoenix-uav-poster.png';
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const projects = [
@@ -38,12 +44,12 @@ const projects = [
     ],
     images: [
       {
-        src: "/projects/stratus-poster-real.png",
+        src: stratusPoster,
         alt: "STRATUS UAV project poster showing the wildfire UAV, modeling system, and project overview.",
         caption: "STRATUS project poster"
       },
       {
-        src: "/projects/stratus-poster.jpg",
+        src: stratusAircraft,
         alt: "STRATUS UAV aircraft photo.",
         caption: "STRATUS UAV airframe"
       }
@@ -58,7 +64,7 @@ const projects = [
       "Optimizing prescribed burns is unfortunately niche with < 20 papers in the last 30 yrs. Mine hit SOTA as the first deep learning approach to it."
     ],
     image: {
-      src: "/projects/sbon-diagram.png",
+      src: sbonDiagram,
       alt: "SBON system diagram showing the terrain, weather, fire, Mamba core, and decoder pipeline.",
       caption: "SBON architecture diagram"
     },
@@ -76,7 +82,7 @@ const projects = [
       "The system keeps a memory of the user, builds a brief from that memory, and updates future issues from replies and feedback to help teach the person about tangential fields they know little about. Scaled to triple-digit users 3 weeks from inception"
     ],
     image: {
-      src: "/reading/no-circles.png",
+      src: noCircles,
       alt: "No Circles product image.",
       caption: "No Circles"
     },
@@ -92,7 +98,7 @@ const projects = [
       "1st in category, 1st in fair, Henkel aerospace award, 1 of 3 selected for national competition, 1 out of 200 nationally winning Junior Lemelson-MIT Inventor Award, and 1 of 20 selected for state level competition."
     ],
     image: {
-      src: "/projects/phoenix-uav-poster.png",
+      src: phoenixPoster,
       alt: "PHOENIX UAV project poster for early wildfire detection.",
       caption: "PHOENIX UAV poster"
     },
@@ -146,7 +152,7 @@ const projects = [
                 <div class:list={["project-gallery", project.images.length > 1 && "project-gallery-multi"]}>
                   {project.images.map((image) => (
                     <figure class="project-figure">
-                      <img src={image.src} alt={image.alt} loading="lazy" />
+                      <Image src={image.src} alt={image.alt} widths={[480, 960, 1440]} sizes="(max-width: 760px) 92vw, 720px" width={1440} format="webp" quality={85} loading="lazy" />
                       {image.caption && <figcaption>{image.caption}</figcaption>}
                     </figure>
                   ))}
@@ -154,7 +160,7 @@ const projects = [
               )}
               {project.image && (
                 <figure class="project-figure">
-                  <img src={project.image.src} alt={project.image.alt} loading="lazy" />
+                  <Image src={project.image.src} alt={project.image.alt} widths={[480, 960, 1440]} sizes="(max-width: 760px) 92vw, 720px" width={1440} format="webp" quality={85} loading="lazy" />
                   {project.image.caption && <figcaption>{project.image.caption}</figcaption>}
                 </figure>
               )}
@@ -194,7 +200,7 @@ const projects = [
               <div class:list={["project-gallery", project.images.length > 1 && "project-gallery-multi"]}>
                 {project.images.map((image) => (
                   <figure class="project-figure">
-                    <img src={image.src} alt={image.alt} loading="lazy" />
+                    <Image src={image.src} alt={image.alt} widths={[480, 960, 1440]} sizes="(max-width: 760px) 92vw, 720px" width={1440} format="webp" quality={85} loading="lazy" />
                     {image.caption && <figcaption>{image.caption}</figcaption>}
                   </figure>
                 ))}
@@ -202,7 +208,7 @@ const projects = [
             )}
             {project.image && (
               <figure class="project-figure">
-                <img src={project.image.src} alt={project.image.alt} loading="lazy" />
+                <Image src={project.image.src} alt={project.image.alt} widths={[480, 960, 1440]} sizes="(max-width: 760px) 92vw, 720px" width={1440} format="webp" quality={85} loading="lazy" />
                 {project.image.caption && <figcaption>{project.image.caption}</figcaption>}
               </figure>
             )}
