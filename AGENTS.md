@@ -3,6 +3,7 @@
 ## 1) Source-of-truth model
 
 - `personal_website` is the detailed, editable source for your public content.
+- Obsidian-authored blog posts are edited in the vault. This repository owns their publishing plugin, privacy checks, rendering, and routes; private Blob storage holds the published revisions. Do not edit generated post HTML as source content.
 - `github.com/coder-2011/coder-2011` (`README.md`) is the compact profile copy.
 - Treat GitHub as a **minimal summary** of the stronger narrative already maintained on the website.
 
@@ -38,4 +39,5 @@
 ## 6) Version control
 
 - Make frequent, atomic commits in this repo so content updates are recoverable and reviewable.
+- Blog content updates go through the authenticated publishing API without Git commits or site rebuilds. Code changes still follow the repository's normal commit/deployment flow.
 - Keep commit messages descriptive and scoped to the smallest meaningful change.

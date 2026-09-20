@@ -1,0 +1,10 @@
+{
+  "id": "naman-publish",
+  "name": "Naman Publish",
+  "version": "1.0.0",
+  "minAppVersion": "1.11.4",
+  "description": "Publish selected notes to naman.world with live updates and privacy checks.",
+  "author": "Naman Chetwani",
+  "authorUrl": "https://naman.world",
+  "isDesktopOnly": true
+}

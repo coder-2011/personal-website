@@ -108,7 +108,29 @@ Run both suites with `node --test tests/bpe.test.mjs tests/unigram.test.mjs`.
 
 Both endpoints share the Vercel firewall limit described above.
 
-## Notes
+## Obsidian blog publishing
+
+`/blog` lists published notes and the existing essays; `/blogs` redirects there. `/blog/[slug]` renders the latest stored HTML on demand. Visible pages check for updates every three seconds. Existing essay URLs are preserved.
+
+The desktop plugin and its usage instructions live in [`obsidian-plugin/README.md`](obsidian-plugin/README.md). Notes are explicitly reviewed before first publication; subsequent approved saves can sync immediately. Both the plugin and server enforce the publication boundary in `src/lib/blog/`.
+
+The publishing API requires `BLOG_PUBLISH_TOKEN` (at least 32 characters) and `BLOB_READ_WRITE_TOKEN` for a private Vercel Blob store. `BLOG_NAMESPACE` separates environments; without an override only Vercel's production environment uses `production`, and other runtimes use `development`. Use `publishing-lab` locally. Never put these keys in browser code or tracked files.
+
+`POST /api/publish` renders and publishes a note; `GET` lists authenticated publication state; `DELETE` unpublishes it. Writes use stable note IDs, immutable revisions, and conditional index writes to reject stale replacements. Image uploads use `POST /api/publish/assets`, and public image reads require a reference from a current published post. Storage reads bypass the Blob CDN cache. Unpublished revisions remain private for recovery.
+
+Validation:
+
+```sh
+npm run plugin:check
+npm run plugin:build
+npm run test:blog
+npm run build
+node --env-file=.env.local scripts/blog/integration.mjs
+```
+
+The integration command requires a running local site at `127.0.0.1:4321`, or an explicit `BLOG_TEST_ORIGIN`. It creates and unpublishes a synthetic post and verifies authentication, images, privacy failures, stale updates, and immediate reads.
+
+## Site notes
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
 - Several `.agents/skills` files are tracked in this repo as local skill snapshots; they are not part of the website runtime.
