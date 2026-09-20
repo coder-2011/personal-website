@@ -2,13 +2,8 @@
 import "../styles/global.css";
 import '@fontsource-variable/inter/wght.css';
 import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
-import { getImage } from 'astro:assets';
-import siteIcon from '../../public/no-circles-logo.png';
 import Analytics from '@vercel/analytics/astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
-
-const favicon = await getImage({ src: siteIcon, width: 32, height: 32, format: 'png' });
-const touchIcon = await getImage({ src: siteIcon, width: 180, height: 180, format: 'png' });
 
 interface Props {
   title?: string;
@@ -39,8 +34,8 @@ const {
         document.querySelector('meta[name="theme-color"]').content = theme === "light" ? "#f7f2ed" : "#030303";
       })();
     </script>
-    <link rel="icon" type="image/png" href={favicon.src} sizes="32x32" />
-    <link rel="apple-touch-icon" href={touchIcon.src} sizes="180x180" />
+    <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <title>{title}</title>
     <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
     <Analytics />
