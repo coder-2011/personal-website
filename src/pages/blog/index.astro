@@ -22,7 +22,7 @@ if (!unavailable) for (const [key,value] of Object.entries(blogPageHeaders)) Ast
       <h1>Blog</h1>
       {unavailable && <p>Recent posts are temporarily unavailable. Please try again shortly.</p>}
       <ul class="plain-list blog-list">
-        {posts.map(post => <li><a data-astro-prefetch href={`/blog/${post.slug}`}>{post.title}</a><span class="wisdom-meta">{new Date(`${post.date}T12:00:00Z`).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric',timeZone:'UTC'})}</span>{post.description && <p>{post.description}</p>}</li>)}
+        {posts.map(post => <li data-post-id={post.id} data-revision={post.revision}><a data-astro-prefetch href={`/blog/${post.slug}`}>{post.title}</a><span class="wisdom-meta">{new Date(`${post.date}T12:00:00Z`).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric',timeZone:'UTC'})}</span>{post.description && <p>{post.description}</p>}</li>)}
         <li><a data-astro-prefetch href="/goodhartmaxxing">goodhartmaxxing</a><span class="wisdom-meta">May 13, 2026</span></li>
         <li><a data-astro-prefetch href="/alt-education">Alternative Education</a><span class="wisdom-meta">May 13, 2026</span></li>
       </ul>

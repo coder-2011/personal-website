@@ -5,8 +5,8 @@ import { PublishError, validateMetadata } from './privacy.mjs';
 import { json, refreshBlogCache } from './http.mjs';
 export { json, noCache } from './http.mjs';
 
-async function refreshPublishedPages() {
-  try { await refreshBlogCache(); }
+async function refreshPublishedPages(post) {
+  try { await refreshBlogCache(post); }
   catch { throw new PublishError('The post was saved, but refreshing the website failed. Retry to finish updating the public pages.', 503); }
 }
 
@@ -68,7 +68,7 @@ export async function publishingRequest(request, mode = 'posts') {
     if (request.method === 'DELETE') {
       if (!/^[a-f0-9-]{36}$/.test(input.id || '') || !/^[a-f0-9-]{36}$/.test(input.baseVersion || '')) throw new PublishError('Invalid post revision.');
       const post = await store.unpublish(input.id, input.baseVersion);
-      await refreshPublishedPages();
+      await refreshPublishedPages(post);
       return json({ post });
     }
     const meta = validateMetadata(input);
@@ -79,7 +79,7 @@ export async function publishingRequest(request, mode = 'posts') {
     if (assets.length > 30) throw new PublishError('Use at most 30 images per post.');
     for (const id of assets) if (!await store.assetExists(id)) throw new PublishError('An image upload is missing. Publish the note again.');
     const post = await store.publish({ ...meta, ...rendered, assets });
-    await refreshPublishedPages();
+    await refreshPublishedPages(post);
     return json({ post, url: `/blog/${post.slug}` });
   } catch (error) {
     if (error instanceof PublishError) return json({ error: error.message }, error.status);

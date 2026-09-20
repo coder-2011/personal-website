@@ -13,7 +13,7 @@ const send = (body, method='POST') => fetch(`${origin}/api/publish`,{method,head
 let version;
 try {
   assert.equal((await fetch(`${origin}/api/publish`)).status,401);
-  const image = await sharp({create:{width:16,height:16,channels:3,background:'#888'}}).jpeg().withMetadata({exif:{IFD0:{Artist:'PRIVATE-METADATA'}}}).toBuffer();
+  const image = await sharp({create:{width:16,height:16,channels:3,background:`#${id.slice(0,6)}`}}).jpeg().withMetadata({exif:{IFD0:{Artist:'PRIVATE-METADATA'}}}).toBuffer();
   const uploaded = await fetch(`${origin}/api/publish/assets`, {method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'image/jpeg'},body:image});
   assert.equal(uploaded.status,200,await uploaded.clone().text());
   const asset = await uploaded.json();
@@ -53,12 +53,13 @@ try {
   assert.equal((await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`)).status,204);
   console.log('Authentication, metadata stripping, stale-write rejection, privacy rejection, unchanged prior content, and removed-image access passed.');
 } finally {
-  if (version) {
-    const state=await (await fetch(`${origin}/api/publish`,{headers})).json();
-    const current=state.posts.find(p=>p.id===id);
-    const deleted=await send({id,baseVersion:current?.revision || version},'DELETE');
+  const state=await (await fetch(`${origin}/api/publish`,{headers})).json();
+  const current=state.posts.find(p=>p.id===id);
+  if (current?.published) {
+    const deleted=await send({id,baseVersion:current.revision},'DELETE');
     assert.equal(deleted.status,200,await deleted.clone().text());
-    assert.equal((await fetch(`${origin}/blog/${slug}`)).status,404);
+    const removed=await fetch(`${origin}/blog/${slug}`);
+    assert.equal(removed.status,404,`Unpublish read: ${JSON.stringify(Object.fromEntries(removed.headers))}`);
     assert.ok(!(await (await fetch(`${origin}/blog`)).text()).includes(`/blog/${slug}`), 'Unpublished post remains in cached index');
     console.log('Temporary post unpublished; its URL returns 404 and it is absent from the index.');
   }
