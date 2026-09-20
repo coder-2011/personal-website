@@ -19,11 +19,20 @@ try {
   const asset = await uploaded.json();
   assert.equal((await fetch(origin+asset.url)).status,404);
   const payload = {...meta,markdown:`# Verified\n\nPublished from a synthetic test.\n\n![Image](${asset.url})`};
+  await (await fetch(`${origin}/blog`)).text();
   const start=performance.now();
   const created=await send(payload);
   assert.equal(created.status,200,await created.clone().text());
   version=(await created.json()).post.revision;
-  assert.equal((await fetch(`${origin}/blog/${slug}`)).status,200);
+  const listed=await (await fetch(`${origin}/blog`)).text();
+  assert.ok(listed.includes(`/blog/${slug}`), 'New post missing from cached index');
+  for (let i=0;i<3;i++) {
+    const page=await fetch(`${origin}/blog/${slug}`);
+    assert.equal(page.status,200);
+    assert.match(await page.text(), /Published from a synthetic test/);
+    if (process.env.BLOG_EXPECT_CDN === '1' && i === 2) assert.equal(page.headers.get('x-vercel-cache'),'HIT');
+  }
+  await (await fetch(origin+asset.url)).arrayBuffer();
   const served=await fetch(origin+asset.url);
   assert.equal(served.status,200);
   const metadata=await sharp(Buffer.from(await served.arrayBuffer())).metadata();
@@ -33,6 +42,7 @@ try {
   const next=(await update.json()).post.revision;
   const previous=version;
   version=next;
+  assert.match(await (await fetch(`${origin}/blog/${slug}`)).text(), /Visible immediately/);
   const read=await fetch(`${origin}/api/blog/posts/${slug}`);
   assert.match((await read.json()).html,/Visible immediately/);
   console.log(`Create, image, update and immediate reads passed in ${Math.round(performance.now()-start)} ms.`);
@@ -49,6 +59,7 @@ try {
     const deleted=await send({id,baseVersion:current?.revision || version},'DELETE');
     assert.equal(deleted.status,200,await deleted.clone().text());
     assert.equal((await fetch(`${origin}/blog/${slug}`)).status,404);
-    console.log('Temporary post unpublished; its URL returns 404.');
+    assert.ok(!(await (await fetch(`${origin}/blog`)).text()).includes(`/blog/${slug}`), 'Unpublished post remains in cached index');
+    console.log('Temporary post unpublished; its URL returns 404 and it is absent from the index.');
   }
 }

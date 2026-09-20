@@ -1,11 +1,14 @@
 import { timingSafeEqual } from 'node:crypto';
-import sharp from 'sharp';
 import { blogStore } from './store.mjs';
-import { renderPost } from './render.mjs';
 import { PublishError, validateMetadata } from './privacy.mjs';
 
-export const noCache = { 'Cache-Control': 'private, no-store', 'CDN-Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
-export const json = (data, status = 200) => Response.json(data, { status, headers: noCache });
+import { json, refreshBlogCache } from './http.mjs';
+export { json, noCache } from './http.mjs';
+
+async function refreshPublishedPages() {
+  try { await refreshBlogCache(); }
+  catch { throw new PublishError('The post was saved, but refreshing the website failed. Retry to finish updating the public pages.', 503); }
+}
 
 function authenticate(request) {
   const secret = process.env.BLOG_PUBLISH_TOKEN;
@@ -45,6 +48,7 @@ export async function publishingRequest(request, mode = 'posts') {
       const bytes = await readBody(request, 3_500_000);
       let safe;
       try {
+        const { default: sharp } = await import('sharp');
         const image = sharp(bytes, { limitInputPixels: 25_000_000, animated: false });
         const metadata = await image.metadata();
         if (!['png', 'jpeg', 'webp'].includes(metadata.format)) throw new Error('format');
@@ -63,15 +67,19 @@ export async function publishingRequest(request, mode = 'posts') {
     if (!input || typeof input !== 'object' || Array.isArray(input)) throw new PublishError('Invalid post.', 400);
     if (request.method === 'DELETE') {
       if (!/^[a-f0-9-]{36}$/.test(input.id || '') || !/^[a-f0-9-]{36}$/.test(input.baseVersion || '')) throw new PublishError('Invalid post revision.');
-      return json({ post: await store.unpublish(input.id, input.baseVersion) });
+      const post = await store.unpublish(input.id, input.baseVersion);
+      await refreshPublishedPages();
+      return json({ post });
     }
     const meta = validateMetadata(input);
     if (typeof input.markdown !== 'string' || !input.markdown.trim() || Buffer.byteLength(input.markdown) > 250_000) throw new PublishError('Use between 1 and 250,000 bytes of Markdown.');
+    const { renderPost } = await import('./render.mjs');
     const rendered = await renderPost(input.markdown);
     const assets = [...new Set([...rendered.html.matchAll(/\/api\/blog\/assets\/([a-f0-9]{64})/g)].map(m => m[1]))];
     if (assets.length > 30) throw new PublishError('Use at most 30 images per post.');
     for (const id of assets) if (!await store.assetExists(id)) throw new PublishError('An image upload is missing. Publish the note again.');
     const post = await store.publish({ ...meta, ...rendered, assets });
+    await refreshPublishedPages();
     return json({ post, url: `/blog/${post.slug}` });
   } catch (error) {
     if (error instanceof PublishError) return json({ error: error.message }, error.status);

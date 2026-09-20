@@ -116,7 +116,7 @@ The desktop plugin and its usage instructions live in [`obsidian-plugin/README.m
 
 The publishing API requires `BLOG_PUBLISH_TOKEN` (at least 32 characters) and `BLOB_READ_WRITE_TOKEN` for a private Vercel Blob store. `BLOG_NAMESPACE` separates environments; without an override only Vercel's production environment uses `production`, and other runtimes use `development`. Use `publishing-lab` locally. Never put these keys in browser code or tracked files.
 
-`POST /api/publish` renders and publishes a note; `GET` lists authenticated publication state; `DELETE` unpublishes it. Writes use stable note IDs, immutable revisions, and conditional index writes to reject stale replacements. Image uploads use `POST /api/publish/assets`, and public image reads require a reference from a current published post. Storage reads bypass the Blob CDN cache. Unpublished revisions remain private for recovery.
+`POST /api/publish` renders and publishes a note; `GET` lists authenticated publication state; `DELETE` unpublishes it. Writes use stable note IDs, immutable revisions, and conditional index writes to reject stale replacements. Image uploads use `POST /api/publish/assets`, and public image reads require a reference from a current published post. Storage reads bypass the Blob CDN cache. Public HTML and images are cached on Vercel’s edge for up to one hour; successful publish and unpublish requests await a hard purge of the shared blog cache tag. Live polling and authenticated requests remain uncached. Failed cache refreshes return an error so the plugin retries the saved operation. Unpublished revisions remain private for recovery.
 
 Validation:
 
@@ -129,6 +129,12 @@ node --env-file=.env.local scripts/blog/integration.mjs
 ```
 
 The integration command requires a running local site at `127.0.0.1:4321`, or an explicit `BLOG_TEST_ORIGIN`. It creates and unpublishes a synthetic post and verifies authentication, images, privacy failures, stale updates, and immediate reads.
+
+## Page loading
+
+The main layout serves and preloads Inter as a local WOFF2 file, avoiding external font stylesheets. Primary navigation and blog links prefetch on hover. Tokenizer models, Markdown rendering, and image processing initialize only when their API needs them. An unchanged live poll reads only the current post index.
+
+`node scripts/blog/measure.mjs POST_SLUG` reports first and repeated HTTP response timings. These are network response measurements, not browser paint measurements. Run `BLOG_EXPECT_CDN=1 BLOG_TEST_ORIGIN=https://naman.world node --env-file=.env.local scripts/blog/integration.mjs` to verify actual cache hits, then immediate update and unpublish behavior against production using a temporary synthetic post.
 
 ## Site notes
 

@@ -1,5 +1,7 @@
 ---
 import "../styles/global.css";
+import '@fontsource-variable/inter/wght.css';
+import interFont from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import Analytics from '@vercel/analytics/astro';
 import ThemeToggle from '../components/ThemeToggle.astro';
 
@@ -35,12 +37,7 @@ const {
     <link rel="icon" type="image/png" href="/no-circles-logo.png" />
     <link rel="apple-touch-icon" href="/no-circles-logo.png" />
     <title>{title}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
     <Analytics />
   </head>
   <body>

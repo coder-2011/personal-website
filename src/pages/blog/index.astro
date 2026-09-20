@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { blogStore } from '../../lib/blog/store.mjs';
+import { blogPageHeaders } from '../../lib/blog/http.mjs';
 export const prerender = false;
 Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('CDN-Cache-Control', 'no-store');
@@ -8,21 +9,22 @@ let unavailable = false;
 let posts = [];
 try { posts = (await blogStore().list()).filter(p => p.published).sort((a,b) => b.date.localeCompare(a.date)); }
 catch { unavailable = true; Astro.response.status = 503; }
+if (!unavailable) for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);
 ---
 <BaseLayout title="Blog | Naman Chetwani" description="Notes and essays by Naman Chetwani.">
   <main class="page">
     <div class="page-top"><nav class="top-nav" aria-label="Primary">
-      <a class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
-      <a class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
-      <a class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
+      <a data-astro-prefetch class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
+      <a data-astro-prefetch class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
+      <a data-astro-prefetch class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
     </nav></div>
     <article class="essay about-essay">
       <h1>Blog</h1>
       {unavailable && <p>Recent posts are temporarily unavailable. Please try again shortly.</p>}
       <ul class="plain-list blog-list">
-        {posts.map(post => <li><a href={`/blog/${post.slug}`}>{post.title}</a><span class="wisdom-meta">{new Date(`${post.date}T12:00:00Z`).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric',timeZone:'UTC'})}</span>{post.description && <p>{post.description}</p>}</li>)}
-        <li><a href="/goodhartmaxxing">goodhartmaxxing</a><span class="wisdom-meta">May 13, 2026</span></li>
-        <li><a href="/alt-education">Alternative Education</a><span class="wisdom-meta">May 13, 2026</span></li>
+        {posts.map(post => <li><a data-astro-prefetch href={`/blog/${post.slug}`}>{post.title}</a><span class="wisdom-meta">{new Date(`${post.date}T12:00:00Z`).toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric',timeZone:'UTC'})}</span>{post.description && <p>{post.description}</p>}</li>)}
+        <li><a data-astro-prefetch href="/goodhartmaxxing">goodhartmaxxing</a><span class="wisdom-meta">May 13, 2026</span></li>
+        <li><a data-astro-prefetch href="/alt-education">Alternative Education</a><span class="wisdom-meta">May 13, 2026</span></li>
       </ul>
     </article>
   </main>

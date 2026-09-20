@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { blogStore } from '../../lib/blog/store.mjs';
+import { blogPageHeaders } from '../../lib/blog/http.mjs';
 import 'katex/dist/katex.min.css';
 import '../../styles/blog.css';
 export const prerender = false;
@@ -12,13 +13,14 @@ let unavailable = false;
 try { post = await blogStore().post(Astro.params.slug); }
 catch { unavailable = true; }
 if (!post) Astro.response.status = unavailable ? 503 : 404;
+else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);
 ---
 <BaseLayout title={`${post?.title || 'Post unavailable'} | Naman Chetwani`} description={post?.description || 'Notes and essays by Naman Chetwani.'}>
   <main class="page blog-page">
     <div class="page-top"><nav class="top-nav" aria-label="Primary">
-      <a class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
-      <a class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
-      <a class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
+      <a data-astro-prefetch class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
+      <a data-astro-prefetch class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
+      <a data-astro-prefetch class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
     </nav></div>
     <article class="essay blog-post" data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>

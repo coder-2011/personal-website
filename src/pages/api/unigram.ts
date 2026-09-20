@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
-import { handleUnigramRequest } from '../../lib/unigram/api.mjs';
 
 export const prerender = false;
-export const ALL: APIRoute = ({ request }) => handleUnigramRequest(request);
+export const ALL: APIRoute = async ({ request }) => {
+  const { handleUnigramRequest } = await import('../../lib/unigram/api.mjs');
+  return handleUnigramRequest(request);
+};

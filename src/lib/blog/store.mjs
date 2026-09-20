@@ -56,9 +56,10 @@ export function createBlogStore(blobs, prefix = 'blog') {
       return { changed: true, entry };
     });
   }
-  async function post(slug) {
+  async function post(slug, knownRevision) {
     const entry = (await list()).find(p => p.slug === slug && p.published);
     if (!entry) return null;
+    if (knownRevision === entry.revision) return { revision: entry.revision };
     const value = await blobs.read(`${prefix}/revisions/${entry.id}/${entry.revision}.json`);
     if (!value) throw new Error('Published revision is missing.');
     return JSON.parse(value.text);

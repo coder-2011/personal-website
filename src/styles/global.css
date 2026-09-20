@@ -44,12 +44,6 @@
   }
 }
 
-@font-face {
-  font-family: "Geist";
-  src: url("https://assets.codepen.io/605876/GeistVF.ttf") format("truetype");
-  font-display: swap;
-}
-
 * {
   box-sizing: border-box;
 }
@@ -68,7 +62,7 @@ body {
     var(--bg);
   background-size: 100% 100%;
   color: var(--text);
-  font-family: "Inter", sans-serif;
+  font-family: "Inter Variable", sans-serif;
 }
 
 body.site-cursor-active,

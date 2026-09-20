@@ -103,3 +103,15 @@ test('publishing fails closed without a key and rejects unauthenticated requests
     assert.equal((await publishingRequest(new Request('https://naman.world/api/publish'))).status,401);
   } finally { if (saved) process.env.BLOG_PUBLISH_TOKEN=saved; else delete process.env.BLOG_PUBLISH_TOKEN; }
 });
+
+test('unchanged polling checks the current index without reading the post body', async () => {
+  const {store, values} = fixture();
+  const input = postInput();
+  const post = await store.publish(input);
+  // A missing body proves the unchanged check did not fetch it; fresh reads still fail closed.
+  for (const key of values.keys()) if (key.includes('/revisions/')) values.delete(key);
+  assert.deepEqual(await store.post(input.slug, post.revision), {revision:post.revision});
+  await assert.rejects(store.post(input.slug), /missing/);
+  await store.unpublish(input.id,post.revision);
+  assert.equal(await store.post(input.slug,post.revision),null);
+});
