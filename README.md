@@ -138,6 +138,22 @@ Tokenizer embeds include their default example, generated from the real models d
 
 `node scripts/blog/measure.mjs POST_SLUG` reports first and repeated HTTP response timings. These are network response measurements, not browser paint measurements. Run `BLOG_EXPECT_CDN=1 BLOG_TEST_ORIGIN=https://naman.world node --env-file=.env.local scripts/blog/integration.mjs` to verify actual cache hits, then immediate update and unpublish behavior against production using a temporary synthetic post.
 
+## Analytics
+
+[Vercel Web Analytics dashboard](https://vercel.com/coder-2011s-projects/personal-website/analytics)
+shows site visitors, page views, traffic sources, countries, and devices. Use the
+Pages panel to select a specific `/blog/post-slug` and see its readership; new
+published posts are tracked automatically. Visitors and page views are separate:
+one visitor can read several pages or reload the same page.
+
+`@vercel/analytics` initializes once through `src/scripts/analytics.mjs`, injected
+into every Astro page by `astro.config.mjs`. The shared script is deferred and
+cached as a hashed asset. It only collects on `naman.world` and `www.naman.world`;
+local development, preview domains, iframe views, and the `/zoom` OAuth callback
+are excluded. Query strings and fragments are removed before sending page URLs.
+Raw embed HTML, API calls, and direct file downloads are not page views. There is
+no session replay, form capture, or note-content tracking.
+
 ## Site notes
 
 - The site intentionally has a sparse, dark, personal visual style rather than a generic portfolio template.
