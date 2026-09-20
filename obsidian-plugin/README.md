@@ -22,11 +22,12 @@ Turn live sync off before making edits you do not want immediately public. Faile
 - Common local paths, `file:` / `obsidian:` URLs, private network addresses, encoded variants, and recognizable credentials block publication, including inside code blocks and public metadata. Errors identify the line and category without repeating sensitive text.
 - Links to published notes become stable website links. Links to unpublished notes become plain text; following a link never publishes its destination.
 - PNG, JPEG and WebP attachments are resolved inside the vault and re-encoded locally before upload, stripping filenames and EXIF/GPS metadata. The server validates and re-encodes them again. Uploaded images are private until referenced by a published post, and cease being served when no current published post references them.
+- SVG attachments stay vector. Both the plugin and server remove comments and editor metadata, scan decoded text and attributes for private paths, and reject scripts, external resources, embedded HTML, and animation. Static shapes, text, gradients, internal references, filters, and presentation styles are supported.
 - The server repeats the text checks and sanitizes rendered HTML. JavaScript and arbitrary iframe embeds are rejected; the two public naman.world tokenizer embeds are explicitly supported.
 
 These checks cannot determine whether ordinary prose or pixels in an image are confidential. The first-publication review is still essential. Private revisions are retained in the storage account; unpublishing removes the live route and image access, not copies readers may already have saved.
 
-Supported: Markdown, GFM tables/task lists, code highlighting, footnotes, math, callouts, published-note heading links, raster images, and tokenizer iframes. Embedded notes, block references, PDFs, SVGs, canvases, Dataview and Mermaid blocks produce a clear error instead of silently publishing incorrect content. Convert these to ordinary Markdown or supported images first.
+Supported: Markdown, GFM tables/task lists, code highlighting, footnotes, math, callouts, published-note heading links, raster images, SVG attachments, and tokenizer iframes. Embedded notes, block references, PDFs, canvases, Dataview and Mermaid blocks produce a clear error instead of silently publishing incorrect content. Convert these to ordinary Markdown or supported images first.
 
 ## Development and installation
 

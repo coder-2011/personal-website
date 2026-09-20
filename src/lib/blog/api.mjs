@@ -44,17 +44,25 @@ export async function publishingRequest(request, mode = 'posts') {
     authenticate(request);
     const store = blogStore();
     if (mode === 'assets' && request.method === 'POST') {
-      if (!/^image\/(png|jpeg|webp)$/.test(request.headers.get('content-type') || '')) throw new PublishError('Only PNG, JPEG, and WebP images are supported.');
+      const contentType = (request.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+      if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(contentType)) throw new PublishError('Only PNG, JPEG, WebP, and SVG images are supported.');
       const bytes = await readBody(request, 3_500_000);
       let safe;
-      try {
+      const svg = contentType === 'image/svg+xml';
+      if (svg) {
+        const { sanitizeSvg } = await import('./svg.mjs');
+        let source;
+        try { source = new TextDecoder('utf-8', { fatal: true }).decode(bytes); }
+        catch { throw new PublishError('Use a UTF-8 encoded SVG.'); }
+        safe = Buffer.from(sanitizeSvg(source));
+      } else try {
         const { default: sharp } = await import('sharp');
         const image = sharp(bytes, { limitInputPixels: 25_000_000, animated: false });
         const metadata = await image.metadata();
         if (!['png', 'jpeg', 'webp'].includes(metadata.format)) throw new Error('format');
         safe = await image.rotate().webp({ quality: 90 }).toBuffer();
       } catch { throw new PublishError('This image could not be safely decoded. Use a PNG, JPEG, or WebP under 25 megapixels.'); }
-      const id = await store.putAsset(safe);
+      const id = await store.putAsset(safe, svg ? 'image/svg+xml' : 'image/webp');
       return json({ id, url: `/api/blog/assets/${id}` });
     }
     if (mode !== 'posts') return json({error:'Use POST.'}, 405);

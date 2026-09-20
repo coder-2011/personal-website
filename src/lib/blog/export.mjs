@@ -23,12 +23,12 @@ export async function exportNote(source, { resolveNote, asset } = {}) {
       return embed ? { type: 'image', url: target, alt: label || 'Image' } : { type: 'link', url: target, children: [{ type: 'text', value: label || target }] };
     }
     const [path, fragment] = target.split('#');
-    if (embed && /\.(?:png|jpe?g|webp)$/i.test(path)) {
+    if (embed && /\.(?:png|jpe?g|webp|svg)$/i.test(path)) {
       if (!asset) throw new PublishError('An image has not been uploaded.');
       const url = await asset(path);
       return { type: 'image', url, alt: label && !/^\d+(?:x\d+)?$/.test(label) ? label : 'Image' };
     }
-    if (embed) throw new PublishError('Embedded notes, PDFs, canvases, and other files need to be converted to text or a PNG/JPEG/WebP image before publishing.');
+    if (embed) throw new PublishError('Embedded notes, PDFs, canvases, and other files need to be converted to text or a PNG/JPEG/WebP/SVG image before publishing.');
     if (!path && fragment) return { type: 'link', url: `#${headingSlug(fragment)}`, children: [{type:'text', value:label || fragment}] };
     const published = await resolveNote?.(path);
     if (!published) {

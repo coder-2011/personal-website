@@ -64,9 +64,9 @@ export function createBlogStore(blobs, prefix = 'blog') {
     if (!value) throw new Error('Published revision is missing.');
     return JSON.parse(value.text);
   }
-  async function putAsset(bytes) {
+  async function putAsset(bytes, contentType = 'image/webp') {
     const id = digest(bytes);
-    await blobs.write(`${prefix}/assets/${id}`, bytes, undefined, 'image/webp', true);
+    await blobs.write(`${prefix}/assets/${id}`, bytes, undefined, contentType, true);
     return id;
   }
   async function assetExists(id) { return !!await blobs.read(`${prefix}/assets/${id}`, true); }
@@ -88,7 +88,7 @@ export function blogStore() {
       const result = await get(path, { access: 'private', useCache: false, token, headers: { 'Accept-Encoding': 'identity' } });
       if (!result || result.statusCode !== 200) return null;
       const response = new Response(result.stream);
-      return binary ? { bytes: new Uint8Array(await response.arrayBuffer()), etag: result.blob.etag }
+      return binary ? { bytes: new Uint8Array(await response.arrayBuffer()), contentType: result.blob.contentType, etag: result.blob.etag }
         : { text: await response.text(), etag: result.blob.etag };
     },
     async write(path, content, etag, contentType = 'application/json', immutable = false) {

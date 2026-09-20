@@ -1,4 +1,5 @@
 import { App, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, requestUrl, parseYaml, getFrontMatterInfo } from 'obsidian';
+import { sanitizeSvg } from '../src/lib/blog/svg.mjs';
 import { exportNote } from '../src/lib/blog/export.mjs';
 import { validateMetadata, assertPublicText } from '../src/lib/blog/privacy.mjs';
 
@@ -6,7 +7,7 @@ type Post = { id: string; slug: string; title: string; date: string; description
 type Saved = { path: string; revision: string | null; slug: string; hash: string; assets: string[]; status: string; approved: boolean };
 type Data = { site: string; secretId: string; posts: Record<string, Saved> };
 type Metadata = { id: string; slug: string; title: string; date: string; description: string; baseVersion: string | null };
-type Image = { path: string; bytes: ArrayBuffer; placeholder: string };
+type Image = { path: string; bytes: ArrayBuffer; type: string; placeholder: string };
 type Prepared = { meta: Metadata; markdown: string; warnings: string[]; images: Image[]; hash: string };
 
 const day = () => new Date().toISOString().slice(0, 10);
@@ -120,21 +121,27 @@ export default class NamanPublish extends Plugin {
         assertPublicText(path, 'Image reference');
         if (path.split('/').some(s => s.startsWith('.')) || path.includes('\\')) throw new Error('Images must be visible files inside the vault.');
         const image = this.app.metadataCache.getFirstLinkpathDest(path, file.path);
-        if (!image || !['png','jpg','jpeg','webp'].includes(image.extension.toLowerCase())) throw new Error('An embedded image is missing or unsupported.');
+        if (!image || !['png','jpg','jpeg','webp','svg'].includes(image.extension.toLowerCase())) throw new Error('An embedded image is missing or unsupported.');
         if (image.stat.size > 3_500_000) throw new Error('Keep each image below 3.5 MB.');
         if (imageByPath.has(image.path)) return imageByPath.get(image.path)!;
         const input = await this.app.vault.readBinary(image);
-        const bitmap = await createImageBitmap(new Blob([input]));
-        if (bitmap.width * bitmap.height > 25_000_000) { bitmap.close(); throw new Error('Keep images below 25 megapixels.'); }
-        const canvas = document.createElement('canvas');
-        canvas.width = bitmap.width; canvas.height = bitmap.height;
-        canvas.getContext('2d')!.drawImage(bitmap, 0, 0); bitmap.close();
-        // Re-encoding before upload strips EXIF, GPS, and original filenames locally.
-        const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Could not prepare image.')), 'image/webp', .92));
-        const bytes = await blob.arrayBuffer();
+        let bytes: ArrayBuffer;
+        const type = image.extension.toLowerCase() === 'svg' ? 'image/svg+xml' : 'image/webp';
+        if (type === 'image/svg+xml') {
+          bytes = new TextEncoder().encode(sanitizeSvg(new TextDecoder('utf-8', {fatal:true}).decode(input))).buffer;
+        } else {
+          const bitmap = await createImageBitmap(new Blob([input]));
+          if (bitmap.width * bitmap.height > 25_000_000) { bitmap.close(); throw new Error('Keep images below 25 megapixels.'); }
+          const canvas = document.createElement('canvas');
+          canvas.width = bitmap.width; canvas.height = bitmap.height;
+          canvas.getContext('2d')!.drawImage(bitmap, 0, 0); bitmap.close();
+          // Re-encoding before upload strips EXIF, GPS, and original filenames locally.
+          const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('Could not prepare image.')), 'image/webp', .92));
+          bytes = await blob.arrayBuffer();
+        }
         if (bytes.byteLength > 3_500_000) throw new Error('The prepared image exceeds 3.5 MB.');
         const placeholder = `/api/blog/assets/${await hash(bytes)}`;
-        images.push({ path: image.path, bytes, placeholder });
+        images.push({ path: image.path, bytes, type, placeholder });
         imageByPath.set(image.path, placeholder);
         return placeholder;
       },
@@ -153,7 +160,7 @@ export default class NamanPublish extends Plugin {
     let markdown = prepared.markdown;
     // All text checks and all image preparation have succeeded before the first upload.
     for (const image of prepared.images) {
-      const uploaded = await this.api('/assets', 'POST', image.bytes, 'image/webp');
+      const uploaded = await this.api('/assets', 'POST', image.bytes, image.type);
       markdown = markdown.split(image.placeholder).join(uploaded.url);
     }
     if (this.stopped) return;
@@ -271,7 +278,7 @@ class PublishModal extends Modal {
         for (const warning of prepared.warnings) preview.createEl('p', { text: warning, cls: 'naman-publish-warning' });
         preview.createEl('pre', { text: prepared.markdown, cls: 'naman-publish-preview' });
         for (const image of prepared.images) {
-          const url = URL.createObjectURL(new Blob([image.bytes], {type:'image/webp'})); this.urls.push(url);
+          const url = URL.createObjectURL(new Blob([image.bytes], {type:image.type})); this.urls.push(url);
           preview.createEl('img', { attr: {src:url, alt:'Image to publish'}, cls:'naman-publish-image' });
         }
         new Setting(preview).addButton(publish => publish.setButtonText('Publish now').setCta().onClick(async () => {

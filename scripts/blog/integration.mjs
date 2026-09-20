@@ -18,7 +18,14 @@ try {
   assert.equal(uploaded.status,200,await uploaded.clone().text());
   const asset = await uploaded.json();
   assert.equal((await fetch(origin+asset.url)).status,404);
-  const payload = {...meta,markdown:`# Verified\n\nPublished from a synthetic test.\n\n![Image](${asset.url})`};
+  const svgHeaders = {Authorization:`Bearer ${token}`,'Content-Type':'image/svg+xml'};
+  const badSvg = await fetch(`${origin}/api/publish/assets`, {method:'POST',headers:svgHeaders,body:'<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>'});
+  assert.equal(badSvg.status,422);
+  const vectorUpload = await fetch(`${origin}/api/publish/assets`, {method:'POST',headers:svgHeaders,body:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60"><!-- private editor comment --><metadata>private source metadata</metadata><rect fill="#${id.slice(0,6)}" width="120" height="60"/><text x="10" y="30">Vector diagram</text></svg>`});
+  assert.equal(vectorUpload.status,200,await vectorUpload.clone().text());
+  const vector=await vectorUpload.json();
+  assert.equal((await fetch(origin+vector.url)).status,404);
+  const payload = {...meta,markdown:`# Verified\n\nPublished from a synthetic test.\n\n![Image](${asset.url})\n\n![Vector](${vector.url})`};
   await (await fetch(`${origin}/blog`)).text();
   const start=performance.now();
   const created=await send(payload);
@@ -37,6 +44,12 @@ try {
   assert.equal(served.status,200);
   const metadata=await sharp(Buffer.from(await served.arrayBuffer())).metadata();
   assert.equal(metadata.exif,undefined); assert.equal(metadata.xmp,undefined);
+  const vectorRead=await fetch(origin+vector.url);
+  assert.equal(vectorRead.headers.get('content-type'),'image/svg+xml');
+  assert.match(vectorRead.headers.get('content-security-policy'),/sandbox/);
+  const vectorText=await vectorRead.text();
+  assert.match(vectorText, /Vector diagram/);
+  assert.doesNotMatch(vectorText,/private|metadata|<!--/);
   const update=await send({...payload,baseVersion:version,markdown:'# Updated\n\nVisible immediately.'});
   assert.equal(update.status,200,await update.clone().text());
   const next=(await update.json()).post.revision;
@@ -50,6 +63,7 @@ try {
   assert.equal((await send({...payload,baseVersion:version,markdown:'Local /Users/test/private.md'})).status,422);
   assert.match((await (await fetch(`${origin}/api/blog/posts/${slug}`)).json()).html,/Visible immediately/);
   assert.equal((await fetch(origin+asset.url)).status,404);
+  assert.equal((await fetch(origin+vector.url)).status,404);
   assert.equal((await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`)).status,204);
   console.log('Authentication, metadata stripping, stale-write rejection, privacy rejection, unchanged prior content, and removed-image access passed.');
 } finally {
