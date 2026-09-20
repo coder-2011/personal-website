@@ -36,12 +36,12 @@ if (!post) Astro.response.status = unavailable ? 503 : 404;
     let delay = 3000;
     try {
       if (!document.hidden) {
-        const response = await fetch(`/api/blog/posts/${article.dataset.slug}`, { headers: { 'If-None-Match': revision || '' }, cache: 'no-store', signal: AbortSignal.timeout(8000) });
+        const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (response.status === 404) {
           document.getElementById('post-title')!.textContent = 'Post no longer available';
           document.getElementById('post-body')!.textContent = 'This post has been unpublished.';
           stopped = true;
-        } else if (response.ok && response.status !== 304) {
+        } else if (response.ok && response.status !== 204) {
           const post = await response.json();
           if (post.revision !== revision) {
             document.getElementById('post-title')!.textContent = post.title;
@@ -51,7 +51,7 @@ if (!post) Astro.response.status = unavailable ? 503 : 404;
             document.title = `${post.title} | Naman Chetwani`;
             revision = post.revision;
           }
-        } else if (response.status !== 304) delay = 15000;
+        } else if (response.status !== 204) delay = 15000;
       }
     } catch { delay = 15000; }
     if (!stopped) timer = setTimeout(update, delay);

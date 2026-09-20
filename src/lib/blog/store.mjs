@@ -83,7 +83,8 @@ export function blogStore() {
   if (!/^[a-z0-9-]+$/.test(namespace)) throw new Error('Invalid blog namespace.');
   return createBlogStore({
     async read(path, binary = false) {
-      const result = await get(path, { access: 'private', useCache: false, token });
+      // Compression changes the HTTP ETag to a weak validator, which Blob rejects on conditional writes.
+      const result = await get(path, { access: 'private', useCache: false, token, headers: { 'Accept-Encoding': 'identity' } });
       if (!result || result.statusCode !== 200) return null;
       const response = new Response(result.stream);
       return binary ? { bytes: new Uint8Array(await response.arrayBuffer()), etag: result.blob.etag }

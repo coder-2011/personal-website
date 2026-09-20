@@ -252,12 +252,14 @@ class PublishModal extends Modal {
     try { meta = this.plugin.metadata(file, this.plugin.frontmatter(file)); }
     catch (error) { el.createEl('p', {text: error instanceof Error ? error.message : 'Could not prepare this note.'}); return; }
     let live = this.plugin.frontmatter(file).blog_live !== false;
-    new Setting(el).setName('Title').addText(input => input.setValue(meta.title).onChange(value => {meta.title = value;}));
-    new Setting(el).setName('URL').setDesc(`${this.plugin.data.site}/blog/`).addText(input => { input.setValue(meta.slug).setDisabled(!!this.plugin.data.posts[meta.id]?.revision).onChange(value => {meta.slug = value;}); });
-    new Setting(el).setName('Date').addText(input => { input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value;}); });
-    new Setting(el).setName('Description').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value;}));
-    new Setting(el).setName('Live sync').setDesc('Saved edits go live while Obsidian is open.').addToggle(toggle => toggle.setValue(live).onChange(value => {live = value;}));
+    let invalidate = () => {};
+    new Setting(el).setName('Title').addText(input => input.setValue(meta.title).onChange(value => {meta.title = value; invalidate();}));
+    new Setting(el).setName('URL').setDesc(`${this.plugin.data.site}/blog/`).addText(input => { input.setValue(meta.slug).setDisabled(!!this.plugin.data.posts[meta.id]?.revision).onChange(value => {meta.slug = value; invalidate();}); });
+    new Setting(el).setName('Date').addText(input => { input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value; invalidate();}); });
+    new Setting(el).setName('Description').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value; invalidate();}));
+    new Setting(el).setName('Live sync').setDesc('Saved edits go live while Obsidian is open.').addToggle(toggle => toggle.setValue(live).onChange(value => {live = value; invalidate();}));
     const preview = el.createDiv();
+    invalidate = () => preview.empty();
     const actions = new Setting(el);
     actions.addButton(button => button.setButtonText('Review publication').setCta().onClick(async () => {
       button.setDisabled(true); preview.empty();

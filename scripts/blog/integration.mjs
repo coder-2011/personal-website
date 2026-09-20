@@ -7,7 +7,7 @@ const token = process.env.BLOG_PUBLISH_TOKEN;
 if (!token) throw new Error('Set BLOG_PUBLISH_TOKEN.');
 const id = randomUUID();
 const slug = `publishing-check-${id.slice(0,8)}`;
-const meta = {id,slug,title:'Publishing verification',date:'2026-09-20',description:'A temporary synthetic integration check.',baseVersion:null};
+const meta = {id,slug,title:'Publishing verification',date:new Date().toISOString().slice(0,10),description:'A temporary synthetic integration check. '.repeat(12).trim(),baseVersion:null};
 const headers = {Authorization:`Bearer ${token}`, 'Content-Type':'application/json'};
 const send = (body, method='POST') => fetch(`${origin}/api/publish`,{method,headers,body:JSON.stringify(body)});
 let version;
@@ -31,19 +31,22 @@ try {
   const update=await send({...payload,baseVersion:version,markdown:'# Updated\n\nVisible immediately.'});
   assert.equal(update.status,200,await update.clone().text());
   const next=(await update.json()).post.revision;
+  const previous=version;
+  version=next;
   const read=await fetch(`${origin}/api/blog/posts/${slug}`);
   assert.match((await read.json()).html,/Visible immediately/);
   console.log(`Create, image, update and immediate reads passed in ${Math.round(performance.now()-start)} ms.`);
-  assert.equal((await send({...payload,baseVersion:version,markdown:'Stale'})).status,409);
-  version=next;
+  assert.equal((await send({...payload,baseVersion:previous,markdown:'Stale'})).status,409);
   assert.equal((await send({...payload,baseVersion:version,markdown:'Local /Users/test/private.md'})).status,422);
   assert.match((await (await fetch(`${origin}/api/blog/posts/${slug}`)).json()).html,/Visible immediately/);
   assert.equal((await fetch(origin+asset.url)).status,404);
-  assert.equal((await fetch(`${origin}/api/blog/posts/${slug}`,{headers:{'If-None-Match':version}})).status,304);
+  assert.equal((await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`)).status,204);
   console.log('Authentication, metadata stripping, stale-write rejection, privacy rejection, unchanged prior content, and removed-image access passed.');
 } finally {
   if (version) {
-    const deleted=await send({id,baseVersion:version},'DELETE');
+    const state=await (await fetch(`${origin}/api/publish`,{headers})).json();
+    const current=state.posts.find(p=>p.id===id);
+    const deleted=await send({id,baseVersion:current?.revision || version},'DELETE');
     assert.equal(deleted.status,200,await deleted.clone().text());
     assert.equal((await fetch(`${origin}/blog/${slug}`)).status,404);
     console.log('Temporary post unpublished; its URL returns 404.');
