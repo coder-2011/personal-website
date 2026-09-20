@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { blogStore } from '../../lib/blog/store.mjs';
+import 'katex/dist/katex.min.css';
+import '../../styles/blog.css';
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+Astro.response.headers.set('CDN-Cache-Control', 'no-store');
+Astro.response.headers.set('Referrer-Policy', 'no-referrer');
+let post = null;
+let unavailable = false;
+try { post = await blogStore().post(Astro.params.slug); }
+catch { unavailable = true; }
+if (!post) Astro.response.status = unavailable ? 503 : 404;
+---
+<BaseLayout title={`${post?.title || 'Post unavailable'} | Naman Chetwani`} description={post?.description || 'Notes and essays by Naman Chetwani.'}>
+  <main class="page blog-page">
+    <div class="page-top"><nav class="top-nav" aria-label="Primary">
+      <a class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
+      <a class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
+      <a class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
+    </nav></div>
+    <article class="essay blog-post" data-slug={post?.slug} data-revision={post?.revision}>
+      <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
+      {post ? <><p class="wisdom-meta"><time id="post-date" datetime={post.date}>{post.date}</time></p><div id="post-body" set:html={post.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
+    </article>
+  </main>
+</BaseLayout>
+<script>
+  const article = document.querySelector<HTMLElement>('.blog-post');
+  let revision = article?.dataset.revision;
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout>;
+  async function update() {
+    if (stopped || !article?.dataset.slug) return;
+    let delay = 3000;
+    try {
+      if (!document.hidden) {
+        const response = await fetch(`/api/blog/posts/${article.dataset.slug}`, { headers: { 'If-None-Match': revision || '' }, cache: 'no-store', signal: AbortSignal.timeout(8000) });
+        if (response.status === 404) {
+          document.getElementById('post-title')!.textContent = 'Post no longer available';
+          document.getElementById('post-body')!.textContent = 'This post has been unpublished.';
+          stopped = true;
+        } else if (response.ok && response.status !== 304) {
+          const post = await response.json();
+          if (post.revision !== revision) {
+            document.getElementById('post-title')!.textContent = post.title;
+            document.getElementById('post-date')!.textContent = post.date;
+            document.getElementById('post-date')!.setAttribute('datetime', post.date);
+            document.getElementById('post-body')!.innerHTML = post.html;
+            document.title = `${post.title} | Naman Chetwani`;
+            revision = post.revision;
+          }
+        } else if (response.status !== 304) delay = 15000;
+      }
+    } catch { delay = 15000; }
+    if (!stopped) timer = setTimeout(update, delay);
+  }
+  timer = setTimeout(update, 3000);
+  window.addEventListener('pagehide', () => { stopped = true; clearTimeout(timer); });
+  window.addEventListener('pageshow', event => {
+    if (event.persisted) { stopped = false; clearTimeout(timer); void update(); }
+  });
+</script>

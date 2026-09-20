@@ -14,6 +14,11 @@
       "source": "/resume",
       "destination": "/resume.pdf",
       "permanent": false
+    },
+    {
+      "source": "/blogs",
+      "destination": "/blog",
+      "permanent": true
     }
   ],
   "headers": [
