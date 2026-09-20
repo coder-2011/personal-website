@@ -132,7 +132,9 @@ The integration command requires a running local site at `127.0.0.1:4321`, or an
 
 ## Page loading
 
-The main layout serves and preloads Inter as a local WOFF2 file, avoiding external font stylesheets. Browser icons are generated at 32 and 180 pixels (`node scripts/optimize-icons.mjs` after changing the source logo), and project images use responsive WebP variants generated at build time. Primary navigation and blog links prefetch on hover. Tokenizer models, Markdown rendering, and image processing initialize only when their API needs them. An unchanged live poll reads only the current post index.
+The main layout serves and preloads Inter as a local WOFF2 file, avoiding external font stylesheets. Browser icons are generated at 32 and 180 pixels (`node scripts/optimize-icons.mjs` after changing the source logo), and project images use responsive WebP variants generated at build time. Primary navigation prefetches after page load; blog post links prefetch on hover. Slow connections and data-saving preferences are respected. Tokenizer models, Markdown rendering, and image processing initialize only when their API needs them. An unchanged live poll reads only the current post index. Shared scripts are separate hashed assets; analytics initializes once. The cursor batches pointer events and stops animation frames when stationary, hidden, or on a touch device.
+
+Tokenizer embeds include their default example, generated from the real models during `npm run build`, so the initial view makes no API request. Each embed keeps up to four recent results in memory for repeated inputs. `node scripts/build-embed-examples.mjs` refreshes those examples and their CSP hashes after editing an embed.
 
 `node scripts/blog/measure.mjs POST_SLUG` reports first and repeated HTTP response timings. These are network response measurements, not browser paint measurements. Run `BLOG_EXPECT_CDN=1 BLOG_TEST_ORIGIN=https://naman.world node --env-file=.env.local scripts/blog/integration.mjs` to verify actual cache hits, then immediate update and unpublish behavior against production using a temporary synthetic post.
 

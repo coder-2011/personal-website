@@ -10,7 +10,8 @@
     "preview": "astro preview --host --port 3000",
     "plugin:build": "node obsidian-plugin/build.mjs",
     "plugin:check": "tsc -p obsidian-plugin/tsconfig.json",
-    "test:blog": "node --test tests/blog*.test.mjs"
+    "test:blog": "node --test tests/blog*.test.mjs",
+    "prebuild": "node scripts/build-embed-examples.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "6.3.11",
