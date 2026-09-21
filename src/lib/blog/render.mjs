@@ -20,9 +20,10 @@ function callouts() {
 const schema = {
   ...defaultSchema,
   clobberPrefix: '',
-  tagNames: [...defaultSchema.tagNames, 'iframe'],
+  tagNames: [...defaultSchema.tagNames, 'iframe', 'caption'],
   attributes: {
     ...defaultSchema.attributes,
+    '*': [...(defaultSchema.attributes['*'] || []), 'style'],
     code: [...(defaultSchema.attributes.code || []), ['className', /^language-/, 'math-inline', 'math-display']],
     span: ['className', 'style'],
     pre: ['className', 'style', 'tabIndex'],

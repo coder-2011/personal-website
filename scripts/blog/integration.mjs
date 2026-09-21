@@ -25,7 +25,7 @@ try {
   assert.equal(vectorUpload.status,200,await vectorUpload.clone().text());
   const vector=await vectorUpload.json();
   assert.equal((await fetch(origin+vector.url)).status,404);
-  const payload = {...meta,markdown:`# Verified\n\nPublished from a synthetic test.\n\n![Image](${asset.url})\n\n![Vector](${vector.url})`};
+  const payload = {...meta,markdown:`# Verified\n\nPublished from a synthetic test.\n\n<span style="color:gray;font-size:.8em">Styled text</span>\n\n<table style="border-collapse:collapse"><caption>Styled table</caption><tr><td style="padding:.35rem .7rem;border:1px solid gray">Cell</td></tr></table>\n\n![Image](${asset.url})\n\n![Vector](${vector.url})`};
   await (await fetch(`${origin}/blog`)).text();
   const start=performance.now();
   const created=await send(payload);
@@ -36,7 +36,11 @@ try {
   for (let i=0;i<3;i++) {
     const page=await fetch(`${origin}/blog/${slug}`);
     assert.equal(page.status,200);
-    assert.match(await page.text(), /Published from a synthetic test/);
+    const html=await page.text();
+    assert.match(html, /Published from a synthetic test/);
+    assert.ok(html.includes('style="color:gray;font-size:.8em"'));
+    assert.ok(html.includes('<caption>Styled table</caption>'));
+    assert.ok(html.includes('style="padding:.35rem .7rem;border:1px solid gray"'));
     if (process.env.BLOG_EXPECT_CDN === '1' && i === 2) assert.equal(page.headers.get('x-vercel-cache'),'HIT');
   }
   await (await fetch(origin+asset.url)).arrayBuffer();
@@ -61,6 +65,7 @@ try {
   console.log(`Create, image, update and immediate reads passed in ${Math.round(performance.now()-start)} ms.`);
   assert.equal((await send({...payload,baseVersion:previous,markdown:'Stale'})).status,409);
   assert.equal((await send({...payload,baseVersion:version,markdown:'Local /Users/test/private.md'})).status,422);
+  assert.equal((await send({...payload,baseVersion:version,markdown:'<span style="background:url(https://example.com/tracker)">Unsafe CSS</span>'})).status,422);
   assert.match((await (await fetch(`${origin}/api/blog/posts/${slug}`)).json()).html,/Visible immediately/);
   assert.equal((await fetch(origin+asset.url)).status,404);
   assert.equal((await fetch(origin+vector.url)).status,404);

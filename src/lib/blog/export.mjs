@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import remarkStringify from 'remark-stringify';
 import { slug as headingSlug } from 'github-slugger';
 import { PublishError, stripPrivateContent, assertPublicText, publicUrl } from './privacy.mjs';
+import { validateHtmlStyles } from './html.mjs';
 
 const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).use(remarkStringify, { fences: true, bullet: '-' });
 
@@ -50,8 +51,10 @@ export async function exportNote(source, { resolveNote, asset } = {}) {
           const src = node.value.match(/\bsrc\s*=\s*["']([^"']+)["']/i)?.[1];
           if (!/^https:\/\/naman\.world\/embeds\/(bpe|unigram)\.html$/.test(src || '')) throw new PublishError('Only the public naman.world tokenizer iframes are supported.');
           node.value = `<iframe src="${src}" title="Tokenizer animation" sandbox="allow-scripts allow-forms" referrerpolicy="no-referrer" loading="lazy"></iframe>`;
-        } else if (/<\/?(?:script|style|object|embed|form|input|base|meta|link)\b|\bon\w+\s*=|\b(?:src|href|srcset|style)\s*=/i.test(node.value)) {
-          throw new PublishError('Use Markdown for links and images; executable or styled HTML cannot be published.');
+        } else if (/<\/?(?:script|style|object|embed|form|input|base|meta|link)\b|\bon\w+\s*=|\b(?:src|href|srcset)\s*=/i.test(node.value)) {
+          throw new PublishError('Scripts, event handlers, and active HTML cannot be published. Use Markdown for links and images.');
+        } else {
+          validateHtmlStyles(node.value);
         }
       }
       if (node.type === 'text' && /!?\[\[/.test(node.value)) {
