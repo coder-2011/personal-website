@@ -1,7 +1,28 @@
-.naman-publish-modal { min-width: min(680px, 80vw); }
+.modal.naman-publish-dialog { width: 760px; max-width: calc(100vw - 32px); }
+.naman-publish-modal { min-width: 0; overflow-wrap: anywhere; }
+.naman-publish-modal .setting-item-info { min-width: 0; }
+.naman-publish-modal .setting-item-control { flex-wrap: wrap; gap: 8px; }
+.naman-publish-modal input[type="text"],
+.naman-publish-modal textarea { width: 100%; min-width: 0; }
+.naman-publish-modal textarea { min-height: 80px; resize: vertical; }
+.naman-publish-search { width: 100%; margin-bottom: 12px; }
+.naman-publish-posts { max-height: 32vh; overflow-y: auto; }
+.naman-publish-post.setting-item { flex-direction: column; align-items: stretch; gap: 10px; }
+.naman-publish-post .setting-item-info { margin-right: 0; }
+.naman-publish-post .setting-item-control { justify-content: flex-start; }
+.naman-publish-footer { position: sticky; bottom: 0; background: var(--background-primary); padding-top: 16px; }
+.naman-publish-note { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-bottom: 1px solid var(--background-modifier-border); cursor: pointer; }
+.naman-publish-note:hover { background: var(--background-modifier-hover); }
+.naman-publish-note > input { flex-shrink: 0; margin: 0; }
+.naman-publish-note > div { min-width: 0; }
+.naman-publish-note .naman-publish-muted { font-size: var(--font-ui-smaller); margin-top: 3px; }
+@media (max-width: 600px) {
+  .naman-publish-modal .setting-item { flex-wrap: wrap; gap: 8px; }
+  .naman-publish-modal .setting-item-control { min-width: 0; }
+}
 .naman-publish-muted { color: var(--text-muted); }
 .naman-publish-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 350px; overflow: auto; padding: 1rem; background: var(--background-secondary); border-radius: 6px; font-size: .85em; }
 .naman-publish-image { display: block; max-width: 100%; max-height: 240px; margin: 1rem auto; }
-.naman-publish-notes { max-height: 300px; overflow: auto; }
+.naman-publish-notes { max-height: 32vh; overflow-y: auto; }
 .naman-publish-error { color: var(--text-error); }
 .naman-publish-warning { color: var(--text-warning); }

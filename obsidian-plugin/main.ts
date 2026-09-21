@@ -246,7 +246,7 @@ export default class NamanPublish extends Plugin {
 class PublishModal extends Modal {
   index = 0;
   urls: string[] = [];
-  constructor(app: App, private plugin: NamanPublish, private files: TFile[]) { super(app); }
+  constructor(app: App, private plugin: NamanPublish, private files: TFile[]) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
   onOpen() { void this.show(); }
   onClose() { this.urls.forEach(URL.revokeObjectURL); this.contentEl.empty(); }
   async show() {
@@ -300,21 +300,88 @@ class PublishModal extends Modal {
 
 class PublishPanel extends Modal {
   selected = new Set<TFile>();
-  constructor(app: App, private plugin: NamanPublish) { super(app); }
-  async onOpen() {
+  generation = 0;
+  constructor(app: App, private plugin: NamanPublish) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
+  onClose() { this.generation++; this.contentEl.empty(); }
+  onOpen() {
+    const generation = ++this.generation;
     const el = this.contentEl; el.empty(); el.addClass('naman-publish-modal');
     el.createEl('h2', { text: 'Publish to naman.world' });
-    const message = el.createEl('p', {text:'Loading published notes…'});
-    try { await this.plugin.refresh(); message.remove(); }
-    catch (error) { message.setText(error instanceof Error ? error.message : 'Could not connect.'); }
-    el.createEl('h3', { text: 'Published notes' });
+    const heading = new Setting(el).setName('Published notes').setHeading();
+    const message = el.createEl('p', {cls:'naman-publish-muted', attr:{role:'status'}});
+    const published = el.createDiv({cls:'naman-publish-posts'});
+    heading.addButton(button => {
+      const refresh = async () => {
+        button.setDisabled(true); message.setText('Loading published notes…');
+        message.removeClass('naman-publish-error');
+        try {
+          await this.plugin.refresh();
+          if (generation !== this.generation) return;
+          message.setText(this.plugin.remote.some(p => p.published) ? '' : 'No published notes yet. Select a note below to get started.');
+          this.drawPublished(published);
+        } catch (error) {
+          if (generation !== this.generation) return;
+          message.setText(`${error instanceof Error ? error.message : 'Could not connect.'} Published notes below may be out of date.`);
+          message.addClass('naman-publish-error');
+        } finally { button.setDisabled(false); }
+      };
+      button.setButtonText('Refresh').onClick(refresh);
+      void refresh();
+    });
+    this.drawPublished(published);
+    el.createEl('h3', {text:'Select notes'});
+    const search = el.createEl('input', {cls:'naman-publish-search', type:'search', attr:{placeholder:'Find a note by name or folder', 'aria-label':'Find a note'}});
+    const notes = el.createDiv({cls:'naman-publish-notes'});
+    const footer = new Setting(el).setClass('naman-publish-footer');
+    const files = this.app.vault.getMarkdownFiles().sort((a,b) => a.path.localeCompare(b.path));
+    for (const file of this.selected) if (!files.includes(file)) this.selected.delete(file);
+    footer.addButton(review => {
+      const updateSelection = () => {
+        footer.setName(`${this.selected.size} ${this.selected.size === 1 ? 'note' : 'notes'} selected`);
+        review.setDisabled(!this.selected.size);
+      };
+      const draw = () => {
+        notes.empty();
+        const matches = files.filter(f => f.path.toLowerCase().includes(search.value.trim().toLowerCase()));
+        for (const file of matches.slice(0,60)) {
+          const label = notes.createEl('label', {cls:'naman-publish-note'});
+          const checkbox = label.createEl('input', {type:'checkbox'});
+          checkbox.checked = this.selected.has(file);
+          const text = label.createDiv();
+          text.createDiv({text:file.basename});
+          text.createDiv({text:file.path, cls:'naman-publish-muted'});
+          checkbox.addEventListener('change', () => {
+            if (checkbox.checked) this.selected.add(file); else this.selected.delete(file);
+            updateSelection();
+          });
+        }
+        if (!matches.length) notes.createEl('p', {text:'No matching notes.', cls:'naman-publish-muted'});
+        if (matches.length > 60) notes.createEl('p', {text:`Showing 60 of ${matches.length} notes. Search to narrow the list.`, cls:'naman-publish-muted'});
+      };
+      search.addEventListener('input', draw);
+      review.setButtonText('Review selected notes').setCta().onClick(() => {
+        if (!this.selected.size) return;
+        this.close(); new PublishModal(this.app, this.plugin, [...this.selected]).open();
+      });
+      footer.addButton(clear => clear.setButtonText('Clear selection').onClick(() => {
+        this.selected.clear(); draw(); updateSelection();
+      }));
+      draw(); updateSelection();
+    });
+  }
+  drawPublished(el: HTMLElement) {
+    el.empty();
     for (const post of this.plugin.remote.filter(p => p.published)) {
       const saved = this.plugin.data.posts[post.id];
       const file = saved && this.app.vault.getAbstractFileByPath(saved.path);
-      const row = new Setting(el).setName(post.title).setDesc(saved?.status || `/blog/${post.slug}`);
+      const row = new Setting(el).setClass('naman-publish-post').setName(post.title).setDesc(`/blog/${post.slug}${saved?.status ? ` · ${saved.status}` : ''}`);
       row.addButton(b => b.setButtonText('Open').onClick(() => window.open(`${this.plugin.data.site}/blog/${post.slug}`)));
-      row.addButton(b => b.setButtonText('Copy link').onClick(() => { void navigator.clipboard.writeText(`${this.plugin.data.site}/blog/${post.slug}`); new Notice('Link copied'); }));
+      row.addButton(b => b.setButtonText('Copy link').onClick(async () => {
+        try { await navigator.clipboard.writeText(`${this.plugin.data.site}/blog/${post.slug}`); new Notice('Link copied'); }
+        catch { new Notice('Could not copy the link.'); }
+      }));
       if (file instanceof TFile) {
+        row.controlEl.createSpan({text:'Live sync', cls:'naman-publish-muted'});
         row.addToggle(t => t.setTooltip('Live sync').setValue(this.plugin.frontmatter(file).blog_live === true).onChange(async enabled => {
           await this.app.fileManager.processFrontMatter(file, fm => {fm.blog_live = enabled;});
           if (enabled) this.plugin.schedule(file);
@@ -338,20 +405,7 @@ class PublishPanel extends Modal {
         })); confirm.open();
       }));
     }
-    el.createEl('h3', {text:'Select notes'});
-    const search = el.createEl('input', {type:'search', attr:{placeholder:'Find a note', 'aria-label':'Find a note'}});
-    const notes = el.createDiv({cls:'naman-publish-notes'});
-    const draw = () => {
-      notes.empty();
-      const files = this.app.vault.getMarkdownFiles().filter(f => f.path.toLowerCase().includes(search.value.toLowerCase())).sort((a,b) => a.basename.localeCompare(b.basename));
-      for (const file of files.slice(0,60)) new Setting(notes).setName(file.basename).addToggle(t => t.setValue(this.selected.has(file)).onChange(value => {if (value) this.selected.add(file); else this.selected.delete(file);}));
-      if (files.length > 60) notes.createEl('p', {text:'Search to narrow the list.'});
-    };
-    search.addEventListener('input', draw); draw();
-    new Setting(el).addButton(b => b.setButtonText('Review selected notes').setCta().onClick(() => {
-      if (!this.selected.size) {new Notice('Select at least one note.'); return;}
-      this.close(); new PublishModal(this.app, this.plugin, [...this.selected]).open();
-    }));
+
   }
 }
 
