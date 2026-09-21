@@ -1,0 +1,35 @@
+import { parseFragment, serialize, serializeOuter } from 'parse5';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import { visit } from 'unist-util-visit';
+
+const parser = unified().use(remarkParse);
+const labels = { js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript', rust: 'Rust', rs: 'Rust', py: 'Python', python: 'Python', json: 'JSON', html: 'HTML', css: 'CSS', cpp: 'C++', 'c++': 'C++', c: 'C', sh: 'Shell', bash: 'Bash', shell: 'Shell', zsh: 'Zsh', sql: 'SQL', yaml: 'YAML', yml: 'YAML', md: 'Markdown', markdown: 'Markdown', text: 'Plain text', txt: 'Plain text', plaintext: 'Plain text' };
+const textContent = node => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(textContent).join('');
+const codeKey = value => value.replace(/\n+$/, '');
+
+// Decorate stored HTML on read, so existing posts get controls without republishing
+// or running the syntax highlighter again. Match text rather than block positions:
+// math and raw HTML can change the number of blocks between Markdown and HTML.
+export function presentPost(html, markdown) {
+  if (!html.includes('<pre') || html.includes('<div class="blog-code-block">')) return html;
+  const languages = new Map();
+  visit(parser.parse(markdown), 'code', node => {
+    const key = codeKey(node.value);
+    const values = languages.get(key) || [];
+    const language = node.lang?.toLowerCase() || 'text';
+    values.push(labels[language] || (/^[a-z0-9_+#.-]{1,40}$/i.test(language) ? language : 'Plain text'));
+    languages.set(key, values);
+  });
+  const tree = parseFragment(html);
+  function decorate(parent) {
+    parent.childNodes = (parent.childNodes || []).map(node => {
+      const code = node.tagName === 'pre' && node.childNodes.find(child => child.tagName === 'code');
+      if (!code) { if (node.childNodes) decorate(node); return node; }
+      const language = languages.get(codeKey(textContent(code)))?.shift() || 'Plain text';
+      return parseFragment(`<div class="blog-code-block"><div class="blog-code-header"><span>${language}</span><button class="blog-code-copy" type="button" aria-label="Copy code" aria-live="polite" hidden>Copy</button></div>${serializeOuter(node)}</div>`).childNodes[0];
+    });
+  }
+  decorate(tree);
+  return serialize(tree);
+}

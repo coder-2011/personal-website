@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw';
 import { visit } from 'unist-util-visit';
 import { exportNote } from './export.mjs';
 import { assertPublicText } from './privacy.mjs';
+import { presentPost } from './presentation.mjs';
 
 function callouts() {
   return tree => visit(tree, 'blockquote', node => {
@@ -42,6 +43,7 @@ export async function renderPost(markdown) {
     shikiConfig: { theme: 'github-dark' },
   });
   const rendered = await (await processor).render(result.markdown);
-  assertPublicText(rendered.code, 'Rendered post');
-  return { markdown: result.markdown, html: rendered.code };
+  const html = presentPost(rendered.code, result.markdown);
+  assertPublicText(html, 'Rendered post');
+  return { markdown: result.markdown, html };
 }

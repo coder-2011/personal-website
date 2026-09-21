@@ -1,7 +1,23 @@
-.blog-page { max-width: 960px; }
-.blog-post { overflow-wrap: anywhere; }
+.page.blog-page { width: min(100%, 1040px); max-width: none; }
+.essay.blog-post { width: min(100%, 56rem); margin-inline: auto; overflow-wrap: anywhere; }
+.blog-post > h1 { max-width: none; }
+.blog-post #post-body { color: var(--muted); font-size: 1.08rem; line-height: 1.9; }
+.blog-post #post-body p { font-size: inherit; line-height: inherit; }
+.blog-post #post-body :is(h2, h3, h4, h5, h6) { color: var(--text); line-height: 1.3; margin-top: 2.5rem; }
+.blog-post h2 { font-size: 1.5rem; }
+.blog-post h3 { font-size: 1.2rem; }
+.blog-post :is(ul, ol) { padding-left: 1.5em; margin-block: 1.4rem; }
+.blog-post li + li { margin-top: .45rem; }
+.blog-post li > :is(ul, ol) { margin-block: .6rem; }
 .blog-post img { display: block; max-width: 100%; height: auto; margin: 1.5rem auto; }
 .blog-post pre { overflow-x: auto; padding: 1.15rem; border-radius: 5px; font-size: .85rem; line-height: 1.65; }
+.blog-code-block { margin-block: 1.5rem; border: 1px solid var(--border); border-radius: 5px; overflow: hidden; }
+.blog-code-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1rem; background: var(--border); color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.blog-code-copy { border: 1px solid var(--border); border-radius: 3px; padding: .3rem .65rem; background: transparent; color: var(--text); cursor: pointer; }
+.blog-code-copy:hover { background: var(--border); }
+.blog-code-copy:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.blog-post .blog-code-block pre { margin: 0; border-radius: 0; }
+.blog-post pre > code { font-size: inherit; }
 .blog-post code { font-size: .9em; }
 .blog-post :not(pre) > code { background: var(--border); padding: .1em .25em; border-radius: 3px; }
 .blog-post table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5rem 0; }
@@ -13,3 +29,6 @@
 .blog-post h2, .blog-post h3, .blog-post h4 { scroll-margin-top: 2rem; }
 .blog-post .footnotes { font-size: .85rem; border-top: 1px solid var(--border); margin-top: 3rem; }
 .blog-post input[type=checkbox] { margin-right: .4rem; }
+@media (max-width: 860px) {
+  .blog-post #post-body { font-size: 1rem; line-height: 1.8; }
+}
