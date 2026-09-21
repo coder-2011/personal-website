@@ -6,6 +6,7 @@ import remarkStringify from 'remark-stringify';
 import { slug as headingSlug } from 'github-slugger';
 import { PublishError, stripPrivateContent, assertPublicText, publicUrl } from './privacy.mjs';
 import { validateHtmlStyles } from './html.mjs';
+import { separateTableParagraphs } from './tables.mjs';
 
 const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).use(remarkStringify, { fences: true, bullet: '-' });
 
@@ -13,7 +14,7 @@ const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).use(rem
 export async function exportNote(source, { resolveNote, asset } = {}) {
   const clean = stripPrivateContent(source);
   assertPublicText(clean);
-  const tree = parser.parse(clean);
+  const tree = parser.parse(separateTableParagraphs(clean));
   const definitions = new Map();
   const warnings = new Set();
   for (const node of tree.children) if (node.type === 'definition') definitions.set(node.identifier, node);

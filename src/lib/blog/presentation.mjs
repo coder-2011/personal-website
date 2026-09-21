@@ -12,9 +12,11 @@ const codeKey = value => value.replace(/\n+$/, '');
 // or running the syntax highlighter again. Match text rather than block positions:
 // math and raw HTML can change the number of blocks between Markdown and HTML.
 export function presentPost(html, markdown) {
-  if (!html.includes('<pre') || html.includes('<div class="blog-code-block">')) return html;
+  const needsCode = html.includes('<pre') && !html.includes('<div class="blog-code-block">');
+  const needsTables = html.includes('<table') && !html.includes('<div class="blog-table-scroll"');
+  if (!needsCode && !needsTables) return html;
   const languages = new Map();
-  visit(parser.parse(markdown), 'code', node => {
+  if (needsCode) visit(parser.parse(markdown), 'code', node => {
     const key = codeKey(node.value);
     const values = languages.get(key) || [];
     const language = node.lang?.toLowerCase() || 'text';
@@ -24,6 +26,17 @@ export function presentPost(html, markdown) {
   const tree = parseFragment(html);
   function decorate(parent) {
     parent.childNodes = (parent.childNodes || []).map(node => {
+      const classes = node.attrs?.find(attr => attr.name === 'class')?.value.split(/\s+/) || [];
+      if (classes.includes('blog-code-block') || classes.includes('blog-table-scroll')) return node;
+      if (node.tagName === 'table') {
+        decorate(node);
+        const wrapper = parseFragment('<div class="blog-table-scroll" role="region" aria-label="Table" tabindex="0"></div>').childNodes[0];
+        const caption = node.childNodes.find(child => child.tagName === 'caption');
+        if (caption) wrapper.attrs.find(attr => attr.name === 'aria-label').value = textContent(caption);
+        wrapper.childNodes = [node];
+        node.parentNode = wrapper;
+        return wrapper;
+      }
       const code = node.tagName === 'pre' && node.childNodes.find(child => child.tagName === 'code');
       if (!code) { if (node.childNodes) decorate(node); return node; }
       const language = languages.get(codeKey(textContent(code)))?.shift() || 'Plain text';

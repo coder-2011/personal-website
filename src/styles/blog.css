@@ -20,8 +20,15 @@
 .blog-post pre > code { font-size: inherit; }
 .blog-post code { font-size: .9em; }
 .blog-post :not(pre) > code { background: var(--border); padding: .1em .25em; border-radius: 3px; }
-.blog-post table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5rem 0; }
-.blog-post th, .blog-post td { border-bottom: 1px solid var(--border); padding: .6rem .9rem; text-align: left; }
+.blog-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; margin-block: 1.5rem; }
+.blog-table-scroll:focus-visible { outline: 2px solid var(--soft); outline-offset: 3px; }
+.blog-post table { width: 100%; border-collapse: collapse; overflow-wrap: normal; font-size: .94rem; line-height: 1.55; font-variant-numeric: tabular-nums; }
+.blog-post th, .blog-post td { border-bottom: 1px solid var(--border); padding: .6rem .8rem; text-align: left; vertical-align: top; }
+.blog-post th { color: var(--text); font-weight: 600; }
+.blog-post :is(th, td)[align="right"] { text-align: right; }
+.blog-post :is(th, td)[align="center"] { text-align: center; }
+.blog-post table code { white-space: nowrap; }
+.blog-post caption { color: var(--text); padding-bottom: .6rem; font-weight: 600; }
 .blog-post blockquote { border-left: 2px solid var(--soft); margin: 1.5rem 0; padding: .2rem 1.3rem; color: var(--muted); }
 .blog-post .blog-callout { background: var(--border); border-radius: 3px; }
 .blog-post iframe { width: 100%; height: 1080px; border: 0; border-radius: 5px; }
