@@ -16,6 +16,7 @@
 .naman-publish-note > input { flex-shrink: 0; margin: 0; }
 .naman-publish-note > div { min-width: 0; }
 .naman-publish-note .naman-publish-muted { font-size: var(--font-ui-smaller); margin-top: 3px; }
+.naman-publish-draft + .naman-publish-draft { margin-top: 24px; padding-top: 8px; border-top: 1px solid var(--background-modifier-border); }
 @media (max-width: 600px) {
   .naman-publish-modal .setting-item { flex-wrap: wrap; gap: 8px; }
   .naman-publish-modal .setting-item-control { min-width: 0; }

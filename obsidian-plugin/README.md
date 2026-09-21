@@ -6,12 +6,12 @@ Select a note, review exactly what will leave the vault, and publish it to `nama
 
 1. Right-click a note → **Publish to naman.world**, or run **Naman Publish: Publish current note** from the command palette.
 2. Set the public title, stable URL, date, description, and whether saved edits should sync automatically.
-3. Choose **Review publication**. Review the exported Markdown, link warnings, and images, then **Publish now**.
-4. Click the send icon or **Naman Publish: Manage published notes** to select multiple notes, open posts, copy links, pause live sync, or unpublish.
+3. Choose **Review publication**. Review the exported Markdown, link warnings, and images, then **Publish now**. With multiple notes, enter each note's details, choose **Review all notes**, then **Publish all N notes**. Every note must pass the privacy checks before the batch can start. If an upload fails, the result shows how many succeeded and retries only the remaining notes.
+4. Click the send icon or **Naman Publish: Manage published notes** to select multiple notes, edit their public details, open posts, copy links, pause live sync, or unpublish.
 
 The plugin stores its publishing key in Obsidian Secret Storage. The API authenticates every write; the browser receives no credentials. Only notes first approved through the plugin are automatically synced, even if another note already has `publish: true`.
 
-Published notes receive `publish`, `blog_id`, `blog_slug`, `blog_title`, `blog_date`, `blog_description`, and `blog_live` properties. Renaming or moving the note keeps its URL. The URL is locked after first publication. Setting `publish: false` unpublishes an approved note. Local deletion pauses syncing and leaves an explicit unpublish action in the panel rather than turning an accidental local deletion into immediate public removal.
+Publishing information is entered in the dialog and stored in this vault's plugin data, including the note's identity, public title, URL, date, description, and live-sync setting. Publishing, pausing, and unpublishing do not modify the Markdown file. A note needs no frontmatter. Existing `blog_*` properties remain usable as initial defaults for older publications; after a reviewed publication, the plugin's saved details take precedence. Keep the plugin data when moving a vault to another computer. Renaming or moving a note within the vault keeps its URL, which is locked after first publication. Use the panel to pause or unpublish. Local deletion pauses syncing and leaves an explicit unpublish action rather than turning an accidental deletion into immediate public removal.
 
 Turn live sync off before making edits you do not want immediately public. Failed checks leave the prior website version intact. Network failures retry on reconnect and every 30 seconds; ordinary saves start immediately. Conflicting revisions require reviewing the local note before replacing the remote copy.
 
