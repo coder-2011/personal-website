@@ -34,6 +34,7 @@ test('loads Cloudflare analytics once with manual SPA tracking disabled', () => 
   assert.equal(scripts.length, 1);
   assert.equal(scripts[0].src, 'https://static.cloudflareinsights.com/beacon.min.js');
   assert.equal(scripts[0].defer, true);
+  assert.equal(scripts[0].type, 'module');
   assert.equal(scripts[0].referrerPolicy, 'no-referrer');
   assert.deepEqual(JSON.parse(scripts[0].dataset.cfBeacon),{token:'a'.repeat(32),spa:false});
 });
@@ -43,7 +44,9 @@ test('excludes development, previews, callbacks, and frames before loading the t
     'http://localhost:3000/',
     'https://naman-world.naman-world.workers.dev/blog/test',
     'https://naman.world/zoom?code=secret',
+    'https://naman.world/zoom/?code=secret',
     'https://naman.world/api/publish',
+    'https://naman.world/embeds/bpe.html',
   ]) assert.equal(load(url).scripts.length, 0, url);
   assert.equal(load('https://naman.world/', { embedded: true }).scripts.length, 0);
   assert.equal(load('https://www.naman.world/').scripts.length, 1);

@@ -5,10 +5,12 @@ const url = new URL(window.location.href);
 // OAuth callback, previews, APIs, or iframe copies of an article.
 if (/^[a-f0-9]{32}$/.test(token || '') && window.self === window.top &&
     ['naman.world', 'www.naman.world'].includes(url.hostname) &&
-    url.pathname !== '/zoom' && !url.pathname.startsWith('/api/') &&
+    !/^\/zoom\/?$/.test(url.pathname) && !url.pathname.startsWith('/api/') &&
+    !url.pathname.startsWith('/embeds/') &&
     !document.head.querySelector('script[data-site-analytics]')) {
   const script = document.createElement('script');
   script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  script.type = 'module';
   script.defer = true;
   script.dataset.siteAnalytics = 'cloudflare';
   script.dataset.cfBeacon = JSON.stringify({ token, spa: false });

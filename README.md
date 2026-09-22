@@ -52,7 +52,8 @@ The Astro Cloudflare adapter builds a Worker and static assets. `wrangler.jsonc`
 contains the account, private R2 bucket, Images binding, and tokenizer rate limit.
 Runtime secrets (`BLOG_PUBLISH_TOKEN`, `OPENROUTER_API_KEY`) live in Worker secrets;
 `.dev.vars` holds local equivalents and `BLOG_NAMESPACE="development"` (gitignored).
-`PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` is a public build-time Web Analytics site token.
+`PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` in `.env.production` is a public build-time Web
+Analytics site token, not a credential.
 
 ```bash
 npx wrangler login
@@ -176,7 +177,7 @@ Vercel analytics remain in Vercel; new visits are collected by Cloudflare.
 `src/scripts/analytics.mjs` loads Cloudflare's deferred beacon once on production
 hosts. Local development, previews, iframe views, APIs, and the `/zoom` OAuth
 callback are excluded. Cloudflare Web Analytics does not log query strings.
-Use manual installation in the dashboard to avoid injecting a second beacon.
+The dashboard is configured for manual installation to avoid injecting a second beacon.
 Raw embed HTML and downloads are not counted as page views.
 
 ## Site notes
