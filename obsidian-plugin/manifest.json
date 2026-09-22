@@ -1,7 +1,7 @@
 {
   "id": "naman-publish",
   "name": "Naman Publish",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "minAppVersion": "1.11.4",
   "description": "Publish selected notes to naman.world with live updates and privacy checks.",
   "author": "Naman Chetwani",

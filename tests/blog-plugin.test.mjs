@@ -16,6 +16,7 @@ class Element {
   empty() { this.children = []; }
   addClass(...names) { names.forEach(name => this.classes.add(name)); }
   removeClass(name) { this.classes.delete(name); }
+  addEventListener() {}
   setAttribute(name, value) { this.attributes[name] = value; }
   *walk() { yield this; for (const child of this.children) yield* child.walk(); }
 }
@@ -54,7 +55,7 @@ class Modal {
 const output = await build({entryPoints:['obsidian-plugin/main.ts'], bundle:true, write:false, format:'cjs', platform:'node', external:['obsidian','css-tree']});
 const module = {exports:{}};
 vm.runInNewContext(output.outputFiles[0].text, {
-  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob, Error,
+  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob, Error, window:{setInterval:() => 0},
   require(name) {
     if (name !== 'obsidian') return createRequire(import.meta.url)(name);
     return {Plugin, Modal, Setting, TFile, Notice:class {}, PluginSettingTab:class {},
@@ -445,4 +446,58 @@ test('live edits during a details upload wait and retain the newly saved metadat
   assert.equal(f.requests.at(-1).body.title, 'New public title');
   assert.match(f.requests.at(-1).body.markdown, /Text edited while details are uploading/);
   assert.equal(f.plugin.live(f.files[0]), true);
+});
+
+
+test('folders and mixed selections fail before reading notes or uploading anything', async () => {
+  const f = fixture(['Safe.md']);
+  let reads = 0;
+  f.app.vault.read = async () => {reads++; throw new Error('Must not read a folder');};
+  const folder = {path:'Private.md', name:'Private.md', extension:'md', children:[f.files[0]]};
+  const attachment = new TFile('picture.png'); attachment.extension = 'png';
+  for (const invalid of [folder, attachment]) {
+    for (const files of [[invalid], [f.files[0], invalid]]) {
+      const modal = new PublishModal(f.app, f.plugin, files);
+      modal.onOpen();
+      assert.equal(button(modal, 'Review publication'), undefined);
+      assert.equal(button(modal, 'Review all notes'), undefined);
+      assert.match([...modal.contentEl.walk()].map(el => el.text || '').join(' '), /Folders cannot be published/);
+    }
+    await assert.rejects(f.plugin.prepare(invalid), /Folders cannot be published/);
+    await assert.rejects(f.plugin.publish(invalid, {}, false), /Folders cannot be published/);
+    f.plugin.schedule(invalid);
+  }
+  assert.equal(reads, 0);
+  assert.equal(f.requests.length, 0);
+  assert.equal(f.plugin.pending.size, 0);
+});
+
+test('context menus offer publishing only for selections entirely made of Markdown files', async () => {
+  const f = fixture(['First.md', 'Second.md']);
+  const events = new Map(), commands = [];
+  f.app.workspace = {on:(name, callback) => {events.set(name, callback);}, onLayoutReady:() => {}, getActiveFile:() => folder};
+  f.app.metadataCache.on = () => {};
+  f.app.vault.on = () => {};
+  f.plugin.loadData = async () => f.plugin.data;
+  f.plugin.addStatusBarItem = () => new Element();
+  f.plugin.addCommand = command => commands.push(command);
+  for (const method of ['registerEvent', 'addRibbonIcon', 'addSettingTab', 'registerDomEvent', 'registerInterval']) f.plugin[method] = () => {};
+  const folder = {path:'Folder.md', name:'Folder.md', children:f.files};
+  await f.plugin.onload();
+  const items = [];
+  const menu = {addItem:configure => {
+    const item = {setTitle() {return this;}, setIcon() {return this;}, onClick(callback) {items.push(callback); return this;}};
+    configure(item);
+  }};
+  events.get('file-menu')(menu, folder);
+  events.get('files-menu')(menu, [folder]);
+  events.get('files-menu')(menu, [f.files[0], folder]);
+  events.get('files-menu')(menu, []);
+  assert.equal(items.length, 0);
+  assert.equal(commands.find(c => c.id === 'publish-note').checkCallback(true), false);
+  events.get('file-menu')(menu, f.files[0]);
+  events.get('files-menu')(menu, f.files);
+  assert.equal(items.length, 2, 'individual notes and explicit note-only batches still work');
+  items[1]();
+  assert.ok(button(f.app.openModal, 'Review all notes'));
 });

@@ -4,6 +4,8 @@ Select a note, review exactly what will leave the vault, and publish it to `nama
 
 ## Using it
 
+Only individual Markdown notes can be published. Folders are never expanded or published, and a selection containing a folder has no publish action. Select multiple notes explicitly to publish a batch.
+
 1. Right-click a note → **Publish to naman.world**, or run **Naman Publish: Publish current note** from the command palette.
 2. Set the public title, stable URL, date, description, and whether saved edits should sync automatically.
 3. Choose **Review publication**. Review the exported Markdown, link warnings, and images, then **Publish now**. With multiple notes, enter each note's details, choose **Review all notes**, then **Publish all N notes**. Every note must pass the privacy checks before the batch can start. If an upload fails, review again to retry only the remaining notes; successfully published notes are kept.

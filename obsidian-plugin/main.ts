@@ -10,6 +10,9 @@ type Metadata = { id: string; slug: string; title: string; date: string; descrip
 type Image = { path: string; bytes: ArrayBuffer; type: string; placeholder: string };
 type Prepared = { meta: Metadata; markdown: string; warnings: string[]; images: Image[]; hash: string };
 
+const isPublishableNote = (file: unknown): file is TFile => file instanceof TFile && file.extension === 'md';
+const requireNote = (file: unknown) => { if (!isPublishableNote(file)) throw new Error('Only individual Markdown notes can be published. Folders cannot be published.'); };
+
 const day = () => new Date().toISOString().slice(0, 10);
 const slugify = (text: string) => text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100);
 const hash = async (value: string | ArrayBuffer) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', typeof value === 'string' ? new TextEncoder().encode(value) : value))).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -37,7 +40,7 @@ export default class NamanPublish extends Plugin {
     this.addRibbonIcon('send', 'Publish to naman.world', () => new PublishPanel(this.app, this).open());
     this.addCommand({ id: 'publish-note', name: 'Publish current note', checkCallback: checking => {
       const file = this.app.workspace.getActiveFile();
-      if (!file || file.extension !== 'md') return false;
+      if (!isPublishableNote(file)) return false;
       if (!checking) new PublishModal(this.app, this, [file]).open();
       return true;
     } });
@@ -45,10 +48,11 @@ export default class NamanPublish extends Plugin {
     this.addCommand({ id: 'sync-now', name: 'Sync published notes now', callback: () => void this.catchUp() });
     this.addSettingTab(new PublishSettings(this.app, this));
     this.registerEvent(this.app.workspace.on('file-menu', (menu, file) => {
-      if (file instanceof TFile && file.extension === 'md') menu.addItem(item => item.setTitle('Publish to naman.world').setIcon('send').onClick(() => new PublishModal(this.app, this, [file]).open()));
+      if (isPublishableNote(file)) menu.addItem(item => item.setTitle('Publish to naman.world').setIcon('send').onClick(() => new PublishModal(this.app, this, [file]).open()));
     }));
     this.registerEvent(this.app.workspace.on('files-menu', (menu, files) => {
-      const notes = files.filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+      if (!files.length || !files.every(isPublishableNote)) return;
+      const notes = files;
       if (notes.length) menu.addItem(item => item.setTitle('Publish selected notes').setIcon('send').onClick(() => new PublishModal(this.app, this, notes).open()));
     }));
     this.registerEvent(this.app.metadataCache.on('changed', file => this.schedule(file)));
@@ -114,6 +118,7 @@ export default class NamanPublish extends Plugin {
     return { id, slug: saved?.slug || String(fm.blog_slug || slugify(file.basename)), title: saved?.metadata?.title ?? String(fm.blog_title || file.basename), date: saved?.metadata?.date ?? String(fm.blog_date || day()), description: saved?.metadata?.description ?? String(fm.blog_description || ''), baseVersion: saved?.revision || null };
   }
   async prepare(file: TFile, meta?: Metadata): Promise<Prepared> {
+    requireNote(file);
     const source = await this.app.vault.read(file);
     const info = getFrontMatterInfo(source);
     const fm = info.exists ? parseYaml(info.frontmatter) || {} : {};
@@ -161,6 +166,7 @@ export default class NamanPublish extends Plugin {
     return { meta: metadata, markdown: exported.markdown, warnings: exported.warnings, images, hash: contentHash };
   }
   async publish(file: TFile, prepared: Prepared, live: boolean, automated = false) {
+    requireNote(file);
     if (this.stopped) return;
     const prior = this.data.posts[prepared.meta.id];
     if (prior?.approved && prior.hash === prepared.hash) {
@@ -184,6 +190,7 @@ export default class NamanPublish extends Plugin {
     this.setStatus('Published');
   }
   schedule(file: TFile) {
+    if (!isPublishableNote(file)) return;
     const saved = this.savedPost(file)?.[1];
     if (!saved?.approved || (this.published(file) && !this.live(file))) return;
     this.pending.add(file.path);
@@ -203,7 +210,7 @@ export default class NamanPublish extends Plugin {
       const path = this.pending.values().next().value!;
       this.pending.delete(path);
       const file = this.app.vault.getAbstractFileByPath(path);
-      if (!(file instanceof TFile)) continue;
+      if (!isPublishableNote(file)) continue;
       const entry = this.savedPost(file);
       if (!entry?.[1].approved || this.manualUpdates.has(path)) continue;
       try {
@@ -300,6 +307,11 @@ export class PublishModal extends Modal {
     const el = this.contentEl; el.empty(); el.addClass('naman-publish-modal');
     el.createEl('h2', {text: this.editing ? 'Edit post details' : this.files.length > 1 ? `Publish ${this.files.length} notes` : 'Publish to naman.world'});
     el.createEl('p', {text:this.editing ? 'Update the public title, date, and description. Review changes before updating the live post, including the latest saved note.' : 'Enter the public information here. It is saved in the plugin, not written into your notes.', cls:'naman-publish-muted'});
+    if (!this.files.length || !this.files.every(isPublishableNote)) {
+      el.createEl('p', {text:'Select individual Markdown notes. Folders cannot be published.', cls:'naman-publish-error', attr:{role:'alert'}});
+      new Setting(el).addButton(button => button.setButtonText('Close').onClick(() => this.close()));
+      return;
+    }
     const drafts: { file: TFile; meta: Metadata; live: boolean; section: HTMLElement; status: HTMLElement; done: boolean }[] = [];
     for (const file of this.files) {
       const section = el.createEl('section', {cls:'naman-publish-draft'});
@@ -449,10 +461,10 @@ export class PublishPanel extends Modal {
     });
     this.drawPublished(published);
     el.createEl('h3', {text:'Select notes'});
-    const search = el.createEl('input', {cls:'naman-publish-search', type:'search', attr:{placeholder:'Find a note by name or folder', 'aria-label':'Find a note'}});
+    const search = el.createEl('input', {cls:'naman-publish-search', type:'search', attr:{placeholder:'Find an individual note', 'aria-label':'Find a note'}});
     const notes = el.createDiv({cls:'naman-publish-notes'});
     const footer = new Setting(el).setClass('naman-publish-footer');
-    const files = this.app.vault.getMarkdownFiles().sort((a,b) => a.path.localeCompare(b.path));
+    const files = this.app.vault.getMarkdownFiles().filter(isPublishableNote).sort((a,b) => a.path.localeCompare(b.path));
     for (const file of this.selected) if (!files.includes(file)) this.selected.delete(file);
     footer.addButton(review => {
       const updateSelection = () => {
@@ -500,7 +512,7 @@ export class PublishPanel extends Modal {
         try { await navigator.clipboard.writeText(`${this.plugin.data.site}/blog/${post.slug}`); new Notice('Link copied'); }
         catch { new Notice('Could not copy the link.'); }
       }));
-      if (file instanceof TFile) {
+      if (isPublishableNote(file)) {
         row.addButton(b => b.setButtonText('Edit details').setDisabled(!!updating).onClick(() => {
           this.close(); new PublishModal(this.app, this.plugin, [file], true).open();
         }));
