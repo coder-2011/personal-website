@@ -108,6 +108,20 @@ function field(modal, file, name) {
   return [...section.children.find(el => el.name === name).walk()].find(el => el.control)?.control;
 }
 
+test('concurrent reviews of the same attachment do not inflate its cache size', async () => {
+  const f = fixture(['Post.md']);
+  const image = new TFile('diagram.svg');
+  image.extension = 'svg'; image.stat = {size:100};
+  f.files.push(image);
+  const source = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>';
+  f.app.vault.readBinary = async () => new TextEncoder().encode(source).buffer;
+  f.sources.set('Post.md', '![[diagram.svg]]');
+  const prepared = await Promise.all(Array.from({length:8}, () => f.plugin.prepare(f.files[0])));
+  assert.equal(f.plugin.preparedImages.size, 1);
+  assert.equal(f.plugin.preparedImageBytes, prepared[0].images[0].bytes.byteLength,
+    'overlapping reviews retain one image, not eight images worth of cache budget');
+});
+
 test('text edits reuse prepared images and uploads, but changed bytes and sites do not', async () => {
   const f = fixture(['Post.md']);
   const image = new TFile('diagram.svg');

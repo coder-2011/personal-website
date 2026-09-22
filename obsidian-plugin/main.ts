@@ -177,6 +177,8 @@ export default class NamanPublish extends Plugin {
         }
         if (bytes.byteLength > 3_500_000) throw new Error('The prepared image exceeds 3.5 MB.');
         const placeholder = `/api/blog/assets/${await hash(bytes)}`;
+        // Another review may have prepared this image while conversion awaited.
+        this.preparedImageBytes -= this.preparedImages.get(sourceHash)?.bytes.byteLength || 0;
         this.preparedImages.set(sourceHash, { bytes, type, placeholder });
         this.preparedImageBytes += bytes.byteLength;
         while (this.preparedImages.size > 32 || this.preparedImageBytes > 16_000_000) {
