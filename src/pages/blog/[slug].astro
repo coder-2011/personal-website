@@ -20,6 +20,7 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
 const presentation = prepareCatalogue(post ? await presentPostForReading(post.html, post.markdown) : '');
 ---
 <BaseLayout title={`${post?.title || 'Post unavailable'} | Naman Chetwani`} description={post?.description || 'Notes and essays by Naman Chetwani.'}>
+  {post && <div class="blog-reading-progress" aria-hidden="true"></div>}
   <main class:list={["page", "blog-page", { "has-catalogue": presentation.outline.length > 0 }]}>
     <div class="page-top"><nav class="top-nav" aria-label="Primary">
       <a data-astro-prefetch="load" class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
@@ -40,6 +41,9 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
   import { enableCodeCopy } from '../../scripts/blog-code.mjs';
   import { enableCatalogue } from '../../scripts/blog-catalogue.mjs';
   import { enableSidenotes } from '../../scripts/blog-sidenotes.mjs';
+  import { enableReadingProgress } from '../../scripts/blog-progress.mjs';
+  const progress = document.querySelector<HTMLElement>('.blog-reading-progress');
+  const cleanProgress = progress ? enableReadingProgress(progress) : () => {};
   const article = document.querySelector<HTMLElement>('.blog-post');
   if (article) enableCodeCopy(article);
   const body = document.getElementById('post-body');
@@ -56,6 +60,7 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
       if (!document.hidden) {
         const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (response.status === 404) {
+          cleanProgress();
           cleanSidenotes();
           cleanCatalogue();
           page.querySelector<HTMLElement>('.blog-catalogue')!.hidden = true;
