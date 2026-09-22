@@ -7,20 +7,20 @@ import { build } from 'esbuild';
 
 // Exercise the actual plugin and modal callbacks; only Obsidian's host APIs are replaced.
 class Element {
-  constructor(tag = 'div', options = {}) { this.tag = tag; this.text = options.text; this.children = []; }
+  constructor(tag = 'div', options = {}) { this.tag = tag; this.text = options.text; this.children = []; this.classes = new Set(); this.attributes = {}; }
   createEl(tag, options) { const child = new Element(tag, options); this.children.push(child); return child; }
   createDiv(options) { return this.createEl('div', options); }
   createSpan(options) { return this.createEl('span', options); }
   create(text) { this.text = text; return this; }
   setText(text) { this.text = text; }
   empty() { this.children = []; }
-  addClass() {}
-  removeClass() {}
-  setAttribute() {}
+  addClass(name) { this.classes.add(name); }
+  removeClass(name) { this.classes.delete(name); }
+  setAttribute(name, value) { this.attributes[name] = value; }
   *walk() { yield this; for (const child of this.children) yield* child.walk(); }
 }
 class Control {
-  constructor(parent, tag) { this.inputEl = parent.createEl(tag); this.inputEl.control = this; }
+  constructor(parent, tag) { this.inputEl = parent.createEl(tag); this.inputEl.control = this; this.buttonEl = this.inputEl; }
   setValue(value) { this.value = value; return this; }
   setButtonText(value) { this.inputEl.text = value; return this; }
   setDisabled(value) { this.disabled = value; return this; }
@@ -53,7 +53,7 @@ class Modal {
 const output = await build({entryPoints:['obsidian-plugin/main.ts'], bundle:true, write:false, format:'cjs', platform:'node', external:['obsidian','css-tree']});
 const module = {exports:{}};
 vm.runInNewContext(output.outputFiles[0].text, {
-  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob,
+  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob, Error,
   require(name) {
     if (name !== 'obsidian') return createRequire(import.meta.url)(name);
     return {Plugin, Modal, Setting, TFile, Notice:class {}, PluginSettingTab:class {},
@@ -62,6 +62,7 @@ vm.runInNewContext(output.outputFiles[0].text, {
 });
 const Publisher = module.exports.default;
 const PublishModal = module.exports.PublishModal;
+const PublishPanel = module.exports.PublishPanel;
 function fixture(names = ['First.md', 'Second.md', 'Third.md']) {
   const files = names.map(name => new TFile(name));
   const sources = new Map(files.map(file => [file.path, `# ${file.basename}\n\nPublic writing.\n`]));
@@ -232,4 +233,89 @@ test('unpublish uses the revision shown in the refreshed panel and stops later s
   f.plugin.schedule(f.files[0]);
   await f.plugin.pump();
   assert.equal(f.requests.length, count, 'editing an unpublished note must not republish it');
+});
+
+async function publishedFixture(live = true) {
+  const f = fixture(['Manual.md']);
+  f.modal.onOpen();
+  field(f.modal, f.files[0], 'Live sync').change(live);
+  await button(f.modal, 'Review publication').click();
+  await button(f.modal, 'Publish now').click();
+  f.panel = new PublishPanel(f.app, f.plugin);
+  f.panel.drawPublished(f.panel.contentEl);
+  return f;
+}
+
+test('Update appears immediately after turning live sync off and spins until completion', async () => {
+  const f = await publishedFixture();
+  assert.equal(button(f.panel, 'Update'), undefined);
+  const toggle = () => [...f.panel.contentEl.walk()].find(el => el.tag === 'toggle').control;
+  await toggle().change(false);
+  assert.ok(button(f.panel, 'Update'));
+  f.sources.set('Manual.md', 'Latest manually published text');
+  const api = f.plugin.api;
+  let release, arrived;
+  const started = new Promise(resolve => { arrived = resolve; });
+  f.plugin.api = async (...args) => { arrived(); await new Promise(resolve => { release = resolve; }); return api(...args); };
+  const updating = button(f.panel, 'Update').click();
+  const spinner = button(f.panel, 'Updating…');
+  assert.equal(spinner.disabled, true);
+  assert.ok(spinner.buttonEl.classes.has('is-updating'));
+  assert.equal(spinner.buttonEl.attributes['aria-busy'], 'true');
+  assert.equal(toggle().disabled, true);
+  await started;
+  assert.equal(f.requests.length, 1, 'no completion before the server accepts the update');
+  assert.equal(f.plugin.updatePost(f.files[0]), f.plugin.manualUpdates.get('Manual.md'), 'duplicate updates share the in-flight request');
+  release(); await updating;
+  assert.match(f.requests.at(-1).body.markdown, /Latest manually published text/);
+  assert.equal(f.plugin.live(f.files[0]), false);
+  assert.equal(button(f.panel, 'Updating…'), undefined);
+  assert.equal(button(f.panel, 'Update').disabled, false);
+  await toggle().change(true);
+  assert.equal(button(f.panel, 'Update'), undefined);
+  await f.plugin.pump();
+});
+
+test('manual update waits for an in-flight live upload, then uses its revision and the latest note', async () => {
+  const f = await publishedFixture();
+  const api = f.plugin.api;
+  let release, arrived;
+  const started = new Promise(resolve => { arrived = resolve; });
+  let hold = true;
+  f.plugin.api = async (...args) => {
+    if (hold) { hold = false; arrived(); await new Promise(resolve => { release = resolve; }); }
+    return api(...args);
+  };
+  f.sources.set('Manual.md', 'Live upload text');
+  f.plugin.schedule(f.files[0]); await started;
+  await f.plugin.setLive(f.files[0], false);
+  f.sources.set('Manual.md', 'Newer manual text');
+  const updating = f.plugin.updatePost(f.files[0]);
+  release(); await updating;
+  assert.equal(f.requests.length, 3);
+  assert.match(f.requests.at(-1).body.markdown, /Newer manual text/);
+  assert.notEqual(f.requests.at(-1).body.baseVersion, f.requests[1].body.baseVersion);
+  assert.equal(f.plugin.live(f.files[0]), false);
+});
+
+test('manual update failures stop the spinner, retain the prior publication, and can be retried', async () => {
+  const f = await publishedFixture(false);
+  const id = f.requests[0].body.id, revision = f.plugin.data.posts[id].revision;
+  const api = f.plugin.api;
+  f.sources.set('Manual.md', 'A changed note');
+  f.plugin.api = async () => { throw new Error('Temporary connection failure'); };
+  await button(f.panel, 'Update').click();
+  assert.equal(f.plugin.data.posts[id].revision, revision);
+  assert.equal(f.plugin.data.posts[id].published, true);
+  assert.equal(button(f.panel, 'Updating…'), undefined);
+  assert.equal(button(f.panel, 'Update').disabled, false);
+  assert.match(f.plugin.data.posts[id].status, /Temporary connection failure/);
+  f.plugin.api = api;
+  f.sources.set('Manual.md', '/Users/alice/private.md');
+  await button(f.panel, 'Update').click();
+  assert.equal(f.requests.length, 1, 'manual updates must pass the same privacy checks');
+  f.sources.set('Manual.md', 'Safe retry');
+  await button(f.panel, 'Update').click();
+  assert.equal(f.requests.length, 2);
+  assert.equal(f.plugin.live(f.files[0]), false);
 });

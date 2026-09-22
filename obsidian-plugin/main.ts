@@ -18,7 +18,8 @@ export default class NamanPublish extends Plugin {
   data!: Data;
   status!: HTMLElement;
   pending = new Set<string>();
-  running = false;
+  syncing: Promise<void> | null = null;
+  manualUpdates = new Map<string, Promise<void>>();
   stopped = false;
   remote: Post[] = [];
   async onload() {
@@ -163,6 +164,7 @@ export default class NamanPublish extends Plugin {
     if (this.stopped) return;
     const prior = this.data.posts[prepared.meta.id];
     if (prior?.approved && prior.hash === prepared.hash) {
+      prior.status = 'Up to date';
       if (!automated) await this.setLive(file, live);
       this.setStatus('Up to date'); return;
     }
@@ -187,26 +189,48 @@ export default class NamanPublish extends Plugin {
     this.pending.add(file.path);
     void this.pump();
   }
-  async pump() {
-    if (this.running || this.stopped) return;
-    this.running = true;
-    try {
-      while (this.pending.size && !this.stopped) {
-        const path = this.pending.values().next().value!;
-        this.pending.delete(path);
-        const file = this.app.vault.getAbstractFileByPath(path);
-        if (!(file instanceof TFile)) continue;
-        const entry = this.savedPost(file);
-        if (!entry?.[1].approved) continue;
-        try {
-          if (!this.published(file)) await this.unpublish(entry[0]);
-          else if (this.live(file)) {
-            const prepared = await this.prepare(file);
-            await this.publish(file, prepared, true, true);
-          }
-        } catch (error) { this.failure(file, error); }
-      }
-    } finally { this.running = false; }
+  pump(): Promise<void> {
+    if (this.syncing) return this.syncing;
+    if (this.stopped) return Promise.resolve();
+    this.syncing = this.runPump().finally(() => {
+      this.syncing = null;
+      if (this.pending.size && !this.stopped) void this.pump();
+    });
+    return this.syncing;
+  }
+  private async runPump() {
+    while (this.pending.size && !this.stopped) {
+      const path = this.pending.values().next().value!;
+      this.pending.delete(path);
+      const file = this.app.vault.getAbstractFileByPath(path);
+      if (!(file instanceof TFile)) continue;
+      const entry = this.savedPost(file);
+      if (!entry?.[1].approved) continue;
+      try {
+        if (!this.published(file)) await this.unpublish(entry[0]);
+        else if (this.live(file)) {
+          const prepared = await this.prepare(file);
+          await this.publish(file, prepared, true, true);
+        }
+      } catch (error) { this.failure(file, error); }
+    }
+  }
+  updatePost(file: TFile): Promise<void> {
+    const current = this.manualUpdates.get(file.path);
+    if (current) return current;
+    const path = file.path;
+    const update = (async () => {
+      // A live upload may still be finishing after the toggle was turned off.
+      // Wait for its revision before preparing the latest saved note.
+      await this.pump();
+      if (this.stopped) throw new Error('The plugin is reloading. Try updating again.');
+      const saved = this.savedPost(file)?.[1];
+      if (!saved?.approved || !this.published(file)) throw new Error('Review this note before publishing it again.');
+      if (this.live(file)) throw new Error('Turn Live sync off to update manually.');
+      await this.publish(file, await this.prepare(file), false);
+    })().catch(error => { this.failure(file, error); throw error; }).finally(() => { this.manualUpdates.delete(path); });
+    this.manualUpdates.set(path, update);
+    return update;
   }
   failure(file: TFile, error: unknown) {
     const message = error instanceof Error ? error.message : 'Publication failed.';
@@ -355,7 +379,7 @@ export class PublishModal extends Modal {
   }
 }
 
-class PublishPanel extends Modal {
+export class PublishPanel extends Modal {
   selected = new Set<TFile>();
   generation = 0;
   constructor(app: App, private plugin: NamanPublish) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
@@ -431,6 +455,7 @@ class PublishPanel extends Modal {
     for (const post of this.plugin.remote.filter(p => p.published)) {
       const saved = this.plugin.data.posts[post.id];
       const file = saved && this.app.vault.getAbstractFileByPath(saved.path);
+      const updating = file instanceof TFile && this.plugin.manualUpdates.get(file.path);
       const row = new Setting(el).setClass('naman-publish-post').setName(post.title).setDesc(`/blog/${post.slug}${saved?.status ? ` · ${saved.status}` : ''}`);
       row.addButton(b => b.setButtonText('Open').onClick(() => window.open(`${this.plugin.data.site}/blog/${post.slug}`)));
       row.addButton(b => b.setButtonText('Copy link').onClick(async () => {
@@ -438,11 +463,32 @@ class PublishPanel extends Modal {
         catch { new Notice('Could not copy the link.'); }
       }));
       if (file instanceof TFile) {
-        row.addButton(b => b.setButtonText('Edit details').onClick(() => {
+        row.addButton(b => b.setButtonText('Edit details').setDisabled(!!updating).onClick(() => {
           this.close(); new PublishModal(this.app, this.plugin, [file]).open();
         }));
         row.controlEl.createSpan({text:'Live sync', cls:'naman-publish-muted'});
-        row.addToggle(t => t.setTooltip('Live sync').setValue(this.plugin.live(file)).onChange(enabled => this.plugin.setLive(file, enabled)));
+        row.addToggle(t => t.setTooltip('Live sync').setValue(this.plugin.live(file)).setDisabled(!!updating).onChange(async enabled => {
+          try { await this.plugin.setLive(file, enabled); }
+          catch (error) { this.plugin.failure(file, error); }
+          this.drawPublished(el);
+        }));
+        if (!this.plugin.live(file)) row.addButton(b => {
+          b.setButtonText(updating ? 'Updating…' : 'Update').setDisabled(!!updating);
+          b.buttonEl.addClass('naman-publish-update');
+          if (updating) b.buttonEl.addClass('is-updating');
+          b.buttonEl.setAttribute('aria-busy', String(!!updating));
+          b.onClick(async () => {
+            const task = this.plugin.updatePost(file);
+            this.drawPublished(el);
+            // updatePost records the error in the row and shows its Notice.
+            await task.catch(() => {});
+          });
+        });
+        if (updating) {
+          const generation = this.generation;
+          const redraw = () => { if (generation === this.generation) this.drawPublished(el); };
+          void updating.then(redraw, redraw);
+        }
         if (saved.revision !== post.revision) row.addButton(b => b.setButtonText('Review conflict').onClick(() => {
           const confirm = new Modal(this.app);
           confirm.contentEl.createEl('h2', {text:'Use the latest saved revision?'});
@@ -452,7 +498,7 @@ class PublishPanel extends Modal {
           })); confirm.open();
         }));
       }
-      row.addButton(b => b.setButtonText('Unpublish').onClick(() => {
+      row.addButton(b => b.setButtonText('Unpublish').setDisabled(!!updating).onClick(() => {
         const confirm = new Modal(this.app);
         confirm.contentEl.createEl('h2', {text:`Unpublish ${post.title}?`});
         confirm.contentEl.createEl('p', {text:'This removes the live post and access to its unshared images. Your note stays in Obsidian.'});

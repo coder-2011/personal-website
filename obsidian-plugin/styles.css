@@ -27,3 +27,6 @@
 .naman-publish-notes { max-height: 32vh; overflow-y: auto; }
 .naman-publish-error { color: var(--text-error); }
 .naman-publish-warning { color: var(--text-warning); }
+.naman-publish-update.is-updating::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: naman-publish-spin .7s linear infinite; }
+@keyframes naman-publish-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .naman-publish-update.is-updating::before { animation: none; } }
