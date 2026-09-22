@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-FTr73XNwCHBDnThaplPKwTXY9RAGEAs/PKNwV0Fno40='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-vftsDN27JaUZ7Qp5ng3FD8o9MLo3oPC06rPsUQo8/6Q='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GPT-2 BPE tokenization</title>
 <style>/* BEGIN GENERATED FONTS */
@@ -249,7 +249,8 @@ async function advance() {
   const rects = new Map(Array.from($('tokens').children, el => [Number(el.dataset.start), el.getBoundingClientRect()]));
   if (!reducedMotion.matches && steps[position + 1].phase === 'merge') {
     const pair = Array.from($('tokens').querySelectorAll('.chosen'));
-    await Promise.all(pair.map((el, i) => el.animate([
+    // A cancelled visual transition must not lock the walkthrough.
+    await Promise.allSettled(pair.map((el, i) => el.animate([
       {transform:'translateX(0)',filter:'brightness(1)'},
       {transform:`translateX(${i % 2 ? -4 : 4}px)`,filter:'brightness(.95)'}
     ], {duration:220,fill:'forwards',easing:'ease-in'}).finished));
@@ -280,14 +281,17 @@ function play() {
 
 // Send only when requested, and cancel an older request before starting another.
 async function encodeInput() {
+  pause(); activeRequest?.abort(); activeRequest = null;
+  generation++; busy = false;
   const value = $('input').value;
   if (!value.length || encoder.encode(value).length > 160) {
-    $('input-error').textContent = 'Use between 1 and 160 UTF-8 bytes.'; return;
+    $('input-error').textContent = 'Use between 1 and 160 UTF-8 bytes.';
+    document.querySelectorAll('.transport button').forEach(button => button.disabled = !frames.length);
+    if (frames.length) render(); else $('step').textContent = 'Waiting for tokenizer';
+    return;
   }
-  activeRequest?.abort();
   const controller = new AbortController();
   activeRequest = controller;
-  pause(); generation++; busy = false;
   document.querySelectorAll('.transport button').forEach(button => button.disabled = true);
   $('input-error').textContent = '';
   $('step').textContent = 'Encoding…';
@@ -303,14 +307,16 @@ async function encodeInput() {
       data = await response.json();
       if (!response.ok) throw Error(data.error || 'Encoding failed. Please try again.');
     }
-    if (data.model !== 'gpt2' || data.version !== 1 || !Array.isArray(data.frames) || !data.frames.length)
+    if (activeRequest !== controller) return;
+    if (data?.model !== 'gpt2' || data.version !== 1 || !Array.isArray(data.frames) || !data.frames.length)
       throw Error('The tokenizer returned an unexpected response.');
+    // Prepare the walkthrough before replacing the last working example.
+    const nextSteps = makeSteps(data.frames);
     if (!traceCache.has(value)) {
       if (traceCache.size >= 4) traceCache.delete(traceCache.keys().next().value);
       traceCache.set(value, data);
     }
-    if (activeRequest !== controller) return;
-    frames = data.frames; steps = makeSteps(frames); position = 0;
+    frames = data.frames; steps = nextSteps; position = 0;
   } catch (error) {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError'

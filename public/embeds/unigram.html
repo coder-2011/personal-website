@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-jVExqSke+iQZmBDAoj3bbwHKs5PryCvamUmI7dUNE6g='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TffDeIGO78NLMsYqmDD1Uh44ZXyYyZjrJurtGaPYX18='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <style>/* BEGIN GENERATED FONTS */
@@ -350,7 +350,7 @@ async function encodeInput() {
     activeRequest = null;
     $('input-error').textContent = 'Use between 1 and 160 UTF-8 bytes.';
     document.querySelectorAll('.transport button').forEach(button => button.disabled = !data);
-    if (data) render();
+    if (data) render(); else $('step').textContent = 'Waiting for tokenizer';
     return;
   }
   const controller = new AbortController(); activeRequest = controller;
@@ -365,13 +365,15 @@ async function encodeInput() {
       result = await response.json();
       if (!response.ok) throw Error(result.error || 'Could not encode this text.');
     }
-    if (result.model !== 't5-small' || result.version !== 1 || !Array.isArray(result.pieces)) throw Error('Unexpected tokenizer response.');
+    if (activeRequest !== controller) return;
+    if (result?.model !== 't5-small' || result.version !== 1 || !Array.isArray(result.pieces)) throw Error('Unexpected tokenizer response.');
+    // Prepare the walkthrough before replacing the last working example.
+    const nextSteps = makeSteps(result.pieces);
     if (!traceCache.has(text)) {
       if (traceCache.size >= 4) traceCache.delete(traceCache.keys().next().value);
       traceCache.set(text, result);
     }
-    if (activeRequest !== controller) return;
-    data = {...result,input:text}; steps = makeSteps(data.pieces); position = 0;
+    data = {...result,input:text}; steps = nextSteps; position = 0;
   } catch (error) {
     if (activeRequest !== controller) return;
     $('input-error').textContent = error.name === 'AbortError' ? 'Request timed out. Try again.'
