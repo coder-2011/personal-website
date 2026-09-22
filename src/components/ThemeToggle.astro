@@ -33,7 +33,10 @@
 
 <style>
   .theme-toggle {
-    margin-left: auto;
+    position: fixed;
+    left: calc(16px + env(safe-area-inset-left, 0px));
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
     display: grid;
     place-items: center;
     width: 44px;
