@@ -72,7 +72,10 @@ Browser automation timed out, so no new LCP, INP, CLS, or visual result is claim
 ## Verification and reproduction
 
 All 100 automated tests passed, as did plugin type checking, plugin build, and
-the production Astro build. The plugin was installed and reloaded in Obsidian.
+the production Astro build. Plugin 1.2.10 was installed and reloaded in Obsidian.
+The final 1.2.11 cache-accounting fix was installed with matching build hashes,
+but its reload could not be verified after native automation began timing out;
+restart Obsidian to load that final fix.
 Production integration checks passed for publishing, immediate updates, stale
 writes, metadata stripping, unsafe SVG/CSS rejection, local-path rejection,
 cache hits, conditional images, withdrawal, and unpublishing. Temporary test
