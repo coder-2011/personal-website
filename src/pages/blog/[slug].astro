@@ -31,14 +31,16 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
     <div class="blog-reading-tools" hidden><button type="button" aria-haspopup="dialog" aria-expanded="false">☰ Catalogue</button></div>
     <div class="blog-reading-layout">
     <BlogCatalogue entries={presentation.outline} />
-    <article class="essay blog-post" data-slug={post?.slug} data-revision={post?.revision}>
+    <article class="essay blog-post" tabindex="-1" data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
       {post ? <><p class="wisdom-meta blog-post-meta" id="post-meta"><time id="post-date" datetime={post.date}>{post.date}</time><span id="post-reading" title="Reading time estimated at 200 words per minute">{readingSummary(presentation.html)}</span></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
     </article>
     </div>
   </main>
+  {post && <aside class="blog-update-notice" id="post-update" aria-label="Article update" hidden><span>New version available</span><button type="button">Update article</button></aside>}
 </BaseLayout>
 <script>
+  import { enableLiveUpdates, rememberReadingPosition } from '../../scripts/blog-live.mjs';
   import { enableCodeCopy } from '../../scripts/blog-code.mjs';
   import { enableCatalogue } from '../../scripts/blog-catalogue.mjs';
   import { enableSidenotes } from '../../scripts/blog-sidenotes.mjs';
@@ -51,50 +53,31 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
   const page = document.querySelector<HTMLElement>('.blog-page')!;
   let cleanCatalogue = body ? enableCatalogue(page, body) : () => {};
   let cleanSidenotes = body ? enableSidenotes(body) : () => {};
-  let revision = article?.dataset.revision;
-  let stopped = false;
-  let timer: ReturnType<typeof setTimeout>;
-  async function update() {
-    if (stopped || !article?.dataset.slug) return;
-    let delay = 3000;
-    try {
-      if (!document.hidden) {
-        const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
-        if (response.status === 404) {
-          document.getElementById('post-meta')!.hidden = true;
-          cleanProgress();
-          cleanSidenotes();
-          cleanCatalogue();
-          page.querySelector<HTMLElement>('.blog-catalogue')!.hidden = true;
-          page.querySelector<HTMLElement>('.blog-reading-tools')!.hidden = true;
-          page.classList.remove('has-catalogue');
-          document.getElementById('post-title')!.textContent = 'Post no longer available';
-          document.getElementById('post-body')!.textContent = 'This post has been unpublished.';
-          stopped = true;
-        } else if (response.ok && response.status !== 204) {
-          const post = await response.json();
-          if (post.revision !== revision) {
-            document.getElementById('post-title')!.textContent = post.title;
-            document.getElementById('post-date')!.textContent = post.date;
-            document.getElementById('post-date')!.setAttribute('datetime', post.date);
-            document.getElementById('post-reading')!.textContent = post.readingSummary;
-            cleanSidenotes();
-            cleanCatalogue();
-            body!.innerHTML = post.html;
-            cleanCatalogue = enableCatalogue(page, body!);
-            cleanSidenotes = enableSidenotes(body!);
-            article.querySelectorAll<HTMLButtonElement>('.blog-code-copy').forEach(button => { button.hidden = false; });
-            document.title = `${post.title} | Naman Chetwani`;
-            revision = post.revision;
-          }
-        } else if (response.status !== 204) delay = 15000;
-      }
-    } catch { delay = 15000; }
-    if (!stopped) timer = setTimeout(update, delay);
-  }
-  timer = setTimeout(update, 3000);
-  window.addEventListener('pagehide', () => { stopped = true; clearTimeout(timer); });
-  window.addEventListener('pageshow', event => {
-    if (event.persisted) { stopped = false; clearTimeout(timer); void update(); }
+  const notice = document.getElementById('post-update');
+  if (article?.dataset.slug && body && notice) enableLiveUpdates(article, notice, post => {
+    const restorePosition = rememberReadingPosition(body);
+    document.getElementById('post-title')!.textContent = post.title;
+    document.getElementById('post-date')!.textContent = post.date;
+    document.getElementById('post-date')!.setAttribute('datetime', post.date);
+    document.getElementById('post-reading')!.textContent = post.readingSummary;
+    cleanSidenotes();
+    cleanCatalogue();
+    body.innerHTML = post.html;
+    cleanCatalogue = enableCatalogue(page, body);
+    cleanSidenotes = enableSidenotes(body);
+    article.querySelectorAll<HTMLButtonElement>('.blog-code-copy').forEach(button => { button.hidden = false; });
+    document.title = `${post.title} | Naman Chetwani`;
+    document.querySelector<HTMLMetaElement>('meta[name="description"]')!.content = post.description;
+    restorePosition();
+  }, () => {
+    document.getElementById('post-meta')!.hidden = true;
+    cleanProgress();
+    cleanSidenotes();
+    cleanCatalogue();
+    page.querySelector<HTMLElement>('.blog-catalogue')!.hidden = true;
+    page.querySelector<HTMLElement>('.blog-reading-tools')!.hidden = true;
+    page.classList.remove('has-catalogue');
+    document.getElementById('post-title')!.textContent = 'Post no longer available';
+    body.textContent = 'This post has been unpublished.';
   });
 </script>

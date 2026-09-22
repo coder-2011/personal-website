@@ -1,6 +1,6 @@
 # Naman Publish
 
-Select a note, review exactly what will leave the vault, and publish it to `naman.world/blog`. Live sync uploads saved changes while Obsidian is open. The website renders content on upload and reads the latest stored revision without a deployment. Open post pages check for updates every three seconds while visible.
+Select a note, review exactly what will leave the vault, and publish it to `naman.world/blog`. Live sync uploads saved changes while Obsidian is open. The website renders content on upload and reads the latest stored revision without a deployment. Open post pages check for updates every three seconds while visible. Existing readers keep their current version until they choose **Update article** from a small notice; new visitors immediately see the latest version. Applying an update keeps the current paragraph at the same scroll position when possible.
 
 ## Using it
 

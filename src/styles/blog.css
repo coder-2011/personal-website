@@ -103,3 +103,9 @@ html:has(.catalogue-dialog[open]) { overflow: hidden; }
   .blog-catalogue, .blog-reading-tools, .catalogue-dialog, .blog-reading-progress { display: none !important; }
   .has-catalogue .blog-reading-layout { display: block; }
 }
+
+.blog-update-notice { position: fixed; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .8rem; max-width: calc(100vw - 96px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); padding: .65rem .85rem; border: 1px solid var(--border); background: var(--bg); color: var(--soft); font-size: .9rem; }
+.blog-update-notice[hidden] { display: none; }
+.blog-update-notice button { border: 0; background: none; color: var(--accent); padding: .2rem 0; cursor: pointer; text-decoration: underline; }
+.blog-post:focus { outline: none; }
+@media print { .blog-update-notice { display: none; } }
