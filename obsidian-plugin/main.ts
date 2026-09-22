@@ -3,10 +3,10 @@ import { sanitizeSvg } from '../src/lib/blog/svg.mjs';
 import { exportNote } from '../src/lib/blog/export.mjs';
 import { validateMetadata, assertPublicText } from '../src/lib/blog/privacy.mjs';
 
-type Post = { id: string; slug: string; title: string; date: string; description: string; revision: string; published: boolean; updated: string };
+type Post = { id: string; slug: string; aliases?: string[]; title: string; date: string; description: string; revision: string; published: boolean; updated: string };
 type Saved = { path: string; revision: string | null; slug: string; hash: string; assets: string[]; status: string; approved: boolean; metadata?: { title: string; date: string; description: string }; live?: boolean; published?: boolean };
 type Data = { site: string; secretId: string; posts: Record<string, Saved> };
-type Metadata = { id: string; slug: string; title: string; date: string; description: string; baseVersion: string | null };
+type Metadata = { id: string; slug: string; title: string; date: string; description: string; baseVersion: string | null; previousSlug?: string };
 type Image = { path: string; bytes: ArrayBuffer; type: string; placeholder: string };
 type Prepared = { meta: Metadata; markdown: string; warnings: string[]; images: Image[]; hash: string };
 
@@ -127,7 +127,7 @@ export default class NamanPublish extends Plugin {
     const id = this.savedPost(file)?.[0] || (typeof fm.blog_id === 'string' ? fm.blog_id : crypto.randomUUID());
     const saved = this.data.posts[id];
     if (saved && saved.path !== file.path) throw new Error('This note copies another published note’s blog_id. Remove blog_id from this copy before publishing it separately.');
-    return { id, slug: saved?.slug || String(fm.blog_slug || slugify(file.basename)), title: saved?.metadata?.title ?? String(fm.blog_title || file.basename), date: saved?.metadata?.date ?? String(fm.blog_date || day()), description: saved?.metadata?.description ?? String(fm.blog_description || ''), baseVersion: saved?.revision || null };
+    return { id, slug: this.remote.find(post => post.id === id)?.slug || saved?.slug || String(fm.blog_slug || slugify(file.basename)), title: saved?.metadata?.title ?? String(fm.blog_title || file.basename), date: saved?.metadata?.date ?? String(fm.blog_date || day()), description: saved?.metadata?.description ?? String(fm.blog_description || ''), baseVersion: saved?.revision || null };
   }
   async prepare(file: TFile, meta?: Metadata): Promise<Prepared> {
     requireNote(file);
@@ -191,7 +191,8 @@ export default class NamanPublish extends Plugin {
         return placeholder;
       },
     });
-    const contentHash = await hash(JSON.stringify({ ...metadata, baseVersion: null, markdown: exported.markdown }));
+    const {previousSlug, ...contentMetadata} = metadata;
+    const contentHash = await hash(JSON.stringify({ ...contentMetadata, baseVersion: null, markdown: exported.markdown }));
     return { meta: metadata, markdown: exported.markdown, warnings: exported.warnings, images, hash: contentHash };
   }
   async publish(file: TFile, prepared: Prepared, live: boolean, automated = false, edit: { readyAt: number } | null = this.edits.get(file) ?? null) {
@@ -372,7 +373,7 @@ export class PublishModal extends Modal {
     this.closed = false;
     const el = this.contentEl; el.empty(); el.addClass('naman-publish-modal');
     el.createEl('h2', {text: this.editing ? 'Edit post details' : this.files.length > 1 ? `Publish ${this.files.length} notes` : 'Publish to naman.world'});
-    el.createEl('p', {text:this.editing ? 'Update the public title, date, and description. Review changes before updating the live post, including the latest saved note.' : 'Enter the public information here. It is saved in the plugin, not written into your notes.', cls:'naman-publish-muted'});
+    el.createEl('p', {text:this.editing ? 'Update the public details or choose Change URL. Review changes before updating the live post, including the latest saved note.' : 'Enter the public information here. It is saved in the plugin, not written into your notes.', cls:'naman-publish-muted'});
     if (!this.files.length || !this.files.every(isPublishableNote)) {
       el.createEl('p', {text:'Select individual Markdown notes. Folders cannot be published.', cls:'naman-publish-error', attr:{role:'alert'}});
       new Setting(el).addButton(button => button.setButtonText('Close').onClick(() => this.close()));
@@ -390,15 +391,28 @@ export class PublishModal extends Modal {
     if (drafts.length !== this.files.length) return;
     const preview = el.createDiv();
     let reviewed: { draft: typeof drafts[number]; prepared: Prepared; live: boolean }[] = [];
+    const confirmedURLs = new Map<string, string>();
+    const needsConfirmation = () => reviewed.some(({prepared}) => prepared.meta.previousSlug !== undefined && confirmedURLs.get(prepared.meta.id) !== prepared.meta.slug);
     const reviewLabel = this.editing ? 'Review changes' : this.files.length > 1 ? 'Review all notes' : 'Review publication';
     let primary: import('obsidian').ButtonComponent;
-    const invalidate = () => { reviewed = []; preview.empty(); this.clearImages(); primary?.setButtonText(reviewLabel); };
+    const invalidate = () => { reviewed = []; confirmedURLs.clear(); preview.empty(); this.clearImages(); primary?.setButtonText(reviewLabel).setDisabled(false); };
     for (const draft of drafts) {
       const {meta, section} = draft;
       new Setting(section).setClass('naman-publish-field').setName('Title').addText(input => input.setValue(meta.title).onChange(value => {meta.title = value; invalidate();}));
-      new Setting(section).setClass('naman-publish-field').setName('URL').setDesc(this.plugin.data.posts[meta.id]?.revision ? 'The URL stays the same so existing links keep working.' : `${this.plugin.data.site}/blog/`).addText(input => {
-        input.setValue(meta.slug).setDisabled(!!this.plugin.data.posts[meta.id]?.revision).onChange(value => {meta.slug = value; invalidate();});
+      const originalSlug = this.plugin.data.posts[meta.id]?.revision ? meta.slug : undefined;
+      let urlInput: import('obsidian').TextComponent;
+      const urlSetting = new Setting(section).setClass('naman-publish-field').setName('URL').setDesc(originalSlug ? 'Changing this address requires a separate confirmation. Old links will redirect and stay reserved.' : `${this.plugin.data.site}/blog/`).addText(input => {
+        urlInput = input;
+        input.setValue(meta.slug).setDisabled(originalSlug !== undefined).onChange(value => {
+          meta.slug = value;
+          if (originalSlug !== undefined && value !== originalSlug) meta.previousSlug = originalSlug;
+          else delete meta.previousSlug;
+          invalidate();
+        });
       });
+      if (originalSlug !== undefined) urlSetting.addButton(button => button.setButtonText('Change URL').onClick(() => {
+        urlInput.setDisabled(false); urlInput.inputEl.focus(); button.setDisabled(true);
+      }));
       new Setting(section).setClass('naman-publish-field').setName('Date').addText(input => {input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value; invalidate();});});
       new Setting(section).setClass('naman-publish-field').setName('Description').setDesc('A short summary for the blog list and search previews. Optional, up to 500 characters.').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value; invalidate();}));
       new Setting(section).setName('Live sync').setDesc('Saved edits sync after two seconds without typing or changes.').addToggle(toggle => toggle.setValue(draft.live).onChange(value => {draft.live = value; invalidate();}));
@@ -415,6 +429,7 @@ export class PublishModal extends Modal {
       primary = button;
       button.setButtonText(reviewLabel).setCta().onClick(async () => {
         if (reviewed.length) {
+          if (needsConfirmation()) return;
           button.setDisabled(true); setBusy(true);
           button.setButtonText(this.editing ? 'Updating…' : 'Publishing…');
           button.buttonEl.addClass('naman-publish-update', 'is-updating');
@@ -456,7 +471,7 @@ export class PublishModal extends Modal {
           for (const draft of drafts) {
             if (slugs.has(draft.meta.slug)) throw new Error('Two selected notes have the same URL. Give each note a different URL.');
             if (ids.has(draft.meta.id)) throw new Error('Two selected notes share a post identifier. Remove the copied blog_id before publishing.');
-            if (this.plugin.remote.some(post => post.slug === draft.meta.slug && post.id !== draft.meta.id)) throw new Error(`The URL “${draft.meta.slug}” already belongs to another post.`);
+            if (this.plugin.remote.some(post => (post.slug === draft.meta.slug && post.id !== draft.meta.id) || (post.aliases?.includes(draft.meta.slug) && (post.id !== draft.meta.id || draft.meta.previousSlug !== undefined)))) throw new Error(`The URL “${draft.meta.slug}” is already used or reserved by an old link.`);
             slugs.add(draft.meta.slug); ids.add(draft.meta.id);
           }
           const preparedNotes: typeof reviewed = [];
@@ -476,6 +491,15 @@ export class PublishModal extends Modal {
           preview.createEl('p', {text:'Private properties and comments are removed. Review each note and its images before publishing.'});
           for (const {draft, prepared} of reviewed) {
             preview.createEl('h4', {text:prepared.meta.title});
+            if (prepared.meta.previousSlug !== undefined) {
+              const change = preview.createDiv({cls:'naman-publish-url-change'});
+              change.createEl('p', {text:`Current: ${this.plugin.data.site}/blog/${prepared.meta.previousSlug}`});
+              change.createEl('p', {text:`New: ${this.plugin.data.site}/blog/${prepared.meta.slug}`});
+              change.createEl('p', {text:'Old links will redirect to this post. Previous URLs remain reserved and cannot be reused.', cls:'naman-publish-muted'});
+              new Setting(change).setClass('naman-publish-field').setName('Confirm new URL').setDesc(`Type ${prepared.meta.slug} to confirm.`).addText(input => {
+                input.onChange(value => { confirmedURLs.set(prepared.meta.id, value); primary.setDisabled(needsConfirmation()); });
+              });
+            }
             preview.createEl('p', {text:`${prepared.meta.date} · /blog/${prepared.meta.slug}`, cls:'naman-publish-muted'});
             preview.createEl('p', {text:prepared.meta.description || 'No description', cls:'naman-publish-muted'});
             for (const warning of prepared.warnings) preview.createEl('p', {text:warning, cls:'naman-publish-warning'});
@@ -485,7 +509,8 @@ export class PublishModal extends Modal {
               preview.createEl('img', {attr:{src:url, alt:`Image for ${draft.meta.title}`}, cls:'naman-publish-image'});
             }
           }
-          button.setButtonText(this.editing ? 'Update post' : reviewed.length > 1 ? `Publish all ${reviewed.length} notes` : 'Publish now');
+          button.setButtonText(this.editing ? (reviewed.some(({prepared}) => prepared.meta.previousSlug !== undefined) ? 'Change URL and update' : 'Update post') : reviewed.length > 1 ? `Publish all ${reviewed.length} notes` : 'Publish now');
+          button.setDisabled(needsConfirmation());
         } catch (error) {
           if (!this.closed) preview.createEl('p', {text:error instanceof Error ? error.message : 'Could not prepare these notes.', cls:'naman-publish-error'});
         } finally { setBusy(false); }
@@ -610,7 +635,7 @@ export class PublishPanel extends Modal {
           confirm.contentEl.createEl('h2', {text:'Use the latest saved revision?'});
           confirm.contentEl.createEl('p', {text:'The website changed elsewhere. This lets your next reviewed publication replace that version with this local note.'});
           new Setting(confirm.contentEl).addButton(button => button.setButtonText('Review local note').onClick(async () => {
-            saved.approved = false; saved.revision = post.revision; saved.hash = ''; await this.plugin.saveData(this.plugin.data); confirm.close(); new PublishModal(this.app,this.plugin,[file]).open();
+            saved.approved = false; saved.revision = post.revision; saved.slug = post.slug; saved.hash = ''; await this.plugin.saveData(this.plugin.data); confirm.close(); new PublishModal(this.app,this.plugin,[file]).open();
           })); confirm.open();
         }));
       }

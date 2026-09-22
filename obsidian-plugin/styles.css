@@ -37,5 +37,7 @@
 .naman-publish-field .setting-item-info { margin: 0; }
 .naman-publish-field .setting-item-control { width: 100%; justify-content: flex-start; }
 .naman-publish-field input[type="date"] { min-height: 32px; }
+.naman-publish-url-change { margin: 12px 0; padding: 4px 16px; border: 1px solid var(--background-modifier-border); border-radius: 6px; background: var(--background-secondary); }
+.naman-publish-url-change p { overflow-wrap: anywhere; }
 .naman-publish-footer .setting-item-info:empty { display: none; }
 .naman-publish-footer .setting-item-control { width: 100%; justify-content: flex-end; }

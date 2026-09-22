@@ -18,6 +18,7 @@ class Element {
   removeClass(name) { this.classes.delete(name); }
   addEventListener() {}
   setAttribute(name, value) { this.attributes[name] = value; }
+  focus() {}
   *walk() { yield this; for (const child of this.children) yield* child.walk(); }
 }
 class Control {
@@ -391,6 +392,98 @@ function editDetails(f) {
   button(f.panel, 'Edit details').click();
   return f.app.openModal;
 }
+
+function urlConfirmation(modal) {
+  const setting = [...modal.contentEl.walk()].find(el => el.name === 'Confirm new URL');
+  return setting && [...setting.walk()].find(el => el.control)?.control;
+}
+
+test('changing a published URL requires unlocking, review, and an exact typed confirmation', async () => {
+  const f = await publishedFixture(false);
+  const original = [...f.sources];
+  const modal = editDetails(f);
+  const url = field(modal,f.files[0],'URL');
+  assert.equal(url.disabled,true);
+  button(modal,'Change URL').click();
+  assert.equal(url.disabled,false);
+  url.change('better-url');
+  await button(modal,'Review changes').click();
+  const confirm = button(modal,'Change URL and update');
+  assert.equal(confirm.disabled,true);
+  await confirm.click();
+  assert.equal(f.requests.length,1,'review or an unconfirmed click never renames');
+  const text = [...modal.contentEl.walk()].map(el=>el.text||'').join(' ');
+  assert.match(text,/Current: https:\/\/naman.world\/blog\/manual/);
+  assert.match(text,/New: https:\/\/naman.world\/blog\/better-url/);
+  urlConfirmation(modal).change('wrong-url');
+  assert.equal(confirm.disabled,true);
+  urlConfirmation(modal).change('better-url');
+  assert.equal(confirm.disabled,false);
+  await confirm.click();
+  assert.equal(f.requests.at(-1).body.previousSlug,'manual');
+  assert.equal(f.requests.at(-1).body.slug,'better-url');
+  assert.equal(f.plugin.savedPost(f.files[0])[1].slug,'better-url');
+  assert.equal(f.plugin.live(f.files[0]),false);
+  assert.deepEqual([...f.sources],original);
+  const next = await f.plugin.prepare(f.files[0]);
+  assert.equal(next.meta.previousSlug,undefined,'rename approval is never reused by live saves');
+  assert.equal(next.hash,f.plugin.savedPost(f.files[0])[1].hash,'confirmation does not force an extra live publication');
+});
+
+test('URL confirmation resets after edits and cancelling leaves the public URL unchanged', async () => {
+  const f = await publishedFixture();
+  const modal = editDetails(f);
+  button(modal,'Change URL').click();
+  field(modal,f.files[0],'URL').change('first-choice');
+  await button(modal,'Review changes').click();
+  urlConfirmation(modal).change('first-choice');
+  field(modal,f.files[0],'URL').change('second-choice');
+  assert.equal(button(modal,'Change URL and update'),undefined);
+  await button(modal,'Review changes').click();
+  assert.equal(button(modal,'Change URL and update').disabled,true);
+  button(modal,'Cancel').click();
+  assert.equal(f.requests.length,1);
+  assert.equal(f.plugin.savedPost(f.files[0])[1].slug,'manual');
+});
+
+test('an unpublished note can choose a different URL when deliberately republished', async () => {
+  const f = await publishedFixture(false);
+  await f.plugin.unpublish(f.requests[0].body.id);
+  const modal = new PublishModal(f.app,f.plugin,[f.files[0]]); modal.onOpen();
+  button(modal,'Change URL').click();
+  field(modal,f.files[0],'URL').change('republished-note');
+  await button(modal,'Review publication').click();
+  assert.equal(button(modal,'Publish now').disabled,true);
+  urlConfirmation(modal).change('republished-note');
+  await button(modal,'Publish now').click();
+  assert.equal(f.requests.at(-1).body.previousSlug,'manual');
+  assert.equal(f.plugin.savedPost(f.files[0])[1].slug,'republished-note');
+  assert.equal(f.plugin.published(f.files[0]),true);
+  assert.equal(f.plugin.live(f.files[0]),false);
+});
+
+test('a batch waits for every changed URL to be confirmed before publishing any note', async () => {
+  const f = fixture(['First.md','Second.md']);
+  f.modal.onOpen();
+  await button(f.modal,'Review all notes').click();
+  await button(f.modal,'Publish all 2 notes').click();
+  const modal = new PublishModal(f.app,f.plugin,f.files);modal.onOpen();
+  const unlocks = [...modal.contentEl.walk()].filter(el=>el.tag==='button' && el.text==='Change URL').map(el=>el.control);
+  unlocks.forEach(control=>control.click());
+  field(modal,f.files[0],'URL').change('first-renamed');
+  field(modal,f.files[1],'URL').change('second-renamed');
+  await button(modal,'Review all notes').click();
+  const confirmations = [...modal.contentEl.walk()].filter(el=>el.name==='Confirm new URL').map(el=>[...el.walk()].find(el=>el.control).control);
+  confirmations[0].change('first-renamed');
+  assert.equal(button(modal,'Publish all 2 notes').disabled,true);
+  await button(modal,'Publish all 2 notes').click();
+  assert.equal(f.requests.length,2);
+  confirmations[1].change('second-renamed');
+  assert.equal(button(modal,'Publish all 2 notes').disabled,false);
+  await button(modal,'Publish all 2 notes').click();
+  assert.equal(f.requests.length,4);
+  assert.deepEqual(f.requests.slice(2).map(({body})=>body.previousSlug),['first','second']);
+});
 
 test('Edit details updates every public field, keeps URL and paused sync, and persists on reopen', async () => {
   const f = await publishedFixture(false);
