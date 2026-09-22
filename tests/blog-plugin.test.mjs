@@ -108,6 +108,43 @@ function field(modal, file, name) {
   return [...section.children.find(el => el.name === name).walk()].find(el => el.control)?.control;
 }
 
+test('text edits reuse prepared images and uploads, but changed bytes and sites do not', async () => {
+  const f = fixture(['Post.md']);
+  const image = new TFile('diagram.svg');
+  image.extension = 'svg'; image.stat = {size:100};
+  f.files.push(image);
+  let source = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10"/></svg>';
+  f.app.vault.readBinary = async () => new TextEncoder().encode(source).buffer;
+  f.sources.set('Post.md','# First\n\n![[diagram.svg]]');
+  const postApi = f.plugin.api;
+  let uploads = 0;
+  f.plugin.api = async (path, method, body) => {
+    if (path !== '/assets') return postApi(path, method, body);
+    uploads++;
+    const id = Buffer.from(await webcrypto.subtle.digest('SHA-256',body)).toString('hex');
+    return {url:`/api/blog/assets/${id}`};
+  };
+  const first = await f.plugin.prepare(f.files[0]);
+  await f.plugin.publish(f.files[0],first,true);
+  f.sources.set('Post.md','# Edited text\n\n![[diagram.svg]]');
+  const second = await f.plugin.prepare(f.files[0]);
+  assert.equal(second.images[0].bytes,first.images[0].bytes,'unchanged input avoids image conversion');
+  await f.plugin.publish(f.files[0],second,true);
+  assert.equal(uploads,1,'text-only edits upload no images');
+  source = source.replaceAll('10','20');
+  const changed = await f.plugin.prepare(f.files[0]);
+  assert.notEqual(changed.images[0].placeholder,first.images[0].placeholder,'content changes are detected even with unchanged file stats');
+  await f.plugin.publish(f.files[0],changed,true);
+  assert.equal(uploads,2);
+  f.plugin.data.site='https://another.example';
+  f.sources.set('Post.md','# Another destination\n\n![[diagram.svg]]');
+  await f.plugin.publish(f.files[0],await f.plugin.prepare(f.files[0]),true);
+  assert.equal(uploads,3,'uploads are specific to the destination');
+  source = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>';
+  await assert.rejects(f.plugin.prepare(f.files[0]),/unsupported or active/);
+  assert.equal(uploads,3,'unsafe replacements never upload');
+});
+
 test('one batch publishes all selected notes with dialog metadata and leaves Markdown untouched', async () => {
   const f = fixture();
   const original = [...f.sources];
@@ -576,7 +613,7 @@ test('typing during an image upload prevents the article POST until idle again',
   f.plugin.api = async (path, ...args) => {
     if (path !== '/assets') return api(path, ...args);
     arrived(); await new Promise(resolve => {release = resolve;});
-    return {url:'/api/blog/assets/test'};
+    return {url:`/api/blog/assets/${'a'.repeat(64)}`};
   };
   f.sources.set(file.path, 'Before typing resumes');
   const prepared = await f.plugin.prepare(file);

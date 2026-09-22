@@ -28,6 +28,9 @@ export default class NamanPublish extends Plugin {
   manualUpdates = new Map<string, Promise<void>>();
   stopped = false;
   remote: Post[] = [];
+  private preparedImages = new Map<string, Omit<Image, 'path'>>();
+  private preparedImageBytes = 0;
+  private uploadedImages = new Map<string, string>();
   async onload() {
     const saved = await this.loadData();
     this.data = { site: 'https://naman.world', secretId: `naman-publish-${crypto.randomUUID()}`, posts: {}, ...saved };
@@ -150,6 +153,14 @@ export default class NamanPublish extends Plugin {
         if (image.stat.size > 3_500_000) throw new Error('Keep each image below 3.5 MB.');
         if (imageByPath.has(image.path)) return imageByPath.get(image.path)!;
         const input = await this.app.vault.readBinary(image);
+        // Hash the actual bytes, not mtime: replacing an image must never reuse stale content.
+        const sourceHash = await hash(input);
+        const cached = this.preparedImages.get(sourceHash);
+        if (cached) {
+          images.push({ ...cached, path: image.path });
+          imageByPath.set(image.path, cached.placeholder);
+          return cached.placeholder;
+        }
         let bytes: ArrayBuffer;
         const type = image.extension.toLowerCase() === 'svg' ? 'image/svg+xml' : 'image/webp';
         if (type === 'image/svg+xml') {
@@ -166,6 +177,13 @@ export default class NamanPublish extends Plugin {
         }
         if (bytes.byteLength > 3_500_000) throw new Error('The prepared image exceeds 3.5 MB.');
         const placeholder = `/api/blog/assets/${await hash(bytes)}`;
+        this.preparedImages.set(sourceHash, { bytes, type, placeholder });
+        this.preparedImageBytes += bytes.byteLength;
+        while (this.preparedImages.size > 32 || this.preparedImageBytes > 16_000_000) {
+          const oldest = this.preparedImages.keys().next().value!;
+          this.preparedImageBytes -= this.preparedImages.get(oldest)!.bytes.byteLength;
+          this.preparedImages.delete(oldest);
+        }
         images.push({ path: image.path, bytes, type, placeholder });
         imageByPath.set(image.path, placeholder);
         return placeholder;
@@ -193,8 +211,17 @@ export default class NamanPublish extends Plugin {
     // All text checks and all image preparation have succeeded before the first upload.
     for (const image of prepared.images) {
       if (!canSend()) return;
-      const uploaded = await this.api('/assets', 'POST', image.bytes, image.type);
-      markdown = markdown.split(image.placeholder).join(uploaded.url);
+      // R2 assets are immutable; text edits can reuse an upload from this session.
+      const key = `${new URL(this.data.site).origin}${image.placeholder}`;
+      let url = this.uploadedImages.get(key);
+      if (!url) {
+        const uploaded = await this.api('/assets', 'POST', image.bytes, image.type);
+        if (!/^\/api\/blog\/assets\/[a-f0-9]{64}$/.test(uploaded.url)) throw new Error('The website returned an invalid image URL.');
+        url = uploaded.url as string;
+        this.uploadedImages.set(key, url);
+        if (this.uploadedImages.size > 128) this.uploadedImages.delete(this.uploadedImages.keys().next().value!);
+      }
+      markdown = markdown.split(image.placeholder).join(url);
     }
     if (!canSend()) return;
     const result = await this.api('', 'POST', { ...prepared.meta, markdown });
