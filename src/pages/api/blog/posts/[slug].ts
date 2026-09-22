@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { blogStore } from '../../../../lib/blog/store.mjs';
+import { readingSummary } from '../../../../lib/blog/reading.mjs';
 import { json, noCache } from '../../../../lib/blog/http.mjs';
 import { presentPostForReading } from '../../../../lib/blog/code-upgrade.mjs';
 export const prerender = false;
@@ -9,6 +10,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     const post = await blogStore().post(params.slug, revision);
     if (!post) return json({ error: 'Post not found.' }, 404);
     if (revision === post.revision) return new Response(null, { status: 204, headers: noCache });
-    return json({ title: post.title, description: post.description, date: post.date, html: await presentPostForReading(post.html, post.markdown), revision: post.revision, updated: post.updated });
+    const html = await presentPostForReading(post.html, post.markdown);
+    return json({ title: post.title, description: post.description, date: post.date, html, readingSummary: readingSummary(html), revision: post.revision, updated: post.updated });
   } catch { return json({ error: 'Temporarily unavailable.' }, 503); }
 };

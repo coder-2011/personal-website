@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogCatalogue from '../../components/BlogCatalogue.astro';
+import { readingSummary } from '../../lib/blog/reading.mjs';
 import { prepareCatalogue } from '../../lib/blog/catalogue.mjs';
 import { blogStore } from '../../lib/blog/store.mjs';
 import { blogPageHeaders } from '../../lib/blog/http.mjs';
@@ -32,7 +33,7 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
     <BlogCatalogue entries={presentation.outline} />
     <article class="essay blog-post" data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
-      {post ? <><p class="wisdom-meta"><time id="post-date" datetime={post.date}>{post.date}</time></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
+      {post ? <><p class="wisdom-meta blog-post-meta" id="post-meta"><time id="post-date" datetime={post.date}>{post.date}</time><span id="post-reading" title="Reading time estimated at 200 words per minute">{readingSummary(presentation.html)}</span></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
     </article>
     </div>
   </main>
@@ -60,6 +61,7 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
       if (!document.hidden) {
         const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (response.status === 404) {
+          document.getElementById('post-meta')!.hidden = true;
           cleanProgress();
           cleanSidenotes();
           cleanCatalogue();
@@ -75,6 +77,7 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
             document.getElementById('post-title')!.textContent = post.title;
             document.getElementById('post-date')!.textContent = post.date;
             document.getElementById('post-date')!.setAttribute('datetime', post.date);
+            document.getElementById('post-reading')!.textContent = post.readingSummary;
             cleanSidenotes();
             cleanCatalogue();
             body!.innerHTML = post.html;

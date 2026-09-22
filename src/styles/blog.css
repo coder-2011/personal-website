@@ -1,5 +1,9 @@
 .essay.blog-post { width: 100%; overflow-wrap: anywhere; }
 .blog-post > h1 { max-width: none; }
+.blog-post-meta { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .25rem 1rem; }
+.blog-post-meta[hidden] { display: none; }
+.blog-post-meta > span { margin-left: auto; text-align: right; }
+.blog-post-meta > time, .blog-post-meta > span { white-space: nowrap; }
 .blog-post #post-body { color: var(--text); font-size: inherit; line-height: inherit; }
 .blog-post #post-body p { font-size: inherit; line-height: inherit; }
 .blog-post #post-body :is(h2, h3, h4, h5, h6) { color: var(--text); line-height: 1.3; margin-top: 2.5rem; }
