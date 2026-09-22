@@ -7,18 +7,16 @@
     "dev": "astro dev --host --port 3000",
     "start": "astro dev --host --port 3000",
     "build": "astro build",
-    "preview": "astro preview --host --port 3000",
+    "preview": "wrangler dev --port 8787",
     "plugin:build": "node obsidian-plugin/build.mjs",
     "plugin:check": "tsc -p obsidian-plugin/tsconfig.json",
     "test:blog": "node --test tests/blog*.test.mjs",
-    "prebuild": "node scripts/build-embed-examples.mjs"
+    "prebuild": "node scripts/build-embed-examples.mjs",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
     "@astrojs/markdown-remark": "6.3.11",
-    "@astrojs/vercel": "^8.2.11",
-    "@vercel/analytics": "^2.0.1",
-    "@vercel/blob": "2.8.0",
-    "@vercel/functions": "3.9.8",
     "astro": "^5.7.1",
     "css-tree": "3.2.1",
     "github-slugger": "2.0.0",
@@ -33,14 +31,15 @@
     "remark-stringify": "11.0.0",
     "saxes": "6.0.0",
     "sharp": "0.34.5",
+    "shiki": "^3.23.0",
     "unified": "11.0.5",
-    "unist-util-visit": "5.1.0",
-    "vercel": "^54.0.0"
+    "unist-util-visit": "5.1.0"
   },
   "devDependencies": {
     "@types/node": "24.13.6",
     "esbuild": "0.27.7",
     "obsidian": "1.13.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "wrangler": "^4.136.1"
   }
 }

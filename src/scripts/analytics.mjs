@@ -1,16 +1,17 @@
-import { inject } from '@vercel/analytics';
+const token = import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN;
+const url = new URL(window.location.href);
 
-function publicPage(event) {
-  const url = new URL(event.url);
-  if (url.pathname === '/zoom' || url.pathname.startsWith('/api/')) return null;
-  url.search = '';
-  url.hash = '';
-  return { ...event, url: url.href };
-}
-
-// Preview deployments and embedded pages must not inflate the site's readership.
-if (window.self === window.top &&
-    ['naman.world', 'www.naman.world'].includes(window.location.hostname) &&
-    publicPage({ url: window.location.href })) {
-  inject({ mode: 'production', beforeSend: publicPage });
+// Cloudflare reports paths without query strings. Never load the beacon on the
+// OAuth callback, previews, APIs, or iframe copies of an article.
+if (/^[a-f0-9]{32}$/.test(token || '') && window.self === window.top &&
+    ['naman.world', 'www.naman.world'].includes(url.hostname) &&
+    url.pathname !== '/zoom' && !url.pathname.startsWith('/api/') &&
+    !document.head.querySelector('script[data-site-analytics]')) {
+  const script = document.createElement('script');
+  script.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  script.defer = true;
+  script.dataset.siteAnalytics = 'cloudflare';
+  script.dataset.cfBeacon = JSON.stringify({ token, spa: false });
+  script.referrerPolicy = 'no-referrer';
+  document.head.appendChild(script);
 }

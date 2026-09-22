@@ -9,7 +9,7 @@ for (const path of ['/', '/blog', `/blog/${slug}`]) {
     const response = await fetch(origin + path);
     const ttfb = Math.round(performance.now() - start);
     await response.arrayBuffer();
-    samples.push({ status: response.status, ttfb, total: Math.round(performance.now() - start), cache: response.headers.get('x-vercel-cache') });
+    samples.push({ status: response.status, ttfb, total: Math.round(performance.now() - start), cache: response.headers.get('x-blog-cache') || response.headers.get('cf-cache-status') });
   }
   results[path] = { first: samples[0], repeatMedian: samples.slice(1).map(s => s.ttfb).sort((a,b) => a-b)[2], samples };
 }

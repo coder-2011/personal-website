@@ -14,7 +14,7 @@ Astro.response.headers.set('CDN-Cache-Control', 'no-store');
 Astro.response.headers.set('Referrer-Policy', 'no-referrer');
 let post = null;
 let unavailable = false;
-try { post = await blogStore().post(Astro.params.slug); }
+try { post = await blogStore(Astro.locals.runtime).post(Astro.params.slug); }
 catch { unavailable = true; }
 if (!post) Astro.response.status = unavailable ? 503 : 404;
 else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);

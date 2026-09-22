@@ -1,12 +1,17 @@
-import vercel from "@astrojs/vercel";
+import cloudflare from "@astrojs/cloudflare";
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
   // Shared scripts should be cached across pages instead of repeated inside each HTML response.
-  vite: { build: { assetsInlineLimit: file => file.endsWith('.js') ? false : undefined } },
+  vite: {
+    define: { 'import.meta.env.SITE_BUILD_ID': JSON.stringify(Date.now().toString(36)) },
+    // Workers can instantiate bundled WASM modules, but cannot compile WASM bytes.
+    resolve: { alias: { 'shiki/wasm': new URL('./node_modules/shiki/dist/onig.wasm', import.meta.url).pathname } },
+    build: { assetsInlineLimit: file => file.endsWith('.js') ? false : undefined },
+  },
   build: { inlineStylesheets: 'never' },
   prefetch: { defaultStrategy: 'hover' },
-  adapter: vercel(),
+  adapter: cloudflare({ imageService: 'compile' }),
   integrations: [{
     name: 'site-analytics',
     hooks: {

@@ -2,16 +2,11 @@ import { timingSafeEqual } from 'node:crypto';
 import { blogStore } from './store.mjs';
 import { PublishError, validateMetadata } from './privacy.mjs';
 
-import { json, refreshBlogCache } from './http.mjs';
+import { json } from './http.mjs';
 export { json, noCache } from './http.mjs';
 
-async function refreshPublishedPages(post) {
-  try { await refreshBlogCache(post); }
-  catch { throw new PublishError('The post was saved, but refreshing the website failed. Retry to finish updating the public pages.', 503); }
-}
-
-function authenticate(request) {
-  const secret = process.env.BLOG_PUBLISH_TOKEN;
+function authenticate(request, env) {
+  const secret = env.BLOG_PUBLISH_TOKEN;
   if (!secret || secret.length < 32) throw new PublishError('Publishing is not configured.', 503);
   const supplied = Buffer.from(request.headers.get('authorization') || '');
   const expected = Buffer.from(`Bearer ${secret}`);
@@ -39,10 +34,10 @@ async function readBody(request, max) {
   } finally { clearTimeout(timer); reader.releaseLock(); }
 }
 
-export async function publishingRequest(request, mode = 'posts') {
+export async function publishingRequest(request, mode = 'posts', runtime = {}) {
   try {
-    authenticate(request);
-    const store = blogStore();
+    authenticate(request, runtime.env || process.env);
+    const store = blogStore(runtime);
     if (mode === 'assets' && request.method === 'POST') {
       const contentType = (request.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
       if (!/^image\/(png|jpeg|webp|svg\+xml)$/.test(contentType)) throw new PublishError('Only PNG, JPEG, WebP, and SVG images are supported.');
@@ -56,11 +51,14 @@ export async function publishingRequest(request, mode = 'posts') {
         catch { throw new PublishError('Use a UTF-8 encoded SVG.'); }
         safe = Buffer.from(sanitizeSvg(source));
       } else try {
-        const { default: sharp } = await import('sharp');
-        const image = sharp(bytes, { limitInputPixels: 25_000_000, animated: false });
-        const metadata = await image.metadata();
-        if (!['png', 'jpeg', 'webp'].includes(metadata.format)) throw new Error('format');
-        safe = await image.rotate().webp({ quality: 90 }).toBuffer();
+        const images = runtime.env?.IMAGES;
+        if (!images) throw new Error('Image service missing');
+        const metadata = await images.info(new Response(bytes).body);
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(metadata.format) ||
+            !metadata.width || !metadata.height || metadata.width * metadata.height > 25_000_000) throw new Error('format or dimensions');
+        // Decode and re-encode on the server too; WebP output discards EXIF/XMP metadata.
+        const output = await images.input(new Response(bytes).body).output({ format: 'image/webp', quality: 90, anim: false });
+        safe = new Uint8Array(await output.response().arrayBuffer());
       } catch { throw new PublishError('This image could not be safely decoded. Use a PNG, JPEG, or WebP under 25 megapixels.'); }
       const id = await store.putAsset(safe, svg ? 'image/svg+xml' : 'image/webp');
       return json({ id, url: `/api/blog/assets/${id}` });
@@ -76,7 +74,6 @@ export async function publishingRequest(request, mode = 'posts') {
     if (request.method === 'DELETE') {
       if (!/^[a-f0-9-]{36}$/.test(input.id || '') || !/^[a-f0-9-]{36}$/.test(input.baseVersion || '')) throw new PublishError('Invalid post revision.');
       const post = await store.unpublish(input.id, input.baseVersion);
-      await refreshPublishedPages(post);
       return json({ post });
     }
     const meta = validateMetadata(input);
@@ -87,7 +84,6 @@ export async function publishingRequest(request, mode = 'posts') {
     if (assets.length > 30) throw new PublishError('Use at most 30 images per post.');
     for (const id of assets) if (!await store.assetExists(id)) throw new PublishError('An image upload is missing. Publish the note again.');
     const post = await store.publish({ ...meta, ...rendered, assets });
-    await refreshPublishedPages(post);
     return json({ post, url: `/blog/${post.slug}` });
   } catch (error) {
     if (error instanceof PublishError) return json({ error: error.message }, error.status);

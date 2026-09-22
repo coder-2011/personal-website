@@ -85,8 +85,8 @@ async function callOpenRouter(apiKey: string, messages: ChatMessage[]) {
   });
 }
 
-export const POST: APIRoute = async ({ request }) => {
-  const apiKey = import.meta.env.OPENROUTER_API_KEY;
+export const POST: APIRoute = async ({ request, locals }) => {
+  const apiKey = locals.runtime.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
     return new Response("OPENROUTER_API_KEY is missing.", { status: 500 });

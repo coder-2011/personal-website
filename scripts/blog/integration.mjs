@@ -41,7 +41,7 @@ try {
     assert.ok(html.includes('style="color:gray;font-size:.8em"'));
     assert.ok(html.includes('<caption>Styled table</caption>'));
     assert.ok(html.includes('style="padding:.35rem .7rem;border:1px solid gray"'));
-    if (process.env.BLOG_EXPECT_CDN === '1' && i === 2) assert.equal(page.headers.get('x-vercel-cache'),'HIT');
+    if (process.env.BLOG_EXPECT_CDN === '1' && i === 2) assert.equal(page.headers.get('x-blog-cache'),'HIT');
   }
   await (await fetch(origin+asset.url)).arrayBuffer();
   const served=await fetch(origin+asset.url);

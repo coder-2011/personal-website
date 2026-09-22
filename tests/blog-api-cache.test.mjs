@@ -18,9 +18,9 @@ function fixture(post) {
       throw new Error(path);
     },
   });
-  return {calls,get:revision=>module.exports.GET({params:{slug:'example'},request:new Request(`https://naman.world/api/blog/posts/example?revision=${revision}`)})};
+  return {calls,get:revision=>module.exports.GET({params:{slug:'example'},locals:{runtime:{}},request:new Request(`https://naman.world/api/blog/posts/example?revision=${revision}`)})};
 }
-test('unchanged and new revisions use the same invalidatable CDN cache as the public pages',async()=>{
+test('unchanged and new revisions require a fresh visibility check',async()=>{
   const f=fixture({revision:'v2',html:'<p>Updated text</p>',title:'Example'});
   const unchanged=await f.get('v2');
   assert.equal(unchanged.status,200);
@@ -28,8 +28,6 @@ test('unchanged and new revisions use the same invalidatable CDN cache as the pu
   const changed=await f.get('v1');
   assert.equal((await changed.json()).html,'<p>Updated text</p>');
   for(const response of [unchanged,changed]) {
-    assert.equal(response.headers.get('Vercel-Cache-Tag'),blogPageHeaders['Vercel-Cache-Tag']);
-    assert.equal(response.headers.get('Vercel-CDN-Cache-Control'),'public, max-age=3600');
     assert.equal(response.headers.get('Cache-Control'),'private, no-store','readers must recheck the CDN, not reuse a browser snapshot');
   }
 });

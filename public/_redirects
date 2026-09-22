@@ -1,0 +1,4 @@
+/diffs https://diffs.naman.world 302
+/resume /resume.pdf 302
+/blogs /blog 301
+/diffs/* https://diffs.naman.world/:splat 302

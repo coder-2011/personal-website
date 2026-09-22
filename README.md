@@ -1,6 +1,6 @@
 # personal-website
 
-This is Naman Chetwani's personal Astro site. It is a small Vercel-deployed site for biography, projects, and a `/kairos` redirect path.
+This is Naman Chetwani's personal Astro site. It is a small Cloudflare-hosted site for biography, projects, and a `/kairos` redirect path.
 
 ## What the site contains
 
@@ -48,7 +48,21 @@ npm run preview
 
 ## Deployment
 
-The Astro adapter is configured for Vercel in `astro.config.mjs`.
+The Astro Cloudflare adapter builds a Worker and static assets. `wrangler.jsonc`
+contains the account, private R2 bucket, Images binding, and tokenizer rate limit.
+Runtime secrets (`BLOG_PUBLISH_TOKEN`, `OPENROUTER_API_KEY`) live in Worker secrets;
+`.dev.vars` holds local equivalents and `BLOG_NAMESPACE="development"` (gitignored).
+`PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN` is a public build-time Web Analytics site token.
+
+```bash
+npx wrangler login
+npm run deploy
+```
+
+Use Workers Paid for publishing and tokenizer demos: rendering long articles can
+exceed the free CPU allowance. R2 holds private revisions and images; do not enable
+public bucket access. Domains are switched only after preview verification.
+Vercel is no longer required at runtime. Existing Vercel data is retained as a backup.
 
 ```bash
 npm run build
@@ -60,7 +74,7 @@ The default dev server binds to host `0.0.0.0` on port `3000` through the Astro 
 
 `/embeds/bpe.html` is a standalone HTML frontend. It uses `/api/bpe` on
 localhost and `https://naman.world/api/bpe` when embedded elsewhere. The API
-runs in the existing Vercel Node function and uses the pinned GPT-2 vocabulary
+runs in the Cloudflare Worker and uses the pinned GPT-2 vocabulary
 in `src/data/`; the browser only renders the returned merge trace.
 
 Send `POST /api/bpe` with `Content-Type: application/json` and
@@ -71,9 +85,10 @@ by this handler, and responses use `Cache-Control: no-store`.
 
 This is intentionally a public, credential-free API. Wildcard CORS permits
 standalone and sandboxed iframe frontends; it is not an authentication barrier.
-Vercel Firewall rule `Tokenizer API rate limit` caps requests across `/api/bpe`
-and `/api/unigram` at 30 per 60 seconds per IP before function execution. The rule is managed in Vercel,
-separately from deployments. Do not replace it with an in-memory counter.
+The Cloudflare `TOKENIZER_LIMIT` binding caps `/api/bpe` and `/api/unigram`
+at 30 requests per 60 seconds per IP at each Cloudflare location. Middleware
+checks the binding before running a tokenizer. These are approximate per-location
+limits, not an in-memory application counter.
 
 Run API validation with `node --test tests/bpe.test.mjs`, then `npm run build`.
 For a native Obsidian embed, paste raw HTML rather than a fenced code block:
@@ -106,17 +121,30 @@ The vocabulary and normalization map are pinned in `src/data/T5-SOURCE.md`.
 It uses the same deferred theme setup as BPE and requires no plugin.
 Run both suites with `node --test tests/bpe.test.mjs tests/unigram.test.mjs`.
 
-Both endpoints share the Vercel firewall limit described above.
+Both endpoints share the Cloudflare rate limit described above.
 
 ## Obsidian blog publishing
 
-`/blog` lists published notes and the existing essays; `/blogs` redirects there. `/blog/[slug]` renders the latest stored HTML on demand. Visible pages check for updates every three seconds. Existing essay URLs are preserved.
+`/blog` lists published notes and the existing essays; `/blogs` redirects there. `/blog/[slug]` renders the latest stored HTML on demand. Visible pages check for updates every second; readers choose when to apply a new article version. Live saves wait for two idle seconds in Obsidian. Existing essay URLs are preserved.
 
 The desktop plugin and its usage instructions live in [`obsidian-plugin/README.md`](obsidian-plugin/README.md). Notes are explicitly reviewed before first publication; subsequent approved saves can sync immediately. Both the plugin and server enforce the publication boundary in `src/lib/blog/`.
 
-The publishing API requires `BLOG_PUBLISH_TOKEN` (at least 32 characters) and `BLOB_READ_WRITE_TOKEN` for a private Vercel Blob store. `BLOG_NAMESPACE` separates environments; without an override only Vercel's production environment uses `production`, and other runtimes use `development`. Use `publishing-lab` locally. Never put these keys in browser code or tracked files.
+The publishing API requires `BLOG_PUBLISH_TOKEN` (at least 32 characters), a private
+`BLOG_BUCKET` R2 binding, and the `IMAGES` binding. `BLOG_NAMESPACE` separates local
+and production data. Never put secrets in browser code or tracked files.
 
-`POST /api/publish` renders and publishes a note; `GET` lists authenticated publication state; `DELETE` unpublishes it. Writes use stable note IDs, immutable revisions, and conditional index writes to reject stale replacements. PNG/JPEG/WebP and sanitized vector SVG uploads use `POST /api/publish/assets`, and public image reads require a reference from a current published post. Storage reads bypass the Blob CDN cache. Public HTML and images are cached on Vercel’s edge for up to one hour; successful publish and unpublish requests await a hard purge of the shared blog cache tag, then warm and verify the list and post page before reporting success. Live polling and authenticated requests remain uncached. Failed cache refreshes return an error so the plugin retries the saved operation. Unpublished revisions remain private for recovery.
+`POST /api/publish` renders and publishes a note; `GET` lists authenticated
+publication state; `DELETE` unpublishes it. R2 conditional writes serialize index
+changes, including concurrent first publications. Identical retries create no new
+revision. Raster uploads are decoded and re-encoded to WebP through Cloudflare
+Images to strip metadata; SVGs are sanitized separately on the server.
+
+Public requests check R2's strongly consistent publication index before consulting
+Cloudflare's response cache. Cache keys include the current index revision and
+site build. A new publication or withdrawal immediately stops serving the old
+cached response without a global purge. Images require a reference from a current
+published post. Browser responses are never cached; unpublished revisions remain
+private for recovery. Live polling still performs one index read per request.
 
 Validation:
 
@@ -125,10 +153,10 @@ npm run plugin:check
 npm run plugin:build
 npm run test:blog
 npm run build
-node --env-file=.env.local scripts/blog/integration.mjs
+BLOG_TEST_ORIGIN=http://127.0.0.1:8787 node --env-file=.dev.vars scripts/blog/integration.mjs
 ```
 
-The integration command requires a running local site at `127.0.0.1:4321`, or an explicit `BLOG_TEST_ORIGIN`. It creates and unpublishes a synthetic post and verifies authentication, images, privacy failures, stale updates, and immediate reads.
+Run `npm run preview` after building to test in the actual Workers runtime. The integration command uses `BLOG_TEST_ORIGIN` to select that server. It creates and unpublishes a synthetic post and verifies authentication, images, privacy failures, stale updates, and immediate reads.
 
 ## Page loading
 
@@ -140,19 +168,16 @@ Tokenizer embeds include their default example, generated from the real models d
 
 ## Analytics
 
-[Vercel Web Analytics dashboard](https://vercel.com/coder-2011s-projects/personal-website/analytics)
-shows site visitors, page views, traffic sources, countries, and devices. Use the
-Pages panel to select a specific `/blog/post-slug` and see its readership; new
-published posts are tracked automatically. Visitors and page views are separate:
-one visitor can read several pages or reload the same page.
+[Cloudflare Web Analytics](https://dash.cloudflare.com/ccc40688201525bb82aed7aa2e045405/web-analytics)
+shows visitors and page views. Filter the Path dimension to `/blog/post-slug` for
+a post's readership. New published posts are tracked automatically. Historical
+Vercel analytics remain in Vercel; new visits are collected by Cloudflare.
 
-`@vercel/analytics` initializes once through `src/scripts/analytics.mjs`, injected
-into every Astro page by `astro.config.mjs`. The shared script is deferred and
-cached as a hashed asset. It only collects on `naman.world` and `www.naman.world`;
-local development, preview domains, iframe views, and the `/zoom` OAuth callback
-are excluded. Query strings and fragments are removed before sending page URLs.
-Raw embed HTML, API calls, and direct file downloads are not page views. There is
-no session replay, form capture, or note-content tracking.
+`src/scripts/analytics.mjs` loads Cloudflare's deferred beacon once on production
+hosts. Local development, previews, iframe views, APIs, and the `/zoom` OAuth
+callback are excluded. Cloudflare Web Analytics does not log query strings.
+Use manual installation in the dashboard to avoid injecting a second beacon.
+Raw embed HTML and downloads are not counted as page views.
 
 ## Site notes
 

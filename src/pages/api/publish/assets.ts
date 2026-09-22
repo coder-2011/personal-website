@@ -1,4 +1,4 @@
 import type { APIRoute } from 'astro';
 import { publishingRequest } from '../../../lib/blog/api.mjs';
 export const prerender = false;
-export const ALL: APIRoute = ({ request }) => publishingRequest(request, 'assets');
+export const ALL: APIRoute = ({ request, locals }) => publishingRequest(request, 'assets', locals.runtime);

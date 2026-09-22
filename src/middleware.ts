@@ -1,0 +1,32 @@
+import { defineMiddleware } from 'astro:middleware';
+import { blogStore, digest } from './lib/blog/store.mjs';
+import { cachedBlogResponse } from './lib/blog/cache.mjs';
+
+export const onRequest = defineMiddleware(async ({ request, url, locals }, next) => {
+  if (['/api/bpe', '/api/unigram'].includes(url.pathname) && locals.runtime?.env.TOKENIZER_LIMIT) {
+    const { success } = await locals.runtime.env.TOKENIZER_LIMIT.limit({ key: request.headers.get('CF-Connecting-IP') || 'local' });
+    if (!success) return Response.json({ error: 'Too many requests. Try again in a minute.' }, {
+      status: 429, headers: { 'Retry-After': '60', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
+    });
+  }
+  if (request.method !== 'GET' || !locals.runtime?.env.BLOG_BUCKET ||
+      !/^(?:\/blog(?:\/[^/]+)?|\/api\/blog\/(?:posts|assets)\/[^/]+)\/?$/.test(url.pathname)) return next();
+  try {
+    // Always consult R2's strongly consistent index before serving a cached page.
+    // Old revisions and images become inaccessible as soon as unpublish succeeds.
+    const entries = await blogStore(locals.runtime).list();
+    const version = digest(JSON.stringify(entries.map(({ id, revision, published }) => [id, revision, published])));
+    return await cachedBlogResponse({
+      request, entries, version,
+      build: import.meta.env.SITE_BUILD_ID,
+      namespace: locals.runtime.env.BLOG_NAMESPACE,
+      cache: locals.runtime.caches.default,
+      waitUntil: promise => locals.runtime.ctx.waitUntil(promise),
+    }, next);
+  } catch {
+    // Do not serve a cached publication if its current visibility cannot be checked.
+    return new Response('Temporarily unavailable. Please try again shortly.', {
+      status: 503, headers: { 'Cache-Control': 'private, no-store' },
+    });
+  }
+});

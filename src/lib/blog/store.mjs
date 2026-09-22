@@ -1,4 +1,3 @@
-import { get, put, BlobPreconditionFailedError } from '@vercel/blob';
 import { createHash, randomUUID } from 'node:crypto';
 import { PublishError } from './privacy.mjs';
 
@@ -82,28 +81,28 @@ export function createBlogStore(blobs, prefix = 'blog') {
   return { list, publish, unpublish, post, putAsset, assetExists, asset };
 }
 
-export function blogStore() {
-  const token = process.env.BLOB_READ_WRITE_TOKEN;
-  if (!token) throw new PublishError('Publishing storage is not configured.', 503);
-  const namespace = process.env.BLOG_NAMESPACE || (process.env.VERCEL_ENV === 'production' ? 'production' : 'development');
+// R2 remains private. All reads go through the publication index, including assets.
+export function blogStore(runtime = {}) {
+  const { BLOG_BUCKET: bucket, BLOG_NAMESPACE: namespace = 'production' } = runtime.env || {};
+  if (!bucket) throw new PublishError('Publishing storage is not configured.', 503);
   if (!/^[a-z0-9-]+$/.test(namespace)) throw new Error('Invalid blog namespace.');
   return createBlogStore({
     async read(path, binary = false) {
-      // Compression changes the HTTP ETag to a weak validator, which Blob rejects on conditional writes.
-      const result = await get(path, { access: 'private', useCache: false, token, headers: { 'Accept-Encoding': 'identity' } });
-      if (!result || result.statusCode !== 200) return null;
-      const response = new Response(result.stream);
-      return binary ? { bytes: new Uint8Array(await response.arrayBuffer()), contentType: result.blob.contentType, etag: result.blob.etag }
-        : { text: await response.text(), etag: result.blob.etag };
+      const result = await bucket.get(path);
+      if (!result) return null;
+      return binary ? { bytes: new Uint8Array(await result.arrayBuffer()), contentType: result.httpMetadata?.contentType, etag: result.etag }
+        : { text: await result.text(), etag: result.etag };
     },
     async write(path, content, etag, contentType = 'application/json', immutable = false) {
-      try {
-        return await put(path, content, { access: 'private', token, contentType, addRandomSuffix: false, ...(etag ? { ifMatch: etag } : {}), cacheControlMaxAge: 60 });
-      } catch (error) {
-        if (immutable && /already exists/i.test(error.message)) return;
-        throw error;
-      }
+      // A missing ETag means create-only, including the very first index write.
+      // R2's conditional put keeps concurrent publications from overwriting one another.
+      const result = await bucket.put(path, content, {
+        onlyIf: etag ? { etagMatches: etag } : { etagDoesNotMatch: '*' },
+        httpMetadata: { contentType },
+      });
+      if (!result && !immutable) throw new StorageConflict();
     },
-    conflict: error => error instanceof BlobPreconditionFailedError || /already exists/i.test(error.message),
+    conflict: error => error instanceof StorageConflict,
   }, `blog/${namespace}`);
 }
+class StorageConflict extends Error {}

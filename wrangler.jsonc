@@ -1,0 +1,41 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "naman-world",
+  "account_id": "ccc40688201525bb82aed7aa2e045405",
+  "main": "./dist/_worker.js/index.js",
+  "compatibility_date": "2026-09-21",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
+  "r2_buckets": [
+    {
+      "binding": "BLOG_BUCKET",
+      "bucket_name": "naman-blog"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "vars": {
+    "BLOG_NAMESPACE": "production"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1,
+    "redact_query_string": true
+  },
+  "ratelimits": [
+    {
+      "name": "TOKENIZER_LIMIT",
+      "namespace_id": "20260921",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    }
+  ]
+}
