@@ -58,7 +58,8 @@
 .blog-post .blog-sidenote-number { position: absolute; left: 0; top: 0; font-size: .85em; }
 .blog-post .blog-sidenote :is(ul, ol) { margin-block: .6rem; padding-left: 1em; }
 .blog-post .blog-sidenote:target { outline: 1px solid var(--border); outline-offset: .5rem; }
-.blog-post .blog-sidenote.is-highlighted { background: var(--wash); box-shadow: 0 0 0 .4rem var(--wash); }
+::highlight(footnote-selection) { background-color: Highlight; color: HighlightText; }
+.blog-post .blog-sidenote.is-selected { background-color: Highlight; color: HighlightText; }
 @media (min-width: 1100px) {
   .page.blog-page:has(.blog-sidenote) { width: min(100%, 1280px); }
   .blog-post:has(.blog-sidenote) :is(#post-body, #post-meta) { width: calc(100% - 18rem); }
