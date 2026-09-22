@@ -37,5 +37,21 @@
         "period": 60
       }
     }
+  ],
+  "limits": {
+    "cpu_ms": 10000
+  },
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "naman.world",
+      "custom_domain": true,
+      "zone_id": "c6e76afa19b5c5993cf8e80cdd7b443e"
+    },
+    {
+      "pattern": "www.naman.world",
+      "custom_domain": true,
+      "zone_id": "c6e76afa19b5c5993cf8e80cdd7b443e"
+    }
   ]
 }
