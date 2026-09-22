@@ -8,7 +8,7 @@ function fixture() {
   const timers = new Map(), calls = [], applied = [], events = new EventTarget();
   const button = new EventTarget(), article = {dataset:{slug:'test',revision:'v1'},focus:() => {article.focused = true;}};
   const notice = {hidden:true,querySelector:() => button};
-  const document = {hidden:false};
+  const document = new EventTarget(); document.hidden = false;
   const window = {addEventListener:events.addEventListener.bind(events),removeEventListener:events.removeEventListener.bind(events),scrollY:1000,innerHeight:800,scrollTo:options => {window.scrollY = options.top;}};
   let id = 0, response = {status:204,ok:true}, withdrawn = 0;
   const context = vm.createContext({AbortController,document,window,
@@ -57,7 +57,10 @@ test('network errors and hidden tabs are quiet, while unpublishing cancels pendi
   const f = fixture();
   f.document.hidden = true; await f.tick();
   assert.equal(f.calls.length,0);
-  f.document.hidden = false; f.post('v2'); await f.tick();
+  assert.equal(f.timers.size,0,'hidden tabs do not wake up every second');
+  f.document.hidden = false; f.post('v2'); f.document.dispatchEvent(new Event('visibilitychange'));
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(f.calls.length,1,'returning to the tab checks immediately');
   f.response(() => {throw new Error('Offline');}); await f.tick();
   assert.equal(f.notice.hidden,false,'keep the downloaded version available');
   assert.equal([...f.timers.values()][0].delay,15000);

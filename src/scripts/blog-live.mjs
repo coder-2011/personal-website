@@ -32,7 +32,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
       }
     } catch { delay = 15000; }
     finally {
-      if (run === generation && !paused && !removed) timer = setTimeout(poll, delay);
+      if (run === generation && !paused && !removed && !document.hidden) timer = setTimeout(poll, delay);
     }
   }
   function apply() {
@@ -55,15 +55,23 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
     paused = false;
     void poll();
   }
+  function visibilityChanged() {
+    generation++;
+    clearTimeout(timer);
+    controller?.abort();
+    if (!document.hidden && !paused && !removed) void poll();
+  }
   button.addEventListener('click', apply);
   window.addEventListener('pagehide', pause);
   window.addEventListener('pageshow', resume);
-  timer = setTimeout(poll, 1000);
+  document.addEventListener('visibilitychange', visibilityChanged);
+  if (!document.hidden) timer = setTimeout(poll, 1000);
   return () => {
     pause(); notice.hidden = true;
     button.removeEventListener('click', apply);
     window.removeEventListener('pagehide', pause);
     window.removeEventListener('pageshow', resume);
+    document.removeEventListener('visibilitychange', visibilityChanged);
   };
 }
 

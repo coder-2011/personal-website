@@ -36,7 +36,7 @@ export function enableCatalogue(page, body) {
   tools.hidden = !flat.length;
   page.classList.toggle('has-catalogue', !!flat.length);
   page.classList.add('catalogue-ready');
-  let active = null, frame = 0;
+  let active = null, frame = 0, positions = [], layoutChanged = true;
   function highlight(index) {
     const link = links[index];
     if (!link || active === link) return;
@@ -55,17 +55,22 @@ export function enableCatalogue(page, body) {
   }
   function track() {
     frame = 0;
-    const positions = targets.map(heading => heading.getBoundingClientRect().top);
+    const offset = window.scrollY;
+    if (layoutChanged) {
+      positions = targets.map(heading => heading.getBoundingClientRect().top + offset);
+      layoutChanged = false;
+    }
     // Match the reference: first visible heading, or the closest one above us
     // while reading a section whose next heading is still below the viewport.
-    let index = positions.findIndex(top => top >= 72 && top < innerHeight);
+    let index = positions.findIndex(top => top >= offset + 72 && top < offset + innerHeight);
     if (index < 0) {
-      index = positions.findLastIndex(top => top < 72);
+      index = positions.findLastIndex(top => top < offset + 72);
       if (index < 0) index = 0;
     }
     highlight(index);
   }
   function schedule() { if (!frame) frame = requestAnimationFrame(track); }
+  function relayout() { layoutChanged = true; schedule(); }
   function close() { dialog.close(); }
   function restore() {
     host.append(nav);
@@ -90,7 +95,7 @@ export function enableCatalogue(page, body) {
     target.focus({ preventScroll: true });
     target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   }
-  function resized() { if (wide.matches && dialog.open) close(); schedule(); }
+  function resized() { if (wide.matches && dialog.open) close(); relayout(); }
   function backdrop(event) { if (event.target === dialog) close(); }
   const closeButton = dialog.querySelector('button');
   toggle.addEventListener('click', open);
@@ -101,13 +106,16 @@ export function enableCatalogue(page, body) {
   window.addEventListener('scroll', schedule, { passive: true });
   window.addEventListener('resize', resized);
   window.addEventListener('hashchange', schedule);
-  body.addEventListener('load', schedule, true);
-  document.fonts.addEventListener('loadingdone', schedule);
+  body.addEventListener('load', relayout, true);
+  document.fonts.addEventListener('loadingdone', relayout);
+  const observer = new ResizeObserver(relayout);
+  observer.observe(body);
   track();
   return () => {
     if (dialog.open) close();
     restore();
     cancelAnimationFrame(frame);
+    observer.disconnect();
     toggle.removeEventListener('click', open);
     closeButton.removeEventListener('click', close);
     dialog.removeEventListener('close', restore);
@@ -116,7 +124,7 @@ export function enableCatalogue(page, body) {
     window.removeEventListener('scroll', schedule);
     window.removeEventListener('resize', resized);
     window.removeEventListener('hashchange', schedule);
-    body.removeEventListener('load', schedule, true);
-    document.fonts.removeEventListener('loadingdone', schedule);
+    body.removeEventListener('load', relayout, true);
+    document.fonts.removeEventListener('loadingdone', relayout);
   };
 }
