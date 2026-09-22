@@ -46,13 +46,47 @@ test('edge cache separates revisions, withdrawals, builds, and unchanged respons
   assert.equal(hit.headers.get('Cache-Control'),'private, no-store');
   assert.equal(calls,1);
   await get('/blog/note',{version:'v2'});
+  assert.equal(calls,1,'an unrelated publication retains this revision in cache');
+  await get('/blog/note',{entries:[{slug:'note',revision:'r2',published:true}]});
   await get('/blog/note',{version:'v3',entries:[{slug:'note',revision:'r3',published:false}]});
   await get('/blog/note',{build:'build2'});
   assert.equal(calls,4);
-  await get('/api/blog/posts/note?revision=r1');
+  const unchanged = await get('/api/blog/posts/note?revision=r1');
+  assert.deepEqual(await unchanged.json(),{revision:'r1'});
+  assert.equal(calls,4,'a fresh index answers unchanged polls without rendering');
   await get('/api/blog/posts/note?revision=old');
   await get('/api/blog/posts/note?revision=another-old');
-  assert.equal(calls,6,'old query values share one changed-content entry');
+  assert.equal(calls,5,'old query values share one changed-content entry');
+});
+
+test('one fresh index serves a cache miss and asset existence uses metadata only', async () => {
+  const storage = bucket(), reads = [];
+  const original = storage.get;
+  storage.get = async path => {reads.push(path);return original(path);};
+  storage.head = async path => original(path);
+  const store = blogStore({env:{BLOG_BUCKET:storage,BLOG_NAMESPACE:'test'}});
+  await store.publish(post('note'));
+  reads.length = 0;
+  const entries = await store.list();
+  assert.equal((await store.post('note',undefined,entries)).title,'note');
+  assert.equal(reads.filter(path=>path.endsWith('/index.json')).length,1);
+  reads.length = 0;
+  assert.equal(await store.assetExists('missing'),false);
+  assert.equal(reads.length,0,'existence checks do not download image bytes');
+  await store.unpublish(entries[0].id,entries[0].revision);
+  assert.equal(await store.post('note'),null,'a later request never reuses that snapshot');
+});
+
+test('a cached image is hidden immediately when its last published reference is removed', async () => {
+  const id='a'.repeat(64), values=new Map();
+  const options={request:new Request(`https://naman.world/api/blog/assets/${id}`),entries:[{published:true,assets:[id]}],build:'b',namespace:'test',version:'v1',cache:{match:async key=>values.get(key.url)?.clone(),put:async(key,res)=>values.set(key.url,res)},waitUntil:()=>{}};
+  const first = await cachedBlogResponse(options,async()=>new Response('image'));
+  assert.equal(first.headers.get('Cache-Control'),'private, no-cache');
+  const conditional = new Request(options.request,{headers:{'If-None-Match':first.headers.get('ETag')}});
+  const reused = await cachedBlogResponse({...options,request:conditional},async()=>{throw new Error('Must not read image again');});
+  assert.equal(reused.status,304);
+  const removed=await cachedBlogResponse({...options,request:conditional,entries:[{published:false,assets:[id]}]},async()=>new Response('removed',{status:404}));
+  assert.equal(removed.status,404);
 });
 
 test('errors and cookie-bearing responses are excluded from the edge cache', async () => {

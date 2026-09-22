@@ -60,8 +60,8 @@ export function createBlogStore(blobs, prefix = 'blog') {
       return { changed: true, entry };
     });
   }
-  async function post(slug, knownRevision) {
-    const entry = (await list()).find(p => p.slug === slug && p.published);
+  async function post(slug, knownRevision, entries) {
+    const entry = (entries ?? await list()).find(p => p.slug === slug && p.published);
     if (!entry) return null;
     if (knownRevision === entry.revision) return { revision: entry.revision };
     const value = await blobs.read(`${prefix}/revisions/${entry.id}/${entry.revision}.json`);
@@ -73,9 +73,12 @@ export function createBlogStore(blobs, prefix = 'blog') {
     await blobs.write(`${prefix}/assets/${id}`, bytes, undefined, contentType, true);
     return id;
   }
-  async function assetExists(id) { return !!await blobs.read(`${prefix}/assets/${id}`, true); }
-  async function asset(id) {
-    if (!(await list()).some(p => p.published && p.assets.includes(id))) return null;
+  async function assetExists(id) {
+    const path = `${prefix}/assets/${id}`;
+    return blobs.exists ? await blobs.exists(path) : !!await blobs.read(path, true);
+  }
+  async function asset(id, entries) {
+    if (!(entries ?? await list()).some(p => p.published && p.assets.includes(id))) return null;
     return blobs.read(`${prefix}/assets/${id}`, true);
   }
   return { list, publish, unpublish, post, putAsset, assetExists, asset };
@@ -87,6 +90,7 @@ export function blogStore(runtime = {}) {
   if (!bucket) throw new PublishError('Publishing storage is not configured.', 503);
   if (!/^[a-z0-9-]+$/.test(namespace)) throw new Error('Invalid blog namespace.');
   return createBlogStore({
+    async exists(path) { return !!await bucket.head(path); },
     async read(path, binary = false) {
       const result = await bucket.get(path);
       if (!result) return null;

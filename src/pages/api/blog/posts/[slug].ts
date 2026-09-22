@@ -7,7 +7,7 @@ export const prerender = false;
 export const GET: APIRoute = async ({ params, request, locals }) => {
   try {
     const revision = new URL(request.url).searchParams.get('revision');
-    const post = await blogStore(locals.runtime).post(params.slug, revision);
+    const post = await blogStore(locals.runtime).post(params.slug, revision, locals.blogEntries);
     if (!post) return json({ error: 'Post not found.' }, 404);
     // Unchanged revisions return only their version, preserving the reader's current article.
     if (revision === post.revision) return Response.json({ revision: post.revision }, { headers: blogPageHeaders });

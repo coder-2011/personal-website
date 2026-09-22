@@ -7,7 +7,7 @@ Astro.response.headers.set('Cache-Control', 'no-store');
 Astro.response.headers.set('CDN-Cache-Control', 'no-store');
 let unavailable = false;
 let posts = [];
-try { posts = (await blogStore(Astro.locals.runtime).list()).filter(p => p.published).sort((a,b) => b.date.localeCompare(a.date)); }
+try { posts = (Astro.locals.blogEntries ?? await blogStore(Astro.locals.runtime).list()).filter(p => p.published).sort((a,b) => b.date.localeCompare(a.date)); }
 catch { unavailable = true; Astro.response.status = 503; }
 if (!unavailable) for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);
 ---

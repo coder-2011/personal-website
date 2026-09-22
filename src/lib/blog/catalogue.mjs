@@ -7,8 +7,8 @@ function title(node) {
   return node.nodeName === '#text' ? node.value : (node.childNodes || []).map(title).join('');
 }
 
-export function prepareCatalogue(html) {
-  const tree = parseFragment(html), headings = [], usedIds = new Set();
+export function prepareCatalogue(html, tree = parseFragment(html)) {
+  const headings = [], usedIds = new Set();
   function walk(node, excluded = false) {
     if (attr(node, 'id')) usedIds.add(attr(node, 'id'));
     excluded ||= ['pre', 'code'].includes(node.tagName) || attr(node, 'data-footnotes') !== undefined || (attr(node, 'class') || '').split(/\s+/).includes('blog-sidenote');

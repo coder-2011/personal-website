@@ -7,5 +7,7 @@ type Runtime = import('@astrojs/cloudflare').Runtime<{
   IMAGES: import('@cloudflare/workers-types').ImagesBinding;
 }>;
 declare namespace App {
-  interface Locals extends Runtime {}
+  interface Locals extends Runtime {
+    blogEntries?: Awaited<ReturnType<ReturnType<typeof import('./lib/blog/store.mjs').blogStore>['list']>>;
+  }
 }

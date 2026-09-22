@@ -1,8 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BlogCatalogue from '../../components/BlogCatalogue.astro';
-import { readingSummary } from '../../lib/blog/reading.mjs';
-import { prepareCatalogue } from '../../lib/blog/catalogue.mjs';
+import { prepareReading } from '../../lib/blog/reading.mjs';
 import { blogStore } from '../../lib/blog/store.mjs';
 import { blogPageHeaders } from '../../lib/blog/http.mjs';
 import { presentPostForReading } from '../../lib/blog/code-upgrade.mjs';
@@ -14,11 +13,11 @@ Astro.response.headers.set('CDN-Cache-Control', 'no-store');
 Astro.response.headers.set('Referrer-Policy', 'no-referrer');
 let post = null;
 let unavailable = false;
-try { post = await blogStore(Astro.locals.runtime).post(Astro.params.slug); }
+try { post = await blogStore(Astro.locals.runtime).post(Astro.params.slug, undefined, Astro.locals.blogEntries); }
 catch { unavailable = true; }
 if (!post) Astro.response.status = unavailable ? 503 : 404;
 else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);
-const presentation = prepareCatalogue(post ? await presentPostForReading(post.html, post.markdown) : '');
+const presentation = prepareReading(post ? await presentPostForReading(post.html, post.markdown) : '');
 ---
 <BaseLayout title={`${post?.title || 'Post unavailable'} | Naman Chetwani`} description={post?.description || 'Notes and essays by Naman Chetwani.'}>
   {post && <div class="blog-reading-progress" aria-hidden="true"></div>}
@@ -33,7 +32,7 @@ const presentation = prepareCatalogue(post ? await presentPostForReading(post.ht
     <BlogCatalogue entries={presentation.outline} />
     <article class="essay blog-post" tabindex="-1" data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
-      {post ? <><p class="wisdom-meta blog-post-meta" id="post-meta"><time id="post-date" datetime={post.date}>{post.date}</time><span id="post-reading" title="Reading time estimated at 200 words per minute">{readingSummary(presentation.html)}</span></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
+      {post ? <><p class="wisdom-meta blog-post-meta" id="post-meta"><time id="post-date" datetime={post.date}>{post.date}</time><span id="post-reading" title="Reading time estimated at 200 words per minute">{presentation.readingSummary}</span></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
     </article>
     </div>
   </main>

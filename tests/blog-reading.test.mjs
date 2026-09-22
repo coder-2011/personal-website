@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readingSummary } from '../src/lib/blog/reading.mjs';
+import { readingSummary, prepareReading } from '../src/lib/blog/reading.mjs';
+import { prepareCatalogue } from '../src/lib/blog/catalogue.mjs';
+
+test('shared article parsing preserves the catalogue and reading count', () => {
+  const html='<h2>A title</h2><p>Some <em>text</em>.</p><pre><code>const x = 1;</code></pre><span class="katex">duplicate math</span>';
+  const prepared=prepareReading(html);
+  assert.deepEqual(prepared,{...prepareCatalogue(html),readingSummary:readingSummary(html)});
+});
 
 test('reading summary counts formatted article text without merging blocks or splitting styled words', () => {
   assert.equal(readingSummary('<h2>Hello <em>world</em></h2><p>A token<span>izer</span> &amp; café.</p><table><tr><td>one</td><td>two</td></tr></table>'), '7 words · 1 min read');

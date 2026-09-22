@@ -1,7 +1,5 @@
-import { createShikiHighlighter } from '@astrojs/markdown-remark';
 import { parseFragment, serialize } from 'parse5';
 import { codeThemes } from './code-theme.mjs';
-import { renderPost } from './render.mjs';
 import { presentPost } from './presentation.mjs';
 
 const cache = new Map();
@@ -17,7 +15,7 @@ async function upgrade(html) {
   }
   collect(tree);
   if (!blocks.length) return html;
-  highlighter ??= createShikiHighlighter({ themes: codeThemes });
+  highlighter ??= import('@astrojs/markdown-remark').then(({createShikiHighlighter}) => createShikiHighlighter({ themes: codeThemes }));
   const engine = await highlighter;
   // Sequential language loads share the highlighter; the surrounding cache also
   // coalesces concurrent requests for the same stored article.
@@ -52,7 +50,7 @@ export function presentPostForReading(html, markdown) {
   const legacyMath = html.includes('class="katex"') && !html.includes('data-math-version="2"');
   if (!legacyMath && !html.includes('github-dark') && !/class="astro-code obsidian-ukiyo(?:"| )/.test(html)) return Promise.resolve(presentPost(html, markdown));
   if (cache.has(html)) return cache.get(html);
-  const result = (legacyMath ? renderPost(markdown, {legacyMath:true}).then(post => post.html) : upgrade(presentPost(html, markdown)))
+  const result = (legacyMath ? import('./render.mjs').then(({renderPost}) => renderPost(markdown, {legacyMath:true})).then(post => post.html) : upgrade(presentPost(html, markdown)))
     .catch(error => { cache.delete(html); throw error; });
   cache.set(html, result);
   if (cache.size > 8) cache.delete(cache.keys().next().value);

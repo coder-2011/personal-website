@@ -82,7 +82,7 @@ export async function publishingRequest(request, mode = 'posts', runtime = {}) {
     const rendered = await renderPost(input.markdown);
     const assets = [...new Set([...rendered.html.matchAll(/\/api\/blog\/assets\/([a-f0-9]{64})/g)].map(m => m[1]))];
     if (assets.length > 30) throw new PublishError('Use at most 30 images per post.');
-    for (const id of assets) if (!await store.assetExists(id)) throw new PublishError('An image upload is missing. Publish the note again.');
+    if ((await Promise.all(assets.map(id => store.assetExists(id)))).some(exists => !exists)) throw new PublishError('An image upload is missing. Publish the note again.');
     const post = await store.publish({ ...meta, ...rendered, assets });
     return json({ post, url: `/blog/${post.slug}` });
   } catch (error) {
