@@ -1,4 +1,4 @@
-<button class="theme-toggle" type="button" role="switch" aria-label="Dark mode" aria-checked="true" title="Switch to light mode">
+<button class="theme-toggle" type="button" role="switch" aria-label="Dark mode" aria-checked="false" title="Switch to dark mode">
   <svg class="theme-toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
     <circle cx="12" cy="12" r="3.75" />
     <path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
@@ -11,41 +11,26 @@
 <script>
   const toggle = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
   const root = document.documentElement;
-  const systemTheme = window.matchMedia("(prefers-color-scheme: light)");
-  let fadeTimeout: ReturnType<typeof setTimeout>;
-  let chosenTheme: string | null = null;
-  try { chosenTheme = localStorage.getItem("theme"); } catch {}
 
   function applyTheme(theme: string) {
     const dark = theme === "dark";
     root.dataset.theme = theme;
     toggle.setAttribute("aria-checked", String(dark));
     toggle.title = `Switch to ${dark ? "light" : "dark"} mode`;
-    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#030303" : "#f7f2ed";
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#191916" : "#fffff8";
   }
 
-  applyTheme(root.dataset.theme ?? "dark");
+  applyTheme(root.dataset.theme ?? "light");
   toggle.addEventListener("click", () => {
-    clearTimeout(fadeTimeout);
-    root.classList.add("theme-changing");
-    chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
+    const chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
     applyTheme(chosenTheme);
-    fadeTimeout = setTimeout(() => root.classList.remove("theme-changing"), 200);
     try { localStorage.setItem("theme", chosenTheme); } catch {}
-  });
-  systemTheme.addEventListener("change", () => {
-    if (chosenTheme !== "light" && chosenTheme !== "dark") {
-      applyTheme(systemTheme.matches ? "light" : "dark");
-    }
   });
 </script>
 
 <style>
   .theme-toggle {
-    position: fixed;
-    bottom: max(1.1rem, env(safe-area-inset-bottom));
-    left: max(1.25rem, env(safe-area-inset-left));
-    z-index: 40;
+    margin-left: auto;
     display: grid;
     place-items: center;
     width: 44px;
@@ -54,7 +39,7 @@
     border: 0;
     border-radius: 50%;
     background: transparent;
-    color: #808080;
+    color: var(--soft);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -65,8 +50,5 @@
   :global([data-theme="light"]) .theme-toggle__moon { display: block; }
   .theme-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 
-  @media (max-width: 860px) {
-    .theme-toggle { left: max(0.9rem, env(safe-area-inset-left)); bottom: max(0.9rem, env(safe-area-inset-bottom)); }
-  }
   @media print { .theme-toggle { display: none; } }
 </style>

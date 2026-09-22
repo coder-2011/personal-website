@@ -1,0 +1,5 @@
+/* ET Book by Edward Tufte, Dmitry Krasny, Bonnie Scranton, and Bembo.
+   MIT license: /fonts/et-book-v1/LICENSE */
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v1/roman.woff") format("woff"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v1/italic.woff") format("woff"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v1/bold.woff") format("woff"); font-style: normal; font-weight: 700; font-display: swap; }
