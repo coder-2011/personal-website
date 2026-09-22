@@ -3,9 +3,14 @@ import { createHash } from 'node:crypto';
 import { handleBpeRequest } from '../src/lib/bpe/api.mjs';
 import { handleUnigramRequest } from '../src/lib/unigram/api.mjs';
 
+const themeCss = await readFile('src/styles/embed-theme.css', 'utf8');
+const themeScript = await readFile('src/scripts/embed-theme-receiver.js', 'utf8');
+
 for (const [name, handler] of [['bpe', handleBpeRequest], ['unigram', handleUnigramRequest]]) {
   const path = `public/embeds/${name}.html`;
   let html = await readFile(path, 'utf8');
+  html = html.replace(/\/\* BEGIN GENERATED THEME \*\/[\s\S]*?\/\* END GENERATED THEME \*\//, `/* BEGIN GENERATED THEME */\n${themeCss}/* END GENERATED THEME */`);
+  html = html.replace(/\/\/ BEGIN GENERATED THEME\n[\s\S]*?\/\/ END GENERATED THEME/, `// BEGIN GENERATED THEME\n${themeScript}// END GENERATED THEME`);
   const input = html.match(/<input id="input" value="([^"]*)"/)[1];
   const response = await handler(new Request(`https://naman.world/api/${name}`, {
     method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text:input}),

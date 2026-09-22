@@ -1,0 +1,24 @@
+/* Shared by both demos. Neutral surfaces match the website; green and purple
+   identify selected and merged tokens in either mode. */
+:root {
+  color-scheme: light;
+  --paper: #f7f2ed; --ink: #111; --muted: #64645c; --line: #d8d0c8;
+  --surface: #fcf9f5; --wash: #eee7e0; --dots: #e0d8d0;
+  --token: #f0eae3; --token-line: #cec5bb;
+  --accent: #52643e; --sage: #e4ebd9; --lavender: #e8e3f0;
+  --merged-line: #b9a9cf; --chosen-line: #82956a; --chosen-shadow: #82956a33;
+  --play: #343e2c; --play-hover: #4b5a3f;
+  --progress: #d8d1c8; --progress-fill: #7b8d62;
+  --success: #28783b; --error: #9a4536;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #211b19; --ink: #eeeade; --muted: #b3b0a4; --line: #493e38;
+  --surface: #2b2420; --wash: #302823; --dots: #493e38;
+  --token: #372d29; --token-line: #5b4d44;
+  --accent: #acc78f; --sage: #34452f; --lavender: #3c3549;
+  --merged-line: #8e79a0; --chosen-line: #a3c087; --chosen-shadow: #a3c08722;
+  --play: #b7cd9e; --play-hover: #c8ddb1;
+  --progress: #493e38; --progress-fill: #aec990;
+  --success: #a2df93; --error: #efac9b;
+}

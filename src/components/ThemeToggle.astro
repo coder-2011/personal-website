@@ -9,12 +9,15 @@
 </button>
 
 <script>
+  import { enableEmbedThemes } from '../scripts/embed-themes.mjs';
+  const syncEmbeds = enableEmbedThemes();
   const toggle = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
   const root = document.documentElement;
 
   function applyTheme(theme: string) {
     const dark = theme === "dark";
     root.dataset.theme = theme;
+    syncEmbeds();
     toggle.setAttribute("aria-checked", String(dark));
     toggle.title = `Switch to ${dark ? "light" : "dark"} mode`;
     document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = dark ? "#211b19" : "#f7f2ed";
