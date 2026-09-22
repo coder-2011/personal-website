@@ -137,7 +137,7 @@ and production data. Never put secrets in browser code or tracked files.
 `POST /api/publish` renders and publishes a note; `GET` lists authenticated
 publication state; `DELETE` unpublishes it. R2 conditional writes serialize index
 changes, including concurrent first publications. Identical retries create no new
-revision. Raster uploads are decoded and re-encoded to WebP through Cloudflare
+revision. Confirmed URL changes retain the post identity and reserve previous URLs as redirects; all addresses stop serving the post when it is unpublished. Raster uploads are decoded and re-encoded to WebP through Cloudflare
 Images to strip metadata; SVGs are sanitized separately on the server.
 
 Public requests check R2's strongly consistent publication index before consulting

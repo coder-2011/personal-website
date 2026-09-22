@@ -53,6 +53,19 @@ test('live edits leave the article untouched until the reader applies the newest
   f.cleanup();
 });
 
+test('a URL change moves polling to the new address without disturbing the reader', async () => {
+  const f = fixture();
+  f.response({status:200,ok:true,json:async()=>({revision:'v2',slug:'new-url',html:'<p>Updated</p>'})});
+  await f.tick();
+  assert.equal(f.applied.length,0);
+  assert.equal(f.window.scrollY,1000);
+  f.response({status:200,ok:true,json:async()=>({revision:'v2'})});
+  await f.tick();
+  assert.equal(f.calls.at(-1).url,'/api/blog/posts/new-url?revision=v2');
+  assert.equal(f.applied.length,0,'renaming does not replace an open article');
+  f.cleanup();
+});
+
 test('network errors and hidden tabs are quiet, while unpublishing cancels pending content', async () => {
   const f = fixture();
   f.document.hidden = true; await f.tick();

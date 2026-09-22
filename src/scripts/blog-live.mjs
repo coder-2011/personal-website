@@ -3,6 +3,7 @@
 export function enableLiveUpdates(article, notice, applyPost, unpublish) {
   const button = notice.querySelector('button');
   let checkedRevision = article.dataset.revision;
+  let pollSlug = article.dataset.slug;
   let pending = null, timer, controller;
   let paused = false, removed = false, generation = 0;
   async function poll() {
@@ -14,7 +15,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
         controller = request;
         const timeout = setTimeout(() => request.abort(), 8000);
         try {
-          const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(checkedRevision || '')}`, { signal:request.signal });
+          const response = await fetch(`/api/blog/posts/${pollSlug}?revision=${encodeURIComponent(checkedRevision || '')}`, { signal:request.signal });
           if (run !== generation) return;
           if (response.status === 404) {
             removed = true; pending = null; notice.hidden = true;
@@ -22,6 +23,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
           } else if (response.ok && response.status !== 204) {
             const post = await response.json();
             if (run !== generation) return;
+            if (typeof post.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(post.slug)) pollSlug = post.slug;
             if (post.revision !== checkedRevision) {
               checkedRevision = post.revision;
               pending = post;

@@ -12,6 +12,6 @@ export const GET: APIRoute = async ({ params, request, locals }) => {
     // Unchanged revisions return only their version, preserving the reader's current article.
     if (revision === post.revision) return Response.json({ revision: post.revision }, { headers: blogPageHeaders });
     const html = await presentPostForReading(post.html, post.markdown);
-    return Response.json({ title: post.title, description: post.description, date: post.date, html, readingSummary: readingSummary(html), revision: post.revision, updated: post.updated }, { headers: blogPageHeaders });
+    return Response.json({ slug: post.slug, title: post.title, description: post.description, date: post.date, html, readingSummary: readingSummary(html), revision: post.revision, updated: post.updated }, { headers: blogPageHeaders });
   } catch { return json({ error: 'Temporarily unavailable.' }, 503); }
 };

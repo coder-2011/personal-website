@@ -91,14 +91,41 @@ try {
   assert.equal(unchanged.status,200);
   assert.deepEqual(await unchanged.json(),{revision:version});
   console.log('Authentication, metadata stripping, stale-write rejection, privacy rejection, unchanged prior content, and removed-image access passed.');
+  const renamedSlug = `${slug}-renamed`;
+  const rename = {...payload,slug:renamedSlug,baseVersion:version,markdown:'# Updated\n\nVisible immediately.'};
+  assert.equal((await send(rename)).status,422,'URL changes require explicit confirmation');
+  const renamed = await send({...rename,previousSlug:slug});
+  assert.equal(renamed.status,200,await renamed.clone().text());
+  const moved = (await renamed.json()).post;
+  assert.equal(moved.slug,renamedSlug);assert.deepEqual(moved.aliases,[slug]);
+  version = moved.revision;
+  for (const method of ['GET','HEAD']) {
+    const redirected = await fetch(`${origin}/blog/${slug}?source=old-link`,{method,redirect:'manual'});
+    assert.equal(redirected.status,301);
+    assert.equal(redirected.headers.get('location'),`${origin}/blog/${renamedSlug}?source=old-link`);
+    assert.equal(redirected.headers.get('cache-control'),'private, no-store');
+  }
+  assert.equal((await fetch(`${origin}/blog/${renamedSlug}`)).status,200);
+  const oldPoll = await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`);
+  assert.deepEqual(await oldPoll.json(),{revision:version});
+  assert.equal((await send({...payload,id:randomUUID(),baseVersion:null})).status,422,'old URLs cannot be claimed by another post');
+  const oldPlugin = await send({...payload,baseVersion:version,markdown:'A save from an already-open plugin.'});
+  assert.equal(oldPlugin.status,200,await oldPlugin.clone().text());
+  const saved = (await oldPlugin.json()).post;
+  assert.equal(saved.slug,renamedSlug);version=saved.revision;
+  console.log('Confirmed URL rename, old-link redirects, URL reservation, and live saves from an old plugin passed.');
 } finally {
   const state=await (await fetch(`${origin}/api/publish`,{headers})).json();
   const current=state.posts.find(p=>p.id===id);
   if (current?.published) {
     const deleted=await send({id,baseVersion:current.revision},'DELETE');
     assert.equal(deleted.status,200,await deleted.clone().text());
-    const removed=await fetch(`${origin}/blog/${slug}`);
-    assert.equal(removed.status,404,`Unpublish read: ${JSON.stringify(Object.fromEntries(removed.headers))}`);
+    for (const address of new Set([slug,current.slug,...(current.aliases || [])])) {
+      for (const prefix of ['/blog/','/api/blog/posts/']) {
+        const removed=await fetch(`${origin}${prefix}${address}`,{redirect:'manual'});
+        assert.equal(removed.status,404,`Unpublish read: ${prefix}${address}`);
+      }
+    }
     assert.ok(!(await (await fetch(`${origin}/blog`)).text()).includes(`/blog/${slug}`), 'Unpublished post remains in cached index');
     console.log('Temporary post unpublished; its URL returns 404 and it is absent from the index.');
   }

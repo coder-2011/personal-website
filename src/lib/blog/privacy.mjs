@@ -63,13 +63,14 @@ export function publicUrl(value, { image = false } = {}) {
 }
 
 export function validateMetadata(input) {
-  const { id, slug, title, date, description = '', baseVersion = null } = input;
+  const { id, slug, title, date, description = '', baseVersion = null, previousSlug } = input;
   if (typeof id !== 'string' || !/^[a-f0-9-]{36}$/.test(id)) throw new PublishError('Invalid post identifier.');
   if (typeof slug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 100 || ['assets', 'feed', 'index'].includes(slug)) throw new PublishError('Use a URL containing lowercase letters, numbers, and hyphens.');
+  if (previousSlug !== undefined && (typeof previousSlug !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(previousSlug) || previousSlug.length > 100)) throw new PublishError('Invalid previous URL. Reopen Edit details.');
   if (typeof title !== 'string' || !title.trim() || title.length > 180) throw new PublishError('Use a title between 1 and 180 characters.');
   if (typeof description !== 'string' || description.length > 500) throw new PublishError('Keep the description under 500 characters.');
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)) || new Date(date).toISOString().slice(0,10) !== date) throw new PublishError('Use a valid publication date (YYYY-MM-DD).');
   if (baseVersion !== null && (typeof baseVersion !== 'string' || !/^[a-f0-9-]{36}$/.test(baseVersion))) throw new PublishError('Invalid saved revision.');
   assertPublicText(`${title}\n${description}\n${slug}`, 'Post properties');
-  return { id, slug, title: title.trim(), date, description: description.trim(), baseVersion };
+  return { id, slug, title: title.trim(), date, description: description.trim(), baseVersion, ...(previousSlug === undefined ? {} : {previousSlug}) };
 }
