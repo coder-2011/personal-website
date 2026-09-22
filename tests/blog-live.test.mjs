@@ -36,7 +36,9 @@ test('live edits leave the article untouched until the reader applies the newest
   assert.equal(f.article.dataset.revision,'v1');
   assert.equal(f.article.focused,undefined,'no focus stealing when an update arrives');
   assert.equal(f.window.scrollY,1000);
-  f.response({status:204,ok:true}); await f.tick();
+  f.response({status:200,ok:true,json:async()=>({revision:'v2'})}); await f.tick();
+  assert.equal(f.applied.length,0,'a cached revision-only response must leave the article untouched');
+  assert.equal(f.calls.at(-1).options.cache,undefined,'allow the CDN cache instead of forcing origin revalidation');
   assert.match(f.calls.at(-1).url,/revision=v2$/,'poll the pending version instead of downloading it again');
   f.post('v3'); await f.tick();
   assert.equal(f.applied.length,0);

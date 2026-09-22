@@ -14,7 +14,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
         controller = request;
         const timeout = setTimeout(() => request.abort(), 8000);
         try {
-          const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(checkedRevision || '')}`, { cache:'no-store', signal:request.signal });
+          const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(checkedRevision || '')}`, { signal:request.signal });
           if (run !== generation) return;
           if (response.status === 404) {
             removed = true; pending = null; notice.hidden = true;

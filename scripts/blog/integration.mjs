@@ -69,7 +69,9 @@ try {
   assert.match((await (await fetch(`${origin}/api/blog/posts/${slug}`)).json()).html,/Visible immediately/);
   assert.equal((await fetch(origin+asset.url)).status,404);
   assert.equal((await fetch(origin+vector.url)).status,404);
-  assert.equal((await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`)).status,204);
+  const unchanged=await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`);
+  assert.equal(unchanged.status,200);
+  assert.deepEqual(await unchanged.json(),{revision:version});
   console.log('Authentication, metadata stripping, stale-write rejection, privacy rejection, unchanged prior content, and removed-image access passed.');
 } finally {
   const state=await (await fetch(`${origin}/api/publish`,{headers})).json();

@@ -28,6 +28,8 @@ export async function refreshBlogCache(post) {
       if (!post.published && (path === '/blog'
         ? cached && response.ok && !html.includes(`data-post-id="${post.id}"`)
         : response.status === 404)) return;
+      // Do not hammer storage while CDN invalidation propagates.
+      await new Promise(resolve => setTimeout(resolve, Math.min(250, Math.max(0, deadline - Date.now()))));
     }
     throw new Error('Public page cache has not refreshed.');
   }));
