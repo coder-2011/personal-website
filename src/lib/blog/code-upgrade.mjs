@@ -1,6 +1,6 @@
 import { createShikiHighlighter } from '@astrojs/markdown-remark';
 import { parseFragment, serialize } from 'parse5';
-import { codeTheme } from './code-theme.mjs';
+import { codeThemes } from './code-theme.mjs';
 import { renderPost } from './render.mjs';
 import { presentPost } from './presentation.mjs';
 
@@ -12,12 +12,12 @@ const classes = node => node.attrs?.find(attr => attr.name === 'class')?.value.s
 async function upgrade(html) {
   const tree = parseFragment(html), blocks = [];
   function collect(node) {
-    if (node.tagName === 'pre' && classes(node).includes('github-dark')) blocks.push(node);
+    if (node.tagName === 'pre' && classes(node).includes('astro-code') && !classes(node).includes('obsidian-ukiyo-light')) blocks.push(node);
     else for (const child of node.childNodes || []) collect(child);
   }
   collect(tree);
   if (!blocks.length) return html;
-  highlighter ??= createShikiHighlighter({ theme: codeTheme });
+  highlighter ??= createShikiHighlighter({ themes: codeThemes });
   const engine = await highlighter;
   // Sequential language loads share the highlighter; the surrounding cache also
   // coalesces concurrent requests for the same stored article.
@@ -50,7 +50,7 @@ export function presentPostForReading(html, markdown) {
   // Current publications already contain the palette and corrected math.
   // Legacy repairs are cached so reads do not repeatedly render the article.
   const legacyMath = html.includes('class="katex"') && !html.includes('data-math-version="2"');
-  if (!legacyMath && !html.includes('github-dark')) return Promise.resolve(presentPost(html, markdown));
+  if (!legacyMath && !html.includes('github-dark') && !/class="astro-code obsidian-ukiyo(?:"| )/.test(html)) return Promise.resolve(presentPost(html, markdown));
   if (cache.has(html)) return cache.get(html);
   const result = (legacyMath ? renderPost(markdown, {legacyMath:true}).then(post => post.html) : upgrade(presentPost(html, markdown)))
     .catch(error => { cache.delete(html); throw error; });

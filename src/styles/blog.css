@@ -12,11 +12,15 @@
 .blog-post li > :is(ul, ol) { margin-block: .6rem; }
 .blog-post img { display: block; max-width: 100%; height: auto; margin: 1.5rem auto; }
 .blog-post pre { overflow-x: auto; padding: 1.15rem; border-radius: 2px; font-size: .85rem; line-height: 1.65; }
-.blog-code-block { margin-block: 1.5rem; border: 1px solid #413632; border-radius: 2px; overflow: hidden; background: #2b2723; }
-.blog-code-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1rem; background: #2b2723; color: #b2a699; font-size: .8rem; line-height: 1.5; }
-.blog-code-copy { margin-left: auto; border: 1px solid #514541; border-radius: 3px; padding: .3rem .65rem; background: transparent; color: #ccc2b7; cursor: pointer; }
-.blog-code-copy:hover { background: #413632; }
-.blog-code-copy:focus-visible { outline: 2px solid #ccc2b7; outline-offset: 3px; }
+/* Light is the default; only the explicit site theme enables dark code colors. */
+.blog-code-block { --code-bg: #eee7e0; --code-text: #383832; --code-muted: #64645c; --code-border: #d8d8cd; --code-hover: #e3dbd2; margin-block: 1.5rem; border: 1px solid var(--code-border); border-radius: 2px; overflow: hidden; background: var(--code-bg); }
+:root[data-theme="dark"] .blog-code-block { --code-bg: #2b2723; --code-text: #ccc2b7; --code-muted: #b2a699; --code-border: #413632; --code-hover: #413632; }
+:root[data-theme="dark"] .blog-post .astro-code,
+:root[data-theme="dark"] .blog-post .astro-code span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
+.blog-code-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1rem; background: var(--code-bg); color: var(--code-muted); font-size: .8rem; line-height: 1.5; }
+.blog-code-copy { margin-left: auto; border: 1px solid var(--code-border); border-radius: 3px; padding: .3rem .65rem; background: transparent; color: var(--code-text); cursor: pointer; }
+.blog-code-copy:hover { background: var(--code-hover); }
+.blog-code-copy:focus-visible { outline: 2px solid var(--code-text); outline-offset: 3px; }
 .blog-post .blog-code-block pre { margin: 0; border-radius: 0; }
 .blog-post pre > code { font-size: inherit; }
 .blog-post code { font-size: .9em; }
