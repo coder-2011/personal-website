@@ -14,7 +14,7 @@ class Element {
   create(text) { this.text = text; return this; }
   setText(text) { this.text = text; }
   empty() { this.children = []; }
-  addClass(name) { this.classes.add(name); }
+  addClass(...names) { names.forEach(name => this.classes.add(name)); }
   removeClass(name) { this.classes.delete(name); }
   setAttribute(name, value) { this.attributes[name] = value; }
   *walk() { yield this; for (const child of this.children) yield* child.walk(); }
@@ -48,6 +48,7 @@ class Plugin {
 }
 class Modal {
   constructor(app) { this.app = app; this.contentEl = new Element(); this.modalEl = new Element(); }
+  open() { this.app.openModal = this; this.onOpen(); }
   close() { this.onClose(); }
 }
 const output = await build({entryPoints:['obsidian-plugin/main.ts'], bundle:true, write:false, format:'cjs', platform:'node', external:['obsidian','css-tree']});
@@ -144,7 +145,8 @@ test('partial failures retain progress and retry only failed notes', async () =>
   await button(f.modal, 'Publish all 3 notes').click();
   assert.equal(Object.keys(f.plugin.persisted.posts).length, 2);
   fail = false;
-  await button(f.modal, 'Retry 1 remaining').click();
+  await button(f.modal, 'Review all notes').click();
+  await button(f.modal, 'Publish now').click();
   assert.deepEqual(attempts, ['first', 'second', 'third', 'second']);
   assert.equal(Object.keys(f.plugin.persisted.posts).length, 3);
 });
@@ -318,4 +320,129 @@ test('manual update failures stop the spinner, retain the prior publication, and
   await button(f.panel, 'Update').click();
   assert.equal(f.requests.length, 2);
   assert.equal(f.plugin.live(f.files[0]), false);
+});
+
+function editDetails(f) {
+  button(f.panel, 'Edit details').click();
+  return f.app.openModal;
+}
+
+test('Edit details updates every public field, keeps URL and paused sync, and persists on reopen', async () => {
+  const f = await publishedFixture(false);
+  const original = [...f.sources];
+  const modal = editDetails(f);
+  assert.equal(field(modal, f.files[0], 'Title').value, 'Manual');
+  assert.equal(field(modal, f.files[0], 'URL').disabled, true);
+  field(modal, f.files[0], 'Title').change('Updated public title');
+  field(modal, f.files[0], 'Date').change('2026-08-12');
+  field(modal, f.files[0], 'Description').change('Updated public summary');
+  await button(modal, 'Review changes').click();
+  assert.equal(f.requests.length, 1, 'review does not publish edits');
+  const api = f.plugin.api;
+  let release, arrived;
+  const started = new Promise(resolve => { arrived = resolve; });
+  f.plugin.api = async (...args) => { arrived(); await new Promise(resolve => {release = resolve;}); return api(...args); };
+  const saving = button(modal, 'Update post').click(); await started;
+  const spinner = button(modal, 'Updating…');
+  assert.equal(spinner.disabled, true);
+  assert.ok(spinner.buttonEl.classes.has('is-updating'));
+  assert.equal(modal.closed, false, 'stay open until the server accepts the update');
+  release(); await saving;
+  assert.equal(modal.closed, true);
+  const body = f.requests.at(-1).body;
+  assert.equal(body.title, 'Updated public title');
+  assert.equal(body.date, '2026-08-12');
+  assert.equal(body.description, 'Updated public summary');
+  assert.equal(body.slug, 'manual');
+  assert.equal(body.id, f.requests[0].body.id);
+  assert.equal(f.plugin.live(f.files[0]), false);
+  assert.deepEqual([...f.sources], original);
+  f.plugin.data = f.plugin.persisted;
+  f.panel.drawPublished(f.panel.contentEl);
+  const reopened = editDetails(f);
+  assert.equal(field(reopened, f.files[0], 'Title').value, body.title);
+  assert.equal(field(reopened, f.files[0], 'Date').value, body.date);
+  assert.equal(field(reopened, f.files[0], 'Description').value, body.description);
+  field(reopened, f.files[0], 'Description').change('');
+  await button(reopened, 'Review changes').click();
+  f.plugin.api = api;
+  await button(reopened, 'Update post').click();
+  assert.equal(f.plugin.metadata(f.files[0], {}).description, '', 'description can be cleared');
+});
+
+test('Edit details handles live updates before and after review without replacing a newer revision', async () => {
+  const f = await publishedFixture();
+  const modal = editDetails(f);
+  field(modal, f.files[0], 'Title').change('Edited title');
+  f.sources.set('Manual.md', 'Edit while the details form is open');
+  f.plugin.schedule(f.files[0]); await f.plugin.pump();
+  await button(modal, 'Review changes').click();
+  f.sources.set('Manual.md', 'Another edit after reviewing');
+  f.plugin.schedule(f.files[0]); await f.plugin.pump();
+  const count = f.requests.length;
+  await button(modal, 'Update post').click();
+  assert.equal(f.requests.length, count, 'stale review must not upload');
+  assert.equal(modal.closed, false);
+  assert.match([...modal.contentEl.walk()].map(el => el.text || '').join(' '), /changed while you were reviewing/);
+  await button(modal, 'Review changes').click();
+  await button(modal, 'Update post').click();
+  await f.plugin.pump();
+  assert.equal(f.requests.at(-1).body.title, 'Edited title', 'draft survives conflict and later sync');
+  assert.match(f.requests.at(-1).body.markdown, /Another edit after reviewing/);
+  assert.equal(f.plugin.live(f.files[0]), true);
+});
+
+test('Edit details cancel, invalid metadata, and network failure keep the published details intact', async () => {
+  const f = await publishedFixture(false);
+  let modal = editDetails(f);
+  field(modal, f.files[0], 'Title').change('Never saved');
+  await button(modal, 'Cancel').click();
+  assert.equal(f.plugin.metadata(f.files[0], {}).title, 'Manual');
+  f.panel.drawPublished(f.panel.contentEl);
+  modal = editDetails(f);
+  for (const [name, value] of [['Title', '/Users/alice/private.txt'], ['Date', '2026-02-30'], ['Description', 'x'.repeat(501)]]) {
+    const input = field(modal, f.files[0], name);
+    input.change(value);
+    await button(modal, 'Review changes').click();
+    assert.equal(button(modal, 'Update post'), undefined);
+    input.change(input.value);
+  }
+  assert.equal(f.requests.length, 1);
+  field(modal, f.files[0], 'Title').change('Retry title');
+  await button(modal, 'Review changes').click();
+  const api = f.plugin.api;
+  f.plugin.api = async () => {throw new Error('Temporary connection failure');};
+  await button(modal, 'Update post').click();
+  assert.equal(modal.closed, false);
+  assert.equal(f.plugin.metadata(f.files[0], {}).title, 'Manual');
+  assert.equal(button(modal, 'Updating…'), undefined);
+  assert.equal(button(modal, 'Review changes').disabled, false);
+  f.plugin.api = api;
+  await button(modal, 'Review changes').click();
+  await button(modal, 'Update post').click();
+  assert.equal(f.plugin.metadata(f.files[0], {}).title, 'Retry title');
+});
+
+test('live edits during a details upload wait and retain the newly saved metadata', async () => {
+  const f = await publishedFixture();
+  const modal = editDetails(f);
+  field(modal, f.files[0], 'Title').change('New public title');
+  await button(modal, 'Review changes').click();
+  const api = f.plugin.api;
+  let release, arrived, hold = true, calls = 0;
+  const started = new Promise(resolve => { arrived = resolve; });
+  f.plugin.api = async (...args) => {
+    calls++;
+    if (hold) { hold = false; arrived(); await new Promise(resolve => {release = resolve;}); }
+    return api(...args);
+  };
+  const saving = button(modal, 'Update post').click(); await started;
+  f.sources.set('Manual.md', 'Text edited while details are uploading');
+  f.plugin.schedule(f.files[0]); await f.plugin.pump();
+  assert.equal(calls, 1, 'live sync cannot race the details upload');
+  release(); await saving; await f.plugin.pump();
+  assert.equal(calls, 2);
+  assert.equal(f.requests.at(-1).body.title, 'New public title');
+  assert.match(f.requests.at(-1).body.markdown, /Text edited while details are uploading/);
+  assert.equal(f.plugin.live(f.files[0]), true);
 });

@@ -205,7 +205,7 @@ export default class NamanPublish extends Plugin {
       const file = this.app.vault.getAbstractFileByPath(path);
       if (!(file instanceof TFile)) continue;
       const entry = this.savedPost(file);
-      if (!entry?.[1].approved) continue;
+      if (!entry?.[1].approved || this.manualUpdates.has(path)) continue;
       try {
         if (!this.published(file)) await this.unpublish(entry[0]);
         else if (this.live(file)) {
@@ -231,6 +231,26 @@ export default class NamanPublish extends Plugin {
     })().catch(error => { this.failure(file, error); throw error; }).finally(() => { this.manualUpdates.delete(path); });
     this.manualUpdates.set(path, update);
     return update;
+  }
+  async publishReviewed(file: TFile, prepared: Prepared, live: boolean) {
+    if (this.manualUpdates.has(file.path)) throw new Error('This note is already updating. Wait for it to finish.');
+    const path = file.path;
+    const update = (async () => {
+      await this.pump();
+      if (this.stopped) throw new Error('The plugin is reloading. Review your changes again.');
+      if ((this.data.posts[prepared.meta.id]?.revision || null) !== prepared.meta.baseVersion) {
+        throw new Error('This post changed while you were reviewing it. Review your changes again before updating.');
+      }
+      await this.publish(file, prepared, live);
+    })();
+    this.manualUpdates.set(path, update);
+    let completed = false;
+    try { await update; completed = true; }
+    finally {
+      this.manualUpdates.delete(path);
+      // Edits made during the request must sync with the newly saved details.
+      if (completed) this.schedule(file);
+    }
   }
   failure(file: TFile, error: unknown) {
     const message = error instanceof Error ? error.message : 'Publication failed.';
@@ -272,14 +292,14 @@ export default class NamanPublish extends Plugin {
 export class PublishModal extends Modal {
   urls: string[] = [];
   closed = false;
-  constructor(app: App, private plugin: NamanPublish, private files: TFile[]) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
+  constructor(app: App, private plugin: NamanPublish, private files: TFile[], private editing = false) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
   onClose() { this.closed = true; this.clearImages(); this.contentEl.empty(); }
   clearImages() { this.urls.forEach(URL.revokeObjectURL); this.urls = []; }
   onOpen() {
     this.closed = false;
     const el = this.contentEl; el.empty(); el.addClass('naman-publish-modal');
-    el.createEl('h2', {text: this.files.length > 1 ? `Publish ${this.files.length} notes` : 'Publish to naman.world'});
-    el.createEl('p', {text:'Enter the public information here. It is saved in the plugin, not written into your notes.', cls:'naman-publish-muted'});
+    el.createEl('h2', {text: this.editing ? 'Edit post details' : this.files.length > 1 ? `Publish ${this.files.length} notes` : 'Publish to naman.world'});
+    el.createEl('p', {text:this.editing ? 'Update the public title, date, and description. Review changes before updating the live post, including the latest saved note.' : 'Enter the public information here. It is saved in the plugin, not written into your notes.', cls:'naman-publish-muted'});
     const drafts: { file: TFile; meta: Metadata; live: boolean; section: HTMLElement; status: HTMLElement; done: boolean }[] = [];
     for (const file of this.files) {
       const section = el.createEl('section', {cls:'naman-publish-draft'});
@@ -292,15 +312,17 @@ export class PublishModal extends Modal {
     if (drafts.length !== this.files.length) return;
     const preview = el.createDiv();
     let reviewed: { draft: typeof drafts[number]; prepared: Prepared; live: boolean }[] = [];
-    const invalidate = () => { reviewed = []; preview.empty(); this.clearImages(); };
+    const reviewLabel = this.editing ? 'Review changes' : this.files.length > 1 ? 'Review all notes' : 'Review publication';
+    let primary: import('obsidian').ButtonComponent;
+    const invalidate = () => { reviewed = []; preview.empty(); this.clearImages(); primary?.setButtonText(reviewLabel); };
     for (const draft of drafts) {
       const {meta, section} = draft;
-      new Setting(section).setName('Title').addText(input => input.setValue(meta.title).onChange(value => {meta.title = value; invalidate();}));
-      new Setting(section).setName('URL').setDesc(`${this.plugin.data.site}/blog/`).addText(input => {
+      new Setting(section).setClass('naman-publish-field').setName('Title').addText(input => input.setValue(meta.title).onChange(value => {meta.title = value; invalidate();}));
+      new Setting(section).setClass('naman-publish-field').setName('URL').setDesc(this.plugin.data.posts[meta.id]?.revision ? 'The URL stays the same so existing links keep working.' : `${this.plugin.data.site}/blog/`).addText(input => {
         input.setValue(meta.slug).setDisabled(!!this.plugin.data.posts[meta.id]?.revision).onChange(value => {meta.slug = value; invalidate();});
       });
-      new Setting(section).setName('Date').addText(input => {input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value; invalidate();});});
-      new Setting(section).setName('Description').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value; invalidate();}));
+      new Setting(section).setClass('naman-publish-field').setName('Date').addText(input => {input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value; invalidate();});});
+      new Setting(section).setClass('naman-publish-field').setName('Description').setDesc('A short summary for the blog list and search previews. Optional, up to 500 characters.').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value; invalidate();}));
       new Setting(section).setName('Live sync').setDesc('Saved edits go live while Obsidian is open.').addToggle(toggle => toggle.setValue(draft.live).onChange(value => {draft.live = value; invalidate();}));
     }
     const actions = new Setting(el).setClass('naman-publish-footer');
@@ -311,70 +333,86 @@ export class PublishModal extends Modal {
       }
       actions.settingEl.inert = busy;
     };
-    actions.addButton(button => button.setButtonText(this.files.length > 1 ? 'Review all notes' : 'Review publication').setCta().onClick(async () => {
-      invalidate(); setBusy(true);
-      try {
-        await this.plugin.refresh();
-        const pending = drafts.filter(draft => !draft.done);
-        const slugs = new Set<string>();
-        const ids = new Set<string>();
-        for (const draft of drafts) {
-          if (slugs.has(draft.meta.slug)) throw new Error('Two selected notes have the same URL. Give each note a different URL.');
-          if (ids.has(draft.meta.id)) throw new Error('Two selected notes share a post identifier. Remove the copied blog_id before publishing.');
-          if (this.plugin.remote.some(post => post.slug === draft.meta.slug && post.id !== draft.meta.id)) throw new Error(`The URL “${draft.meta.slug}” already belongs to another post.`);
-          slugs.add(draft.meta.slug); ids.add(draft.meta.id);
-        }
-        const preparedNotes: typeof reviewed = [];
-        // Validate every note and image before enabling any publication in this batch.
-        for (const draft of pending) {
-          if (this.closed) return;
-          draft.status.setText('Preparing review…');
-          try {
-            const prepared = await this.plugin.prepare(draft.file, {...draft.meta});
-            preparedNotes.push({draft, prepared, live:draft.live});
-            draft.status.setText('Ready for review');
-          } catch (error) { draft.status.setText('Needs attention'); throw error; }
-        }
-        if (this.closed) return;
-        reviewed = preparedNotes;
-        preview.createEl('h3', {text:'Exactly what will be published'});
-        preview.createEl('p', {text:'Private properties and comments are removed. Review each note and its images before publishing.'});
-        for (const {draft, prepared} of reviewed) {
-          preview.createEl('h4', {text:prepared.meta.title});
-          preview.createEl('p', {text:`/blog/${prepared.meta.slug}`, cls:'naman-publish-muted'});
-          for (const warning of prepared.warnings) preview.createEl('p', {text:warning, cls:'naman-publish-warning'});
-          preview.createEl('pre', {text:prepared.markdown, cls:'naman-publish-preview'});
-          for (const image of prepared.images) {
-            const url = URL.createObjectURL(new Blob([image.bytes], {type:image.type})); this.urls.push(url);
-            preview.createEl('img', {attr:{src:url, alt:`Image for ${draft.meta.title}`}, cls:'naman-publish-image'});
-          }
-        }
-        const result = preview.createEl('p', {attr:{role:'status'}});
-        new Setting(preview).addButton(publish => publish.setButtonText(reviewed.length > 1 ? `Publish all ${reviewed.length} notes` : 'Publish now').setCta().onClick(async () => {
-          publish.setDisabled(true); setBusy(true);
+    actions.addButton(button => {
+      primary = button;
+      button.setButtonText(reviewLabel).setCta().onClick(async () => {
+        if (reviewed.length) {
+          button.setDisabled(true); setBusy(true);
+          button.setButtonText(this.editing ? 'Updating…' : 'Publishing…');
+          button.buttonEl.addClass('naman-publish-update', 'is-updating');
+          button.buttonEl.setAttribute('aria-busy', 'true');
+          const errors: string[] = [];
           for (const {draft, prepared, live} of reviewed) {
             if (this.closed) break;
             if (draft.done) continue;
-            draft.status.setText('Publishing…');
+            draft.status.setText(this.editing ? 'Updating…' : 'Publishing…');
             try {
-              await this.plugin.publish(draft.file, prepared, live);
-              draft.done = true; draft.status.setText('Published');
+              await this.plugin.publishReviewed(draft.file, prepared, live);
+              draft.done = true; draft.status.setText(this.editing ? 'Updated' : 'Published');
             } catch (error) {
-              draft.status.setText(error instanceof Error ? error.message : 'Publication failed.');
+              const message = error instanceof Error ? error.message : 'Publication failed.';
+              draft.status.setText(message); errors.push(message);
               this.plugin.failure(draft.file, error);
             }
           }
           const remaining = drafts.filter(draft => !draft.done).length;
-          const summary = `Published ${drafts.length - remaining} of ${drafts.length} notes.`;
-          result.setText(remaining ? `${summary} Retry the remaining notes below.` : summary);
-          new Notice(summary);
-          if (!remaining) this.close();
-          else { publish.setButtonText(`Retry ${remaining} remaining`).setDisabled(false); setBusy(false); }
-        }));
-      } catch (error) {
-        if (!this.closed) preview.createEl('p', {text:error instanceof Error ? error.message : 'Could not prepare these notes.', cls:'naman-publish-error'});
-      } finally { setBusy(false); }
-    }));
+          if (!remaining) { new Notice(this.editing ? 'Post updated' : `Published ${drafts.length} notes.`); this.close(); }
+          else {
+            // Review again so retries use fresh local content and revision, while
+            // retaining the entered details and skipping successful batch items.
+            invalidate();
+            for (const message of errors) preview.createEl('p', {text:message, cls:'naman-publish-error', attr:{role:'alert'}});
+          }
+          button.buttonEl.removeClass('is-updating');
+          button.buttonEl.setAttribute('aria-busy', 'false');
+          button.setDisabled(false); setBusy(false);
+          return;
+        }
+        invalidate(); setBusy(true);
+        try {
+          await this.plugin.pump();
+          await this.plugin.refresh();
+          const pending = drafts.filter(draft => !draft.done);
+          const slugs = new Set<string>();
+          const ids = new Set<string>();
+          for (const draft of drafts) {
+            if (slugs.has(draft.meta.slug)) throw new Error('Two selected notes have the same URL. Give each note a different URL.');
+            if (ids.has(draft.meta.id)) throw new Error('Two selected notes share a post identifier. Remove the copied blog_id before publishing.');
+            if (this.plugin.remote.some(post => post.slug === draft.meta.slug && post.id !== draft.meta.id)) throw new Error(`The URL “${draft.meta.slug}” already belongs to another post.`);
+            slugs.add(draft.meta.slug); ids.add(draft.meta.id);
+          }
+          const preparedNotes: typeof reviewed = [];
+          // Validate every note and image before enabling any publication in this batch.
+          for (const draft of pending) {
+            if (this.closed) return;
+            draft.status.setText('Preparing review…');
+            try {
+              const prepared = await this.plugin.prepare(draft.file, {...draft.meta, baseVersion:this.plugin.data.posts[draft.meta.id]?.revision || draft.meta.baseVersion});
+              preparedNotes.push({draft, prepared, live:draft.live});
+              draft.status.setText('Ready for review');
+            } catch (error) { draft.status.setText('Needs attention'); throw error; }
+          }
+          if (this.closed) return;
+          reviewed = preparedNotes;
+          preview.createEl('h3', {text:'Exactly what will be published'});
+          preview.createEl('p', {text:'Private properties and comments are removed. Review each note and its images before publishing.'});
+          for (const {draft, prepared} of reviewed) {
+            preview.createEl('h4', {text:prepared.meta.title});
+            preview.createEl('p', {text:`${prepared.meta.date} · /blog/${prepared.meta.slug}`, cls:'naman-publish-muted'});
+            preview.createEl('p', {text:prepared.meta.description || 'No description', cls:'naman-publish-muted'});
+            for (const warning of prepared.warnings) preview.createEl('p', {text:warning, cls:'naman-publish-warning'});
+            preview.createEl('pre', {text:prepared.markdown, cls:'naman-publish-preview'});
+            for (const image of prepared.images) {
+              const url = URL.createObjectURL(new Blob([image.bytes], {type:image.type})); this.urls.push(url);
+              preview.createEl('img', {attr:{src:url, alt:`Image for ${draft.meta.title}`}, cls:'naman-publish-image'});
+            }
+          }
+          button.setButtonText(this.editing ? 'Update post' : reviewed.length > 1 ? `Publish all ${reviewed.length} notes` : 'Publish now');
+        } catch (error) {
+          if (!this.closed) preview.createEl('p', {text:error instanceof Error ? error.message : 'Could not prepare these notes.', cls:'naman-publish-error'});
+        } finally { setBusy(false); }
+      });
+    });
     actions.addButton(button => button.setButtonText('Cancel').onClick(() => this.close()));
   }
 }
@@ -464,7 +502,7 @@ export class PublishPanel extends Modal {
       }));
       if (file instanceof TFile) {
         row.addButton(b => b.setButtonText('Edit details').setDisabled(!!updating).onClick(() => {
-          this.close(); new PublishModal(this.app, this.plugin, [file]).open();
+          this.close(); new PublishModal(this.app, this.plugin, [file], true).open();
         }));
         row.controlEl.createSpan({text:'Live sync', cls:'naman-publish-muted'});
         row.addToggle(t => t.setTooltip('Live sync').setValue(this.plugin.live(file)).setDisabled(!!updating).onChange(async enabled => {

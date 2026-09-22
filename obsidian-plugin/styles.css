@@ -30,3 +30,12 @@
 .naman-publish-update.is-updating::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 6px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: naman-publish-spin .7s linear infinite; }
 @keyframes naman-publish-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .naman-publish-update.is-updating::before { animation: none; } }
+
+.naman-publish-draft > h3 { font-size: var(--font-ui-small); color: var(--text-muted); font-weight: normal; margin: 16px 0 8px; }
+.naman-publish-draft > p:empty { display: none; }
+.naman-publish-field.setting-item { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 0; border-top: 0; }
+.naman-publish-field .setting-item-info { margin: 0; }
+.naman-publish-field .setting-item-control { width: 100%; justify-content: flex-start; }
+.naman-publish-field input[type="date"] { min-height: 32px; }
+.naman-publish-footer .setting-item-info:empty { display: none; }
+.naman-publish-footer .setting-item-control { width: 100%; justify-content: flex-end; }

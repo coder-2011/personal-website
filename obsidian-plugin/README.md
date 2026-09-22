@@ -6,8 +6,10 @@ Select a note, review exactly what will leave the vault, and publish it to `nama
 
 1. Right-click a note → **Publish to naman.world**, or run **Naman Publish: Publish current note** from the command palette.
 2. Set the public title, stable URL, date, description, and whether saved edits should sync automatically.
-3. Choose **Review publication**. Review the exported Markdown, link warnings, and images, then **Publish now**. With multiple notes, enter each note's details, choose **Review all notes**, then **Publish all N notes**. Every note must pass the privacy checks before the batch can start. If an upload fails, the result shows how many succeeded and retries only the remaining notes.
+3. Choose **Review publication**. Review the exported Markdown, link warnings, and images, then **Publish now**. With multiple notes, enter each note's details, choose **Review all notes**, then **Publish all N notes**. Every note must pass the privacy checks before the batch can start. If an upload fails, review again to retry only the remaining notes; successfully published notes are kept.
 4. Click the send icon or **Naman Publish: Manage published notes** to select multiple notes, edit their public details, open posts, copy links, pause live sync, or unpublish.
+
+**Edit details** opens the saved title, date, and description in full-width fields. Choose **Review changes**, then **Update post**. The review includes the latest saved note as well as its public details. The URL stays fixed and Live Sync keeps the setting shown in the dialog. The update button spins until the server accepts the changes. Cancel leaves the saved details untouched; validation and network failures keep your entries available for retry. If Live Sync changes the post after review, review again before updating.
 
 The plugin stores its publishing key in Obsidian Secret Storage. The API authenticates every write; the browser receives no credentials. Only notes first approved through the plugin are automatically synced, even if another note already has `publish: true`.
 
