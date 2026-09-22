@@ -23,11 +23,12 @@ test('new posts default to light code and include the Ukiyo dark palette for the
   assert.equal(await presentPostForReading(html, ''), html);
 });
 
-test('plain-text fences have copy controls without a language label', async () => {
+test('plain-text fences have copy controls and a Plain text label', async () => {
   const { html } = await renderPost('```\nPlain text stays in the code\n```\n\n```plaintext\nx\n```\n\n```text\ny\n```');
   assert.equal(find(html, 'button').length, 3);
   assert.deepEqual(find(html, 'code').map(text), ['Plain text stays in the code', 'x', 'y']);
-  assert.doesNotMatch(html, /blog-code-header"><span>/);
+  assert.equal((html.match(/blog-code-header"><span>Plain text<\/span>/g) || []).length, 3);
+  assert.equal(presentPost(html.replaceAll("<span>Plain text</span>", ""), ""), html);
 });
 
 test('legacy upgrades are cached and preserve exact copied text, labels and existing presentation', async () => {
@@ -39,7 +40,8 @@ test('legacy upgrades are cached and preserve exact copied text, labels and exis
   assert.equal(find(result, 'button').length, 2);
   assert.equal(find(result, 'aside').length, 1);
   assert.match(result, /<span>Rust<\/span>/);
-  assert.doesNotMatch(result, /<span>Plain text<\/span>|github-dark/);
+  assert.match(result, /<span>Plain text<\/span>/);
+  assert.doesNotMatch(result, /github-dark/);
   assert.equal(presentPost(result, ''), result);
 });
 

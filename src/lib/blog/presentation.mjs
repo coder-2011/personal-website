@@ -5,7 +5,7 @@ import { visit } from 'unist-util-visit';
 import { placeSidenotes } from './sidenotes.mjs';
 
 const parser = unified().use(remarkParse);
-const labels = { js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript', rust: 'Rust', rs: 'Rust', py: 'Python', python: 'Python', json: 'JSON', html: 'HTML', css: 'CSS', cpp: 'C++', 'c++': 'C++', c: 'C', sh: 'Shell', bash: 'Bash', shell: 'Shell', zsh: 'Zsh', sql: 'SQL', yaml: 'YAML', yml: 'YAML', md: 'Markdown', markdown: 'Markdown', text: '', txt: '', plaintext: '', plain: '' };
+const labels = { js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript', rust: 'Rust', rs: 'Rust', py: 'Python', python: 'Python', json: 'JSON', html: 'HTML', css: 'CSS', cpp: 'C++', 'c++': 'C++', c: 'C', sh: 'Shell', bash: 'Bash', shell: 'Shell', zsh: 'Zsh', sql: 'SQL', yaml: 'YAML', yml: 'YAML', md: 'Markdown', markdown: 'Markdown', text: 'Plain text', txt: 'Plain text', plaintext: 'Plain text', plain: 'Plain text' };
 const textContent = node => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(textContent).join('');
 const codeKey = value => value.replace(/\n+$/, '');
 
@@ -13,11 +13,12 @@ const codeKey = value => value.replace(/\n+$/, '');
 // or running the syntax highlighter again. Match text rather than block positions:
 // math and raw HTML can change the number of blocks between Markdown and HTML.
 export function presentPost(html, markdown) {
+  // Restore labels on already-published blocks without re-highlighting the post.
+  html = html.replaceAll('<div class="blog-code-header"><button', '<div class="blog-code-header"><span>Plain text</span><button');
   const needsCode = html.includes('<pre') && !html.includes('<div class="blog-code-block">');
   const needsTables = html.includes('<table') && !html.includes('<div class="blog-table-scroll"');
   const needsSidenotes = html.includes('data-footnotes=');
-  const needsPlainLabelRemoval = html.includes('<span>Plain text</span>');
-  if (!needsCode && !needsTables && !needsSidenotes && !needsPlainLabelRemoval) return html;
+  if (!needsCode && !needsTables && !needsSidenotes) return html;
   const languages = new Map();
   if (needsCode) visit(parser.parse(markdown), 'code', node => {
     const key = codeKey(node.value);
@@ -42,19 +43,11 @@ export function presentPost(html, markdown) {
       }
       const code = node.tagName === 'pre' && node.childNodes.find(child => child.tagName === 'code');
       if (!code) { if (node.childNodes) decorate(node); return node; }
-      const language = languages.get(codeKey(textContent(code)))?.shift() || '';
+      const language = languages.get(codeKey(textContent(code)))?.shift() || 'Plain text';
       return parseFragment(`<div class="blog-code-block"><div class="blog-code-header">${language ? `<span>${language}</span>` : ''}<button class="blog-code-copy" type="button" aria-label="Copy code" aria-live="polite" hidden>Copy</button></div>${serializeOuter(node)}</div>`).childNodes[0];
     });
   }
   decorate(tree);
-  if (needsPlainLabelRemoval) {
-    function removeLabel(node) {
-      const classes = node.attrs?.find(attr => attr.name === 'class')?.value.split(/\s+/) || [];
-      if (classes.includes('blog-code-header')) node.childNodes = node.childNodes.filter(child => child.tagName !== 'span' || textContent(child) !== 'Plain text');
-      else for (const child of node.childNodes || []) removeLabel(child);
-    }
-    removeLabel(tree);
-  }
   if (needsSidenotes) placeSidenotes(tree);
   return serialize(tree);
 }
