@@ -2,25 +2,25 @@
 
 :root {
   color-scheme: light;
-  --bg: #fffff8;
+  --bg: #f7f2ed;
   --text: #111;
   --muted: #383832;
   --soft: #64645c;
   --border: #d8d8cd;
   --accent: #a00000;
-  --wash: #fbf7f0;
+  --wash: #eee7e0;
   --serif: "ET Book", Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
   --mono: Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #191916;
+  --bg: #211b19;
   --text: #eeeade;
   --muted: #ddd9cc;
   --soft: #b3b0a4;
-  --border: #45453c;
+  --border: #493e38;
   --accent: #edaaa0;
-  --wash: #24241f;
+  --wash: #2b2420;
 }
 * { box-sizing: border-box; }
 html { min-width: 280px; }
