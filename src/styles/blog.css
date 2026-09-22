@@ -75,3 +75,42 @@
   .blog-post:has(.blog-sidenote) #post-body { width: 100%; min-height: 0 !important; }
   .blog-post #post-body > .blog-sidenote { position: relative !important; left: auto !important; top: auto !important; width: auto; margin-block: 1rem; }
 }
+
+/* A separate left column leaves the right margin available for footnotes. */
+.blog-reading-layout { min-width: 0; }
+.blog-reading-layout > .blog-post { min-width: 0; }
+.blog-catalogue { display: none; margin-bottom: 2rem; }
+.catalogue-nav { max-height: calc(100dvh - 4rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; font-size: 1rem; line-height: 1.35; }
+.catalogue-nav h2 { margin: 0 0 1rem; font-size: 1.2rem; font-weight: 400; }
+.catalogue-nav ul { list-style: none; padding: 0; margin: 0; }
+.catalogue-nav li { margin: 0; }
+.catalogue-nav li > ul { margin: .25rem 0 .5rem .6rem; padding-left: .6rem; border-left: 1px solid var(--border); }
+.catalogue-nav a { display: block; padding: .4rem .35rem; color: var(--soft); text-decoration: none; overflow-wrap: anywhere; }
+.catalogue-nav a:hover { color: var(--accent); background: var(--wash); }
+.catalogue-nav a.catalogue-active { color: var(--accent); }
+.catalogue-nav a[aria-current="location"] { background: var(--wash); }
+.catalogue-ready .catalogue-nav li > ul { display: none; }
+.catalogue-ready .catalogue-nav a.catalogue-active + ul { display: block; }
+.catalogue-ready .blog-catalogue { display: none; }
+.blog-reading-tools { position: sticky; top: 0; z-index: 20; padding: .6rem 0; margin: 0 0 1.5rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+.blog-reading-tools button, .catalogue-dialog button { background: none; color: var(--accent); border: 0; padding: .35rem .5rem; font: inherit; font-size: 1rem; cursor: pointer; }
+.blog-reading-tools[hidden], .blog-catalogue[hidden] { display: none !important; }
+.catalogue-dialog { width: min(32rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.25rem; border: 1px solid var(--border); background: var(--bg); color: var(--text); overscroll-behavior: contain; }
+.catalogue-dialog::backdrop { background: #0008; }
+.catalogue-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+.catalogue-dialog-header strong { font-weight: 400; }
+.catalogue-dialog .catalogue-nav { max-height: calc(100dvh - 8rem); }
+.catalogue-dialog .catalogue-nav h2 { display: none; }
+html:has(.catalogue-dialog[open]) { overflow: hidden; }
+.blog-post #post-body :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 5rem; }
+@media (min-width: 1400px) {
+  .page.blog-page.has-catalogue { width: min(100%, 1540px); }
+  .has-catalogue .blog-reading-layout { display: grid; grid-template-columns: 14rem minmax(0, 1fr); gap: 2rem; align-items: start; }
+  .has-catalogue .blog-post:not(:has(.blog-sidenote)) { max-width: 56rem; }
+  .has-catalogue .blog-catalogue { display: block; position: sticky; top: 2rem; margin: 0; }
+  .has-catalogue .blog-reading-tools { display: none; }
+}
+@media print {
+  .blog-catalogue, .blog-reading-tools, .catalogue-dialog { display: none !important; }
+  .has-catalogue .blog-reading-layout { display: block; }
+}

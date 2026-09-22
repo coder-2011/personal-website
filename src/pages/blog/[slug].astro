@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCatalogue from '../../components/BlogCatalogue.astro';
+import { prepareCatalogue } from '../../lib/blog/catalogue.mjs';
 import { blogStore } from '../../lib/blog/store.mjs';
 import { blogPageHeaders } from '../../lib/blog/http.mjs';
 import { presentPost } from '../../lib/blog/presentation.mjs';
@@ -15,26 +17,34 @@ try { post = await blogStore().post(Astro.params.slug); }
 catch { unavailable = true; }
 if (!post) Astro.response.status = unavailable ? 503 : 404;
 else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.headers.set(key,value);
+const presentation = prepareCatalogue(post ? presentPost(post.html, post.markdown) : '');
 ---
 <BaseLayout title={`${post?.title || 'Post unavailable'} | Naman Chetwani`} description={post?.description || 'Notes and essays by Naman Chetwani.'}>
-  <main class="page blog-page">
+  <main class:list={["page", "blog-page", { "has-catalogue": presentation.outline.length > 0 }]}>
     <div class="page-top"><nav class="top-nav" aria-label="Primary">
       <a data-astro-prefetch="load" class="nav-link" href="/" data-echo="Naman Chetwani">Naman Chetwani</a>
       <a data-astro-prefetch="load" class="nav-link" href="/things-ive-done" data-echo="Things I've Done">Things I've Done</a>
       <a data-astro-prefetch="load" class="nav-link current" href="/blog" data-echo="Blog">Blog</a>
     </nav></div>
+    <div class="blog-reading-tools" hidden><button type="button" aria-haspopup="dialog" aria-expanded="false">☰ Catalogue</button></div>
+    <div class="blog-reading-layout">
+    <BlogCatalogue entries={presentation.outline} />
     <article class="essay blog-post" data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
-      {post ? <><p class="wisdom-meta"><time id="post-date" datetime={post.date}>{post.date}</time></p><div id="post-body" set:html={presentPost(post.html, post.markdown)} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
+      {post ? <><p class="wisdom-meta"><time id="post-date" datetime={post.date}>{post.date}</time></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
     </article>
+    </div>
   </main>
 </BaseLayout>
 <script>
   import { enableCodeCopy } from '../../scripts/blog-code.mjs';
+  import { enableCatalogue } from '../../scripts/blog-catalogue.mjs';
   import { enableSidenotes } from '../../scripts/blog-sidenotes.mjs';
   const article = document.querySelector<HTMLElement>('.blog-post');
   if (article) enableCodeCopy(article);
   const body = document.getElementById('post-body');
+  const page = document.querySelector<HTMLElement>('.blog-page')!;
+  let cleanCatalogue = body ? enableCatalogue(page, body) : () => {};
   let cleanSidenotes = body ? enableSidenotes(body) : () => {};
   let revision = article?.dataset.revision;
   let stopped = false;
@@ -47,6 +57,10 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
         const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (response.status === 404) {
           cleanSidenotes();
+          cleanCatalogue();
+          page.querySelector<HTMLElement>('.blog-catalogue')!.hidden = true;
+          page.querySelector<HTMLElement>('.blog-reading-tools')!.hidden = true;
+          page.classList.remove('has-catalogue');
           document.getElementById('post-title')!.textContent = 'Post no longer available';
           document.getElementById('post-body')!.textContent = 'This post has been unpublished.';
           stopped = true;
@@ -57,7 +71,9 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
             document.getElementById('post-date')!.textContent = post.date;
             document.getElementById('post-date')!.setAttribute('datetime', post.date);
             cleanSidenotes();
+            cleanCatalogue();
             body!.innerHTML = post.html;
+            cleanCatalogue = enableCatalogue(page, body!);
             cleanSidenotes = enableSidenotes(body!);
             article.querySelectorAll<HTMLButtonElement>('.blog-code-copy').forEach(button => { button.hidden = false; });
             document.title = `${post.title} | Naman Chetwani`;

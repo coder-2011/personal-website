@@ -1,0 +1,14 @@
+---
+import CatalogueItems from './CatalogueItems.astro';
+const { entries } = Astro.props;
+---
+<noscript><style>.blog-catalogue:not([hidden]) { display: block; }</style></noscript>
+<aside class="blog-catalogue" hidden={!entries.length}>
+  <nav aria-label="Catalogue" class="catalogue-nav">
+    <h2>Catalogue</h2>
+    <CatalogueItems entries={entries} />
+  </nav>
+</aside>
+<dialog class="catalogue-dialog" aria-label="Catalogue">
+  <div class="catalogue-dialog-header"><strong>Catalogue</strong><button type="button" aria-label="Close catalogue">Close</button></div>
+</dialog>

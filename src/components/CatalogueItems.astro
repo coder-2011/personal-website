@@ -1,0 +1,9 @@
+---
+const { entries } = Astro.props;
+---
+<ul>
+  {entries.map(entry => <li>
+    <a href={`#${encodeURIComponent(entry.id)}`} data-heading={entry.id}>{entry.title}</a>
+    {entry.children.length > 0 && <Astro.self entries={entry.children} />}
+  </li>)}
+</ul>
