@@ -14,7 +14,7 @@ export function createBlogStore(blobs, prefix = 'blog') {
   async function mutate(change) {
     for (let attempt = 0; attempt < 5; attempt++) {
       const { entries, etag } = await index();
-      const result = change(entries);
+      const result = await change(entries);
       if (!result.changed) return result.entry;
       try {
         await blobs.write(indexPath, JSON.stringify(entries), etag);
@@ -31,14 +31,19 @@ export function createBlogStore(blobs, prefix = 'blog') {
     const revision = randomUUID();
     const updated = new Date().toISOString();
     const revisionPath = `${prefix}/revisions/${input.id}/${revision}.json`;
-    // Revisions are immutable; only the small index is conditionally replaced.
-    await blobs.write(revisionPath, JSON.stringify({ ...content, revision, updated }));
-    return mutate(entries => {
+    let written = false;
+    return mutate(async entries => {
       const prior = entries.find(p => p.id === input.id);
       if (prior?.published && prior.hash === hash) return { changed: false, entry: prior };
       if ((prior?.revision || null) !== baseVersion) throw new PublishError('This post changed elsewhere. Refresh its saved revision in the publishing panel before replacing it.', 409);
       if (prior && prior.slug !== input.slug) throw new PublishError('The published URL is permanent. Keep the original slug.');
       if (entries.some(p => p.slug === input.slug && p.id !== input.id)) throw new PublishError('This URL belongs to another post. Choose a different slug.', 409);
+      // Validate first: idempotent retries and rejected edits need no new blob.
+      // A competing index write can retry this callback; reuse the immutable revision.
+      if (!written) {
+        await blobs.write(revisionPath, JSON.stringify({ ...content, revision, updated }));
+        written = true;
+      }
       const entry = { id: input.id, slug: input.slug, title: input.title, description: input.description, date: input.date, assets: input.assets, revision, updated, hash, published: true };
       if (prior) entries.splice(entries.indexOf(prior), 1, entry); else entries.push(entry);
       return { changed: true, entry };

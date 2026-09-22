@@ -68,12 +68,15 @@ function fixture() {
 const postInput = (extra={}) => ({id:randomUUID(),slug:'test',title:'Test',date:'2026-09-20',description:'',markdown:'Public',html:'<p>Public</p>',assets:[],baseVersion:null,...extra});
 
 test('publishing is immediately readable, retries are idempotent, and stale writes cannot overwrite', async () => {
-  const {store} = fixture();
+  const {store, values} = fixture();
   const input = postInput();
   const first = await store.publish(input);
   assert.equal((await store.post('test')).html,'<p>Public</p>');
+  const objectCount = values.size;
   assert.equal((await store.publish(input)).revision,first.revision);
+  assert.equal(values.size, objectCount, 'idempotent retries create no extra revisions');
   await assert.rejects(store.publish({...input,html:'bad'}),/changed elsewhere/);
+  assert.equal(values.size, objectCount, 'rejected stale edits create no extra revisions');
   const next = await store.publish({...input,baseVersion:first.revision,html:'<p>Updated</p>'});
   assert.equal((await store.post('test')).html,'<p>Updated</p>');
   await assert.rejects(store.publish(postInput()),/belongs to another/);
