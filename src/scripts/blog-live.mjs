@@ -7,7 +7,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
   let paused = false, removed = false, generation = 0;
   async function poll() {
     const run = generation;
-    let delay = 3000;
+    let delay = 1000;
     try {
       if (!document.hidden) {
         const request = new AbortController();
@@ -58,7 +58,7 @@ export function enableLiveUpdates(article, notice, applyPost, unpublish) {
   button.addEventListener('click', apply);
   window.addEventListener('pagehide', pause);
   window.addEventListener('pageshow', resume);
-  timer = setTimeout(poll, 3000);
+  timer = setTimeout(poll, 1000);
   return () => {
     pause(); notice.hidden = true;
     button.removeEventListener('click', apply);

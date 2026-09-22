@@ -28,7 +28,9 @@ function fixture() {
 
 test('live edits leave the article untouched until the reader applies the newest pending version', async () => {
   const f = fixture();
+  assert.equal([...f.timers.values()][0].delay,1000);
   f.post('v2'); await f.tick();
+  assert.equal([...f.timers.values()][0].delay,1000);
   assert.equal(f.notice.hidden,false);
   assert.equal(f.applied.length,0);
   assert.equal(f.article.dataset.revision,'v1');

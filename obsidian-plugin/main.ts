@@ -14,6 +14,7 @@ const isPublishableNote = (file: unknown): file is TFile => file instanceof TFil
 const requireNote = (file: unknown) => { if (!isPublishableNote(file)) throw new Error('Only individual Markdown notes can be published. Folders cannot be published.'); };
 
 const day = () => new Date().toISOString().slice(0, 10);
+const LIVE_IDLE_MS = 2000;
 const slugify = (text: string) => text.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100);
 const hash = async (value: string | ArrayBuffer) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', typeof value === 'string' ? new TextEncoder().encode(value) : value))).map(b => b.toString(16).padStart(2, '0')).join('');
 
@@ -21,6 +22,8 @@ export default class NamanPublish extends Plugin {
   data!: Data;
   status!: HTMLElement;
   pending = new Set<string>();
+  edits = new WeakMap<TFile, { readyAt: number }>();
+  wakeTimer?: number;
   syncing: Promise<void> | null = null;
   manualUpdates = new Map<string, Promise<void>>();
   stopped = false;
@@ -55,20 +58,26 @@ export default class NamanPublish extends Plugin {
       const notes = files;
       if (notes.length) menu.addItem(item => item.setTitle('Publish selected notes').setIcon('send').onClick(() => new PublishModal(this.app, this, notes).open()));
     }));
-    this.registerEvent(this.app.metadataCache.on('changed', file => this.schedule(file)));
+    this.registerEvent(this.app.workspace.on('editor-change', (_editor, info) => {
+      if (isPublishableNote(info.file)) this.noteChanged(info.file);
+    }));
+    this.registerEvent(this.app.metadataCache.on('changed', file => this.noteChanged(file)));
     this.registerEvent(this.app.vault.on('modify', file => {
-      if (!(file instanceof TFile) || file.extension === 'md') return;
+      if (!(file instanceof TFile)) return;
+      if (file.extension === 'md') { this.noteChanged(file); return; }
       for (const post of Object.values(this.data.posts)) if (post.assets.includes(file.path)) {
         const note = this.app.vault.getAbstractFileByPath(post.path);
-        if (note instanceof TFile) this.schedule(note);
+        if (note instanceof TFile) this.noteChanged(note);
       }
     }));
     this.registerEvent(this.app.vault.on('rename', (file, old) => {
+      this.pending.delete(old);
       for (const post of Object.values(this.data.posts)) if (post.path === old) post.path = file.path;
       void this.saveData(this.data);
-      if (file instanceof TFile) this.schedule(file);
+      if (file instanceof TFile) this.noteChanged(file);
     }));
     this.registerEvent(this.app.vault.on('delete', file => {
+      this.pending.delete(file.path);
       for (const post of Object.values(this.data.posts)) if (post.path === file.path) {
         post.status = 'Note deleted locally; unpublish from the publishing panel.';
         post.approved = false;
@@ -80,7 +89,7 @@ export default class NamanPublish extends Plugin {
     this.registerInterval(window.setInterval(() => void this.catchUp(), 30_000));
     this.app.workspace.onLayoutReady(() => void this.catchUp());
   }
-  onunload() { this.stopped = true; this.pending.clear(); }
+  onunload() { this.stopped = true; this.pending.clear(); window.clearTimeout(this.wakeTimer); }
   setStatus(value: string) { this.status.setText(`Publish: ${value}`); }
   async api(path = '', method = 'GET', body?: object | ArrayBuffer, type = 'application/json') {
     const site = new URL(this.data.site);
@@ -165,9 +174,14 @@ export default class NamanPublish extends Plugin {
     const contentHash = await hash(JSON.stringify({ ...metadata, baseVersion: null, markdown: exported.markdown }));
     return { meta: metadata, markdown: exported.markdown, warnings: exported.warnings, images, hash: contentHash };
   }
-  async publish(file: TFile, prepared: Prepared, live: boolean, automated = false) {
+  async publish(file: TFile, prepared: Prepared, live: boolean, automated = false, edit: { readyAt: number } | null = this.edits.get(file) ?? null) {
     requireNote(file);
-    if (this.stopped) return;
+    // Check again after every await: typing can resume during conversion or image upload.
+    const canSend = () => !this.stopped && (!automated || (
+      this.savedPost(file)?.[1].approved && this.live(file) && this.published(file)
+      && (this.edits.get(file) ?? null) === edit && this.idleDelay(file) === 0
+    ));
+    if (!canSend()) return;
     const prior = this.data.posts[prepared.meta.id];
     if (prior?.approved && prior.hash === prepared.hash) {
       prior.status = 'Up to date';
@@ -178,19 +192,27 @@ export default class NamanPublish extends Plugin {
     let markdown = prepared.markdown;
     // All text checks and all image preparation have succeeded before the first upload.
     for (const image of prepared.images) {
+      if (!canSend()) return;
       const uploaded = await this.api('/assets', 'POST', image.bytes, image.type);
       markdown = markdown.split(image.placeholder).join(uploaded.url);
     }
-    if (this.stopped) return;
-    if (automated && (!this.live(file) || !this.published(file))) return;
+    if (!canSend()) return;
     const result = await this.api('', 'POST', { ...prepared.meta, markdown });
     this.remote = this.remote.filter(p => p.id !== result.post.id).concat(result.post);
     this.data.posts[prepared.meta.id] = { path: file.path, revision: result.post.revision, slug: result.post.slug, hash: prepared.hash, assets: prepared.images.map(i => i.path), status: `Published ${new Date().toLocaleTimeString()}`, approved: true, metadata: { title: prepared.meta.title, date: prepared.meta.date, description: prepared.meta.description }, live: automated ? this.live(file) : live, published: true };
     await this.saveData(this.data);
     this.setStatus('Published');
   }
+  noteChanged(file: TFile) {
+    if (this.stopped || !isPublishableNote(file)) return;
+    this.edits.set(file, { readyAt: Date.now() + LIVE_IDLE_MS });
+    this.schedule(file);
+  }
+  private idleDelay(file: TFile) {
+    return Math.max(0, (this.edits.get(file)?.readyAt || 0) - Date.now());
+  }
   schedule(file: TFile) {
-    if (!isPublishableNote(file)) return;
+    if (this.stopped || !isPublishableNote(file)) return;
     const saved = this.savedPost(file)?.[1];
     if (!saved?.approved || (this.published(file) && !this.live(file))) return;
     this.pending.add(file.path);
@@ -199,15 +221,27 @@ export default class NamanPublish extends Plugin {
   pump(): Promise<void> {
     if (this.syncing) return this.syncing;
     if (this.stopped) return Promise.resolve();
+    window.clearTimeout(this.wakeTimer);
     this.syncing = this.runPump().finally(() => {
       this.syncing = null;
-      if (this.pending.size && !this.stopped) void this.pump();
+      if (this.pending.size && !this.stopped) {
+        const delay = Math.min(...Array.from(this.pending, path => {
+          const file = this.app.vault.getAbstractFileByPath(path);
+          return isPublishableNote(file) ? this.idleDelay(file) : 0;
+        }));
+        this.wakeTimer = window.setTimeout(() => { void this.pump(); }, delay);
+      }
     });
     return this.syncing;
   }
   private async runPump() {
     while (this.pending.size && !this.stopped) {
-      const path = this.pending.values().next().value!;
+      // A note being edited must not hold up another note that is already idle.
+      const path = [...this.pending].find(path => {
+        const file = this.app.vault.getAbstractFileByPath(path);
+        return !isPublishableNote(file) || this.idleDelay(file) === 0;
+      });
+      if (path === undefined) return;
       this.pending.delete(path);
       const file = this.app.vault.getAbstractFileByPath(path);
       if (!isPublishableNote(file)) continue;
@@ -216,8 +250,9 @@ export default class NamanPublish extends Plugin {
       try {
         if (!this.published(file)) await this.unpublish(entry[0]);
         else if (this.live(file)) {
+          const edit = this.edits.get(file) ?? null;
           const prepared = await this.prepare(file);
-          await this.publish(file, prepared, true, true);
+          await this.publish(file, prepared, true, true, edit);
         }
       } catch (error) { this.failure(file, error); }
     }
@@ -335,7 +370,7 @@ export class PublishModal extends Modal {
       });
       new Setting(section).setClass('naman-publish-field').setName('Date').addText(input => {input.inputEl.type = 'date'; input.setValue(meta.date).onChange(value => {meta.date = value; invalidate();});});
       new Setting(section).setClass('naman-publish-field').setName('Description').setDesc('A short summary for the blog list and search previews. Optional, up to 500 characters.').addTextArea(input => input.setValue(meta.description).onChange(value => {meta.description = value; invalidate();}));
-      new Setting(section).setName('Live sync').setDesc('Saved edits go live while Obsidian is open.').addToggle(toggle => toggle.setValue(draft.live).onChange(value => {draft.live = value; invalidate();}));
+      new Setting(section).setName('Live sync').setDesc('Saved edits sync after two seconds without typing or changes.').addToggle(toggle => toggle.setValue(draft.live).onChange(value => {draft.live = value; invalidate();}));
     }
     const actions = new Setting(el).setClass('naman-publish-footer');
     const setBusy = (busy: boolean) => {

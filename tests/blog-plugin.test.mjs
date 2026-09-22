@@ -54,8 +54,21 @@ class Modal {
 }
 const output = await build({entryPoints:['obsidian-plugin/main.ts'], bundle:true, write:false, format:'cjs', platform:'node', external:['obsidian','css-tree']});
 const module = {exports:{}};
+const clock = { now: 100000, next: 0, timers: new Map() };
+const hostWindow = {
+  setInterval: () => 0,
+  setTimeout: (callback, delay) => { const id = ++clock.next; clock.timers.set(id, {callback, at: clock.now + delay}); return id; },
+  clearTimeout: id => clock.timers.delete(id),
+};
+async function advance(ms, ...plugins) {
+  clock.now += ms;
+  for (const [id, timer] of [...clock.timers]) if (timer.at <= clock.now) {
+    clock.timers.delete(id); timer.callback();
+  }
+  await Promise.all(plugins.map(plugin => plugin.pump()));
+}
 vm.runInNewContext(output.outputFiles[0].text, {
-  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob, Error, window:{setInterval:() => 0},
+  __filename: new URL('../obsidian-plugin/main.ts', import.meta.url).pathname, module, exports:module.exports, crypto:webcrypto, TextEncoder, TextDecoder, ArrayBuffer, Uint8Array, URL, Blob, Error, window:hostWindow, Date:class extends Date { static now() { return clock.now; } },
   require(name) {
     if (name !== 'obsidian') return createRequire(import.meta.url)(name);
     return {Plugin, Modal, Setting, TFile, Notice:class {}, PluginSettingTab:class {},
@@ -500,4 +513,143 @@ test('context menus offer publishing only for selections entirely made of Markdo
   assert.equal(items.length, 2, 'individual notes and explicit note-only batches still work');
   items[1]();
   assert.ok(button(f.app.openModal, 'Review all notes'));
+});
+
+test('typing and saves restart the idle wait; catch-up cannot bypass it or extend it', async () => {
+  const f = await publishedFixture();
+  const events = new Map();
+  for (const [name, host] of [['workspace', f.app.workspace = {}], ['metadata', f.app.metadataCache], ['vault', f.app.vault]]) {
+    host.on = (event, callback) => events.set(`${name}:${event}`, callback);
+  }
+  f.app.workspace.onLayoutReady = () => {};
+  f.app.secretStorage = {getSecret:() => 'test'};
+  f.plugin.loadData = async () => f.plugin.data;
+  f.plugin.addStatusBarItem = () => new Element();
+  for (const method of ['addCommand', 'registerEvent', 'addRibbonIcon', 'addSettingTab', 'registerDomEvent', 'registerInterval']) f.plugin[method] = () => {};
+  await f.plugin.onload();
+  const file = f.files[0];
+  events.get('workspace:editor-change')({}, {file});
+  await f.plugin.pump();
+  await advance(1500, f.plugin);
+  f.sources.set(file.path, 'Still typing');
+  events.get('vault:modify')(file);
+  events.get('metadata:changed')(file);
+  await f.plugin.catchUp(); await f.plugin.pump();
+  await advance(1999, f.plugin);
+  assert.equal(f.requests.length, 1, 'nothing sent while typing or before two idle seconds');
+  await f.plugin.catchUp(); await f.plugin.pump();
+  await advance(1, f.plugin);
+  assert.equal(f.requests.length, 2, 'send immediately at the idle deadline, without a polling delay');
+  assert.match(f.requests.at(-1).body.markdown, /Still typing/);
+  await advance(5000, f.plugin);
+  assert.equal(f.requests.length, 2, 'coalesce all editor, save and cache events into one update');
+  f.plugin.onunload();
+});
+
+test('typing during preparation discards the old snapshot even if preparation outlasts the idle delay', async () => {
+  const f = await publishedFixture(), file = f.files[0];
+  const prepare = f.plugin.prepare.bind(f.plugin);
+  let release, arrived;
+  const started = new Promise(resolve => {arrived = resolve;});
+  f.plugin.prepare = async (...args) => {
+    const prepared = await prepare(...args);
+    arrived(); await new Promise(resolve => {release = resolve;});
+    return prepared;
+  };
+  f.sources.set(file.path, 'Old snapshot');
+  f.plugin.schedule(file);
+  await started;
+  f.sources.set(file.path, 'Newest snapshot'); f.plugin.noteChanged(file);
+  clock.now += 2000;
+  f.plugin.prepare = prepare;
+  release(); await f.plugin.pump();
+  assert.equal(f.requests.length, 2, 'publish only the replacement, never the stale prepared snapshot');
+  assert.match(f.requests.at(-1).body.markdown, /Newest snapshot/);
+  f.plugin.onunload();
+});
+
+test('typing during an image upload prevents the article POST until idle again', async () => {
+  const f = await publishedFixture(), file = f.files[0];
+  const api = f.plugin.api;
+  let release, arrived;
+  const started = new Promise(resolve => {arrived = resolve;});
+  f.plugin.api = async (path, ...args) => {
+    if (path !== '/assets') return api(path, ...args);
+    arrived(); await new Promise(resolve => {release = resolve;});
+    return {url:'/api/blog/assets/test'};
+  };
+  f.sources.set(file.path, 'Before typing resumes');
+  const prepared = await f.plugin.prepare(file);
+  prepared.images.push({bytes:new ArrayBuffer(0),type:'image/svg+xml',placeholder:'placeholder',path:'test.svg'});
+  const uploading = f.plugin.publish(file, prepared, true, true);
+  await started;
+  f.sources.set(file.path, 'After typing resumes'); f.plugin.noteChanged(file);
+  release(); await uploading; await f.plugin.pump();
+  assert.equal(f.requests.length, 1);
+  await advance(2000, f.plugin);
+  assert.equal(f.requests.length, 2);
+  assert.match(f.requests.at(-1).body.markdown, /After typing resumes/);
+  f.plugin.onunload();
+});
+
+test('an actively edited note does not delay another idle note', async () => {
+  const f = fixture();
+  f.modal.onOpen();
+  await button(f.modal, 'Review all notes').click();
+  await button(f.modal, 'Publish all 3 notes').click();
+  for (const file of f.files) f.sources.set(file.path, `Updated ${file.basename}`);
+  f.plugin.noteChanged(f.files[0]);
+  f.plugin.schedule(f.files[1]);
+  await f.plugin.pump();
+  assert.equal(f.requests.length, 4);
+  assert.equal(f.requests.at(-1).body.slug, 'second');
+  await advance(2000, f.plugin);
+  assert.equal(f.requests.length, 5);
+  assert.equal(f.requests.at(-1).body.slug, 'first');
+  f.plugin.onunload();
+});
+
+test('pausing cancels queued automatic updates but manual Update still sends immediately', async () => {
+  const f = await publishedFixture(), file = f.files[0];
+  f.sources.set(file.path, 'Explicit manual update');
+  f.plugin.noteChanged(file); await f.plugin.pump();
+  await f.plugin.setLive(file, false);
+  await f.plugin.updatePost(file);
+  assert.equal(f.requests.length, 2);
+  await advance(2000, f.plugin);
+  assert.equal(f.requests.length, 2);
+  f.sources.set(file.path, 'Reenabled while typing');
+  f.plugin.noteChanged(file);
+  await f.plugin.setLive(file, true); await f.plugin.pump();
+  assert.equal(f.requests.length, 2);
+  await advance(2000, f.plugin);
+  assert.equal(f.requests.length, 3);
+  f.sources.set(file.path, 'Must not send after unload');
+  f.plugin.noteChanged(file); await f.plugin.pump();
+  f.plugin.onunload();
+  await advance(2000, f.plugin);
+  assert.equal(f.requests.length, 3);
+  assert.equal(clock.timers.size, 0);
+});
+
+test('edits during an already-sent request wait for idle and use the accepted revision', async () => {
+  const f = await publishedFixture(), file = f.files[0];
+  const api = f.plugin.api;
+  let release, arrived;
+  const started = new Promise(resolve => {arrived = resolve;});
+  f.plugin.api = async (...args) => {arrived(); await new Promise(resolve => {release = resolve;}); return api(...args);};
+  f.sources.set(file.path, 'Already sent'); f.plugin.schedule(file);
+  await started;
+  f.sources.set(file.path, 'Still editing'); f.plugin.noteChanged(file);
+  f.plugin.api = api;
+  release(); await f.plugin.pump();
+  assert.equal(f.requests.length, 2);
+  const acceptedRevision = f.plugin.savedPost(file)[1].revision;
+  await advance(1999, f.plugin);
+  assert.equal(f.requests.length, 2);
+  await advance(1, f.plugin);
+  assert.equal(f.requests.length, 3);
+  assert.equal(f.requests.at(-1).body.baseVersion, acceptedRevision);
+  assert.match(f.requests.at(-1).body.markdown, /Still editing/);
+  f.plugin.onunload();
 });
