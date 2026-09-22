@@ -1,21 +1,28 @@
-import model from '../../data/gpt2.json' with { type: 'json' };
 import { createBPE } from './engine.mjs';
 
 import { createTraceHandler } from '../tokenizer-api.mjs';
 
-const { trace, visible } = createBPE(model);
+let engine;
 
-export const handleBpeRequest = createTraceHandler(text => {
+export const handleBpeRequest = createTraceHandler(async text => {
+  engine ??= import('../../data/gpt2.json', { with: { type: 'json' } }).then(({default:model}) => createBPE(model));
+  const { trace, visible } = await engine;
+  // Frames share most tokens. Decode each distinct byte string once per request.
+  const display = new Map();
+  const printable = value => {
+    if (!display.has(value)) display.set(value, visible(value));
+    return display.get(value);
+  };
   const frames = trace(text).map(frame => ({
     ...frame,
-    tokens: frame.tokens.map(token => ({ ...token, text: visible(token.text) })),
+    tokens: frame.tokens.map(token => ({ ...token, text: printable(token.text) })),
     candidate: frame.candidate && {
       ...frame.candidate,
-      left: visible(frame.candidate.left),
-      right: visible(frame.candidate.right),
-      merged: visible(frame.candidate.left + frame.candidate.right),
+      left: printable(frame.candidate.left),
+      right: printable(frame.candidate.right),
+      merged: printable(frame.candidate.left + frame.candidate.right),
       choices: frame.candidate.choices.slice(0, 6).map(choice => ({
-        ...choice, left: visible(choice.left), right: visible(choice.right),
+        ...choice, left: printable(choice.left), right: printable(choice.right),
       })),
     },
   }));

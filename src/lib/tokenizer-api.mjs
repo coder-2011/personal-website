@@ -79,7 +79,7 @@ export function createTraceHandler(trace) {
     if (byteLength < 1 || byteLength > MAX_TEXT_BYTES)
       return respond({ error: 'Use between 1 and 160 UTF-8 bytes.' }, 400);
 
-    try { return respond(trace(input.text)); }
+    try { return respond(await trace(input.text)); }
     catch (error) {
       if (error instanceof RangeError) return respond({error:error.message}, 422);
       return respond({error:'Could not encode this text.'}, 500);
