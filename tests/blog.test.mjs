@@ -98,13 +98,28 @@ test('concurrent posts preserve both index entries and same-post races report co
 });
 
 test('publishing fails closed without a key and rejects unauthenticated requests before storage', async () => {
-  const saved = process.env.BLOG_PUBLISH_TOKEN;
-  try {
-    delete process.env.BLOG_PUBLISH_TOKEN;
-    assert.equal((await publishingRequest(new Request('https://naman.world/api/publish'))).status,503);
-    process.env.BLOG_PUBLISH_TOKEN='x'.repeat(48);
-    assert.equal((await publishingRequest(new Request('https://naman.world/api/publish'))).status,401);
-  } finally { if (saved) process.env.BLOG_PUBLISH_TOKEN=saved; else delete process.env.BLOG_PUBLISH_TOKEN; }
+  const key = 'x'.repeat(48);
+  for (const mode of ['posts', 'assets']) for (const method of ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']) {
+    const path = `/api/publish${mode === 'assets' ? '/assets' : ''}`;
+    for (const [secret, authorization, status] of [
+      [undefined, `Bearer ${key}`, 503], ['too-short', `Bearer ${key}`, 503],
+      [key, undefined, 401], [key, 'Bearer wrong', 401],
+      [key, `Bearer ${'y'.repeat(key.length)}`, 401], [key, `Basic ${key}`, 401],
+    ]) {
+      // Neither a query parameter nor a cookie substitutes for the header.
+      const request = new Request(`https://naman.world${path}?token=${key}`, {
+        method, headers: {Cookie:`token=${key}`, ...(authorization ? {Authorization:authorization} : {})},
+      });
+      let bodyReads = 0, storageAccesses = 0;
+      Object.defineProperty(request, 'body', {get() {bodyReads++;throw new Error('Must authenticate before reading uploads');}});
+      const env = {BLOG_PUBLISH_TOKEN:secret, get BLOG_BUCKET() {storageAccesses++;throw new Error('Must authenticate before accessing storage');}};
+      const response = await publishingRequest(request, mode, {env});
+      assert.equal(response.status,status,`${mode} ${method}`);
+      assert.equal(bodyReads,0);
+      assert.equal(storageAccesses,0);
+      assert.ok(!(await response.text()).includes(key),'authentication failures must not echo the configured key');
+    }
+  }
 });
 
 test('unchanged polling checks the current index without reading the post body', async () => {

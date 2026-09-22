@@ -12,7 +12,16 @@ const headers = {Authorization:`Bearer ${token}`, 'Content-Type':'application/js
 const send = (body, method='POST') => fetch(`${origin}/api/publish`,{method,headers,body:JSON.stringify(body)});
 let version;
 try {
-  assert.equal((await fetch(`${origin}/api/publish`)).status,401);
+  for (const [path,method] of [['/api/publish','GET'],['/api/publish','POST'],['/api/publish','DELETE'],['/api/publish/assets','POST']]) {
+    for (const authorization of [null, `Bearer ${'0'.repeat(64)}`]) {
+      const response = await fetch(origin+path, {method,
+        headers:{'Content-Type':'application/json', ...(authorization ? {Authorization:authorization} : {})},
+        ...(method === 'GET' ? {} : {body:'{}'}),
+      });
+      assert.equal(response.status,401,`${method} ${path} must reject a ${authorization ? 'wrong' : 'missing'} key`);
+      await response.arrayBuffer();
+    }
+  }
   const image = await sharp({create:{width:16,height:16,channels:3,background:`#${id.slice(0,6)}`}}).jpeg().withMetadata({exif:{IFD0:{Artist:'PRIVATE-METADATA'}}}).toBuffer();
   const uploaded = await fetch(`${origin}/api/publish/assets`, {method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'image/jpeg'},body:image});
   assert.equal(uploaded.status,200,await uploaded.clone().text());
