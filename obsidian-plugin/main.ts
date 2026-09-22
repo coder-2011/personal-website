@@ -310,7 +310,9 @@ export default class NamanPublish extends Plugin {
   async catchUp() {
     if (this.stopped || !this.app.secretStorage.getSecret(this.data.secretId)) return;
     try {
-      await this.refresh();
+      // Compare saved notes locally. The pump skips matching hashes without an
+      // API request; refreshing the remote list on every timer burns read quota.
+      // The publishing panel still refreshes before review or unpublishing.
       for (const saved of Object.values(this.data.posts)) {
         const file = this.app.vault.getAbstractFileByPath(saved.path);
         if (file instanceof TFile) this.schedule(file);

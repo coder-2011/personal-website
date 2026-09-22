@@ -653,3 +653,15 @@ test('edits during an already-sent request wait for idle and use the accepted re
   assert.match(f.requests.at(-1).body.markdown, /Still editing/);
   f.plugin.onunload();
 });
+
+test('background catch-up checks unchanged notes without any storage requests', async () => {
+  const f = await publishedFixture();
+  f.app.secretStorage = {getSecret:() => 'test'};
+  f.plugin.refresh = () => {throw new Error('Periodic catch-up must not read remote storage');};
+  for (let i=0; i<10; i++) { await f.plugin.catchUp(); await f.plugin.pump(); }
+  assert.equal(f.requests.length, 1);
+  f.sources.set(f.files[0].path, 'Retry this changed note');
+  await f.plugin.catchUp(); await f.plugin.pump();
+  assert.equal(f.requests.length, 2, 'unsent local changes still retry');
+  f.plugin.onunload();
+});
