@@ -23,7 +23,7 @@ test('adds language labels to legacy HTML while preserving exact code text and p
   assert.deepEqual(elements(result, 'button').map(text), ['Copy', 'Copy', 'Copy']);
   assert.match(result, /<span>Rust<\/span>/);
   assert.match(result, /<span>JSON<\/span>/);
-  assert.match(result, /<span>Plain text<\/span>/);
+  assert.doesNotMatch(result, /<span>Plain text<\/span>/);
   assert.equal(text(elements(result, 'p')[0]), 'Normal prose');
   assert.equal(presentPost(result, markdown), result);
 });
@@ -34,7 +34,7 @@ test('published HTML has controls after sanitizing, with math and lists unaffect
   assert.match(html, /class="katex"/);
   assert.match(html, /<li>Counts are weighted by word frequency\.<\/li>/);
   assert.match(html, /<span>Python<\/span>/);
-  assert.match(html, /<span>Plain text<\/span>/);
+  assert.doesNotMatch(html, /<span>Plain text<\/span>/);
   assert.equal(elements(html, 'button').length, 2);
   assert.ok(elements(html, 'button').every(node => node.attrs.some(attr => attr.name === 'hidden')));
   assert.deepEqual(elements(html, 'code').map(text), ['print("<hello>")', '1M']);
@@ -44,7 +44,7 @@ test('fence labels cannot inject HTML into the code toolbar', () => {
   const html = '<pre><code>x</code></pre>';
   const result = presentPost(html, '```<img>\nx\n```');
   assert.equal(elements(result, 'img').length, 0);
-  assert.match(result, /<span>Plain text<\/span>/);
+  assert.doesNotMatch(result, /<span>Plain text<\/span>/);
 });
 
 test('footnotes become adjacent notes with stable IDs, repeat references and rich content', async () => {

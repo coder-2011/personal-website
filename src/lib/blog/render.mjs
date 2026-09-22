@@ -7,6 +7,7 @@ import { visit } from 'unist-util-visit';
 import { exportNote } from './export.mjs';
 import { assertPublicText } from './privacy.mjs';
 import { presentPost } from './presentation.mjs';
+import { codeTheme } from './code-theme.mjs';
 
 function callouts() {
   return tree => visit(tree, 'blockquote', node => {
@@ -40,7 +41,7 @@ export async function renderPost(markdown) {
   processor ??= createMarkdownProcessor({
     remarkPlugins: [remarkMath, callouts],
     rehypePlugins: [rehypeRaw, [rehypeSanitize, schema], [rehypeKatex, { trust: false, strict: 'ignore' }]],
-    shikiConfig: { theme: 'github-dark' },
+    shikiConfig: { theme: codeTheme },
   });
   const rendered = await (await processor).render(result.markdown);
   const html = presentPost(rendered.code, result.markdown);

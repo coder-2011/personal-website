@@ -8,11 +8,11 @@
 .blog-post li > :is(ul, ol) { margin-block: .6rem; }
 .blog-post img { display: block; max-width: 100%; height: auto; margin: 1.5rem auto; }
 .blog-post pre { overflow-x: auto; padding: 1.15rem; border-radius: 2px; font-size: .85rem; line-height: 1.65; }
-.blog-code-block { margin-block: 1.5rem; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; }
-.blog-code-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1rem; background: var(--wash); color: var(--muted); font-size: .8rem; line-height: 1.5; }
-.blog-code-copy { border: 1px solid var(--border); border-radius: 3px; padding: .3rem .65rem; background: transparent; color: var(--text); cursor: pointer; }
-.blog-code-copy:hover { background: var(--wash); }
-.blog-code-copy:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.blog-code-block { margin-block: 1.5rem; border: 1px solid #413632; border-radius: 2px; overflow: hidden; background: #2b2723; }
+.blog-code-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1rem; background: #2b2723; color: #b2a699; font-size: .8rem; line-height: 1.5; }
+.blog-code-copy { margin-left: auto; border: 1px solid #514541; border-radius: 3px; padding: .3rem .65rem; background: transparent; color: #ccc2b7; cursor: pointer; }
+.blog-code-copy:hover { background: #413632; }
+.blog-code-copy:focus-visible { outline: 2px solid #ccc2b7; outline-offset: 3px; }
 .blog-post .blog-code-block pre { margin: 0; border-radius: 0; }
 .blog-post pre > code { font-size: inherit; }
 .blog-post code { font-size: .9em; }
@@ -38,23 +38,6 @@
 .blog-post :is(th, td) p { text-align: left; margin-bottom: .5rem; }
 .blog-post .blog-code-header { font-family: var(--mono); }
 .blog-post .footnotes p { font-size: inherit; }
-
-/* Stored posts use GitHub Dark. Its matching light palette avoids re-highlighting
-   existing articles on every request; dark mode keeps the original token styles. */
-:root:not([data-theme="dark"]) .blog-post pre.astro-code { background-color: #fff !important; color: #24292e !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#6a737d" i] { color: #6a737d !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#79b8ff" i] { color: #005cc5 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#b392f0" i] { color: #6f42c1 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#e1e4e8" i] { color: #24292e !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#85e89d" i] { color: #22863a !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#f97583" i] { color: #d73a49 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#9ecbff" i] { color: #032f62 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#ffab70" i] { color: #e36209 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#fdaeb7" i] { color: #b31d28 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#24292e" i] { color: #fafbfc !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#dbedff" i] { color: #032f62 !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#2f363d" i] { color: #f6f8fa !important; }
-:root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#d1d5da" i] { color: #586069 !important; }
 
 /* Notes stay beside their references, with the burgundy markers used in prose. */
 .blog-post [data-footnote-ref], .blog-sidenote-number { color: var(--accent); text-decoration: none; }
