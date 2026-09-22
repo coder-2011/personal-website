@@ -234,7 +234,7 @@ export default class NamanPublish extends Plugin {
   async unpublish(id: string) {
     const local = this.data.posts[id];
     const remote = this.remote.find(p => p.id === id);
-    const result = await this.api('', 'DELETE', { id, baseVersion: local?.revision || remote?.revision });
+    const result = await this.api('', 'DELETE', { id, baseVersion: remote?.revision || local?.revision });
     this.remote = this.remote.filter(p => p.id !== id).concat(result.post);
     if (local) {
       local.approved = false; local.revision = result.post.revision; local.hash = ''; local.status = 'Unpublished';

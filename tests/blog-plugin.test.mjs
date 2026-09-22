@@ -208,3 +208,28 @@ test('pausing live sync during an upload stays paused after it completes', async
   await upload;
   assert.equal(f.plugin.live(f.files[0]), false);
 });
+
+test('unpublish uses the revision shown in the refreshed panel and stops later syncs', async () => {
+  const f = fixture(['Disposable.md']);
+  f.modal.onOpen();
+  await button(f.modal, 'Review publication').click();
+  await button(f.modal, 'Publish now').click();
+  const id = f.requests[0].body.id;
+  const remoteRevision = randomUUID();
+  f.plugin.remote.find(post => post.id === id).revision = remoteRevision;
+  const api = f.plugin.api;
+  f.plugin.api = (path, method, body) => {
+    if (method === 'DELETE') assert.equal(body.baseVersion, remoteRevision, 'use the refreshed post the user chose to unpublish');
+    return api(path, method, body);
+  };
+  await f.plugin.unpublish(id);
+  assert.equal(f.plugin.remote.find(post => post.id === id).published, false);
+  assert.equal(f.plugin.persisted.posts[id].approved, false);
+  assert.equal(f.plugin.persisted.posts[id].published, false);
+  assert.equal(f.plugin.persisted.posts[id].live, false);
+  const count = f.requests.length;
+  f.sources.set('Disposable.md', 'An edit after unpublishing');
+  f.plugin.schedule(f.files[0]);
+  await f.plugin.pump();
+  assert.equal(f.requests.length, count, 'editing an unpublished note must not republish it');
+});
