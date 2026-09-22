@@ -1,0 +1,4 @@
+/* ET Book, unchanged glyphs in WOFF2. MIT license: /fonts/et-book-v2/LICENSE */
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v2/roman.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v2/italic.woff2") format("woff2"); font-style: italic; font-weight: 400; font-display: swap; }
+@font-face { font-family: "ET Book"; src: url("/fonts/et-book-v2/bold.woff2") format("woff2"); font-style: normal; font-weight: 700; font-display: swap; }

@@ -1,4 +1,4 @@
-@import url("/fonts/et-book-v1/fonts.css");
+@import "./fonts.css";
 
 :root {
   color-scheme: light;

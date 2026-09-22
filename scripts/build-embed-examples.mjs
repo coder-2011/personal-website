@@ -4,11 +4,15 @@ import { handleBpeRequest } from '../src/lib/bpe/api.mjs';
 import { handleUnigramRequest } from '../src/lib/unigram/api.mjs';
 
 const themeCss = await readFile('src/styles/embed-theme.css', 'utf8');
+const fontCss = await readFile('src/styles/fonts.css', 'utf8');
 const themeScript = await readFile('src/scripts/embed-theme-receiver.js', 'utf8');
 
 for (const [name, handler] of [['bpe', handleBpeRequest], ['unigram', handleUnigramRequest]]) {
   const path = `public/embeds/${name}.html`;
   let html = await readFile(path, 'utf8');
+  html = html.replace(/<link rel="stylesheet" href="\/fonts\/et-book-v1\/fonts.css"\s*\/?>\n?/, '');
+  html = html.replace(/\/\* BEGIN GENERATED FONTS \*\/[\s\S]*?\/\* END GENERATED FONTS \*\//, '');
+  html = html.replace('<style>', `<style>/* BEGIN GENERATED FONTS */\n${fontCss}/* END GENERATED FONTS */`);
   html = html.replace(/\/\* BEGIN GENERATED THEME \*\/[\s\S]*?\/\* END GENERATED THEME \*\//, `/* BEGIN GENERATED THEME */\n${themeCss}/* END GENERATED THEME */`);
   html = html.replace(/\/\/ BEGIN GENERATED THEME\n[\s\S]*?\/\/ END GENERATED THEME/, `// BEGIN GENERATED THEME\n${themeScript}// END GENERATED THEME`);
   const input = html.match(/<input id="input" value="([^"]*)"/)[1];
