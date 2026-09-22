@@ -2,6 +2,7 @@ import { parseFragment, serialize, serializeOuter } from 'parse5';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import { visit } from 'unist-util-visit';
+import { placeSidenotes } from './sidenotes.mjs';
 
 const parser = unified().use(remarkParse);
 const labels = { js: 'JavaScript', javascript: 'JavaScript', ts: 'TypeScript', typescript: 'TypeScript', rust: 'Rust', rs: 'Rust', py: 'Python', python: 'Python', json: 'JSON', html: 'HTML', css: 'CSS', cpp: 'C++', 'c++': 'C++', c: 'C', sh: 'Shell', bash: 'Bash', shell: 'Shell', zsh: 'Zsh', sql: 'SQL', yaml: 'YAML', yml: 'YAML', md: 'Markdown', markdown: 'Markdown', text: 'Plain text', txt: 'Plain text', plaintext: 'Plain text' };
@@ -14,7 +15,8 @@ const codeKey = value => value.replace(/\n+$/, '');
 export function presentPost(html, markdown) {
   const needsCode = html.includes('<pre') && !html.includes('<div class="blog-code-block">');
   const needsTables = html.includes('<table') && !html.includes('<div class="blog-table-scroll"');
-  if (!needsCode && !needsTables) return html;
+  const needsSidenotes = html.includes('data-footnotes=');
+  if (!needsCode && !needsTables && !needsSidenotes) return html;
   const languages = new Map();
   if (needsCode) visit(parser.parse(markdown), 'code', node => {
     const key = codeKey(node.value);
@@ -44,5 +46,6 @@ export function presentPost(html, markdown) {
     });
   }
   decorate(tree);
+  if (needsSidenotes) placeSidenotes(tree);
   return serialize(tree);
 }

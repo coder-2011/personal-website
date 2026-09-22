@@ -44,7 +44,7 @@ test('reference links cannot bypass privacy checks and unsupported embeds are ex
 
 test('rendering preserves math, tables, callouts, footnotes, highlighting and the public tokenizer iframe', async () => {
   const {html} = await renderPost('# Heading\n\n$x^2$\n\n> [!note] Remember\n> A detail.\n\n| A | B |\n| - | - |\n| 1 | 2 |\n\n```js\nconst x = 1;\n```\n\nFootnote[^1].\n\n[^1]: Details\n\n<iframe src="https://naman.world/embeds/unigram.html"></iframe>');
-  for (const part of ['id="heading"','class="katex"','blog-callout','<table>','astro-code','footnotes','sandbox="allow-scripts allow-forms"']) assert.ok(html.includes(part),part);
+  for (const part of ['id="heading"','class="katex"','blog-callout','<table>','astro-code','blog-sidenote','sandbox="allow-scripts allow-forms"']) assert.ok(html.includes(part),part);
   await assert.rejects(renderPost('<a onclick="alert(1)">bad</a>'));
   const harmless = await renderPost('<div id="location"><strong>Safe</strong></div>');
   assert.doesNotMatch(harmless.html,/onclick|<script/);

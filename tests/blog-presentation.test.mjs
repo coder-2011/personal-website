@@ -46,3 +46,32 @@ test('fence labels cannot inject HTML into the code toolbar', () => {
   assert.equal(elements(result, 'img').length, 0);
   assert.match(result, /<span>Plain text<\/span>/);
 });
+
+test('footnotes become adjacent notes with stable IDs, repeat references and rich content', async () => {
+  const markdown = 'First[^alpha] and second[^beta].\n\nAgain[^alpha].\n\n| Cell |\n| --- |\n| Table reference[^table] |\n\n[^alpha]: A **bold** note with $x^2$.\n\n    A second paragraph with [a link](https://example.com).\n\n[^beta]: Another note.\n\n[^table]: A table note.';
+  const {html} = await renderPost(markdown);
+  const tree = parseFragment(html);
+  const blocks = tree.childNodes.filter(node => node.tagName);
+  assert.deepEqual(blocks.map(node => node.tagName), ['p', 'aside', 'aside', 'p', 'div', 'aside']);
+  const notes = elements(html, 'aside');
+  assert.equal(notes.length, 3);
+  assert.equal(elements(html, 'strong').map(text).join(), 'bold');
+  assert.match(html, /class="katex"/);
+  assert.match(html, /A second paragraph/);
+  assert.ok(!html.includes('data-footnotes='));
+  assert.ok(!html.includes('aria-describedby="footnote-label"'));
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(ids).size, ids.length, 'no cloned IDs');
+  for (const [, target] of html.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.includes(target), `target ${target} exists`);
+  assert.equal(elements(html, 'a').filter(node => node.attrs.some(attr => attr.name === 'data-footnote-backref')).length, 4);
+  assert.equal(presentPost(html, markdown), html, 'already-published presentation is unchanged');
+});
+
+test('legacy footnote-only HTML gets notes without code or table decoration', () => {
+  const html = '<p>Text<sup><a href="#fn-a" id="ref-a" data-footnote-ref aria-describedby="footnote-label">1</a></sup>.</p><section data-footnotes="" class="footnotes"><h2 id="footnote-label">Footnotes</h2><ol><li id="fn-a"><p>The note <a href="#ref-a" data-footnote-backref>↩</a></p></li></ol></section>';
+  const result = presentPost(html, '');
+  assert.match(result, /<aside class="blog-sidenote"/);
+  assert.match(result, /aria-label="Footnote 1"/);
+  assert.ok(!result.includes('<section'));
+  assert.equal(presentPost(result, ''), result);
+});

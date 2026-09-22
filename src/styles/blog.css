@@ -55,3 +55,23 @@
 :root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#dbedff" i] { color: #032f62 !important; }
 :root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#2f363d" i] { color: #f6f8fa !important; }
 :root:not([data-theme="dark"]) .blog-post pre.astro-code span[style*="color:#d1d5da" i] { color: #586069 !important; }
+
+/* Notes stay beside their references, with the burgundy markers used in prose. */
+.blog-post [data-footnote-ref], .blog-sidenote-number { color: var(--accent); text-decoration: none; }
+.blog-post [data-footnote-ref] { scroll-margin-block: 5rem; }
+.blog-post .blog-sidenote { position: relative; margin: 1rem 0 1.75rem; padding-left: 1.5rem; font-size: 1rem; line-height: 1.4; color: var(--text); scroll-margin-block: 2rem; }
+.blog-post .blog-sidenote :is(p, li) { color: inherit; text-align: left; }
+.blog-post .blog-sidenote p { margin-bottom: .6rem; }
+.blog-post .blog-sidenote > :last-child { margin-bottom: 0; }
+.blog-post .blog-sidenote-number { position: absolute; left: 0; top: 0; font-size: .85em; }
+.blog-post .blog-sidenote :is(ul, ol) { margin-block: .6rem; padding-left: 1em; }
+.blog-post .blog-sidenote:target { outline: 1px solid var(--border); outline-offset: .5rem; }
+@media (min-width: 1100px) {
+  .page.blog-page:has(.blog-sidenote) { width: min(100%, 1280px); }
+  .blog-post:has(.blog-sidenote) #post-body { position: relative; width: calc(100% - 18rem); }
+  .blog-post #post-body[data-sidenotes-ready] > .blog-sidenote { position: absolute; left: calc(100% + 3rem); width: 15rem; margin: 0; }
+}
+@media print {
+  .blog-post:has(.blog-sidenote) #post-body { width: 100%; min-height: 0 !important; }
+  .blog-post #post-body > .blog-sidenote { position: relative !important; left: auto !important; top: auto !important; width: auto; margin-block: 1rem; }
+}

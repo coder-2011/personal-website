@@ -31,8 +31,11 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
 </BaseLayout>
 <script>
   import { enableCodeCopy } from '../../scripts/blog-code.mjs';
+  import { enableSidenotes } from '../../scripts/blog-sidenotes.mjs';
   const article = document.querySelector<HTMLElement>('.blog-post');
   if (article) enableCodeCopy(article);
+  const body = document.getElementById('post-body');
+  let cleanSidenotes = body ? enableSidenotes(body) : () => {};
   let revision = article?.dataset.revision;
   let stopped = false;
   let timer: ReturnType<typeof setTimeout>;
@@ -43,6 +46,7 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
       if (!document.hidden) {
         const response = await fetch(`/api/blog/posts/${article.dataset.slug}?revision=${encodeURIComponent(revision || '')}`, { cache: 'no-store', signal: AbortSignal.timeout(8000) });
         if (response.status === 404) {
+          cleanSidenotes();
           document.getElementById('post-title')!.textContent = 'Post no longer available';
           document.getElementById('post-body')!.textContent = 'This post has been unpublished.';
           stopped = true;
@@ -52,7 +56,9 @@ else for (const [key,value] of Object.entries(blogPageHeaders)) Astro.response.h
             document.getElementById('post-title')!.textContent = post.title;
             document.getElementById('post-date')!.textContent = post.date;
             document.getElementById('post-date')!.setAttribute('datetime', post.date);
-            document.getElementById('post-body')!.innerHTML = post.html;
+            cleanSidenotes();
+            body!.innerHTML = post.html;
+            cleanSidenotes = enableSidenotes(body!);
             article.querySelectorAll<HTMLButtonElement>('.blog-code-copy').forEach(button => { button.hidden = false; });
             document.title = `${post.title} | Naman Chetwani`;
             revision = post.revision;
