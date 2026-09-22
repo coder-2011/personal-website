@@ -6,15 +6,21 @@ import remarkStringify from 'remark-stringify';
 import { slug as headingSlug } from 'github-slugger';
 import { PublishError, stripPrivateContent, assertPublicText, publicUrl } from './privacy.mjs';
 import { validateHtmlStyles } from './html.mjs';
+import { normalizeMath } from './math.mjs';
 import { separateTableParagraphs } from './tables.mjs';
 
 const parser = unified().use(remarkParse).use(remarkGfm).use(remarkMath).use(remarkStringify, { fences: true, bullet: '-' });
 
 // resolveNote returns only an explicitly published note's public URL; asset never receives an absolute path.
-export async function exportNote(source, { resolveNote, asset } = {}) {
+/** @param {string} source
+ * @param {{resolveNote?: (target: string) => string | null | Promise<string | null>, asset?: (path: string) => string | Promise<string>, legacyMath?: boolean}} [options]
+ */
+export async function exportNote(source, { resolveNote, asset, legacyMath = false } = {}) {
   const clean = stripPrivateContent(source);
   assertPublicText(clean);
-  const tree = parser.parse(separateTableParagraphs(clean));
+  const normalized = separateTableParagraphs(clean);
+  const tree = parser.parse(normalized);
+  normalizeMath(tree, normalized, {legacy:legacyMath});
   const definitions = new Map();
   const warnings = new Set();
   for (const node of tree.children) if (node.type === 'definition') definitions.set(node.identifier, node);

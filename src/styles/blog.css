@@ -33,7 +33,8 @@
 .blog-post blockquote { border-left: 2px solid var(--soft); margin: 1.5rem 0; padding: .2rem 1.3rem; color: var(--muted); }
 .blog-post .blog-callout { background: var(--wash); border-radius: 3px; }
 .blog-post iframe { width: 100%; height: 1080px; border: 0; border-radius: 2px; }
-.blog-post .katex-display { overflow-x: auto; overflow-y: hidden; padding: .5rem 0; }
+.blog-post .katex { font-size: 1.05em; text-indent: 0; overflow-wrap: normal; word-break: normal; }
+.blog-post .katex-display { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: .5rem 0; margin-block: 1.5rem; }
 .blog-post h2, .blog-post h3, .blog-post h4 { scroll-margin-top: 2rem; }
 .blog-post .footnotes { font-size: .85rem; border-top: 1px solid var(--border); margin-top: 3rem; }
 .blog-post input[type=checkbox] { margin-right: .4rem; }

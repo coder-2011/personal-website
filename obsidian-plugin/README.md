@@ -31,7 +31,7 @@ Turn live sync off before making edits you do not want immediately public. While
 
 These checks cannot determine whether ordinary prose or pixels in an image are confidential. The first-publication review is still essential. Private revisions are retained in the storage account; unpublishing removes the live route and image access, not copies readers may already have saved.
 
-Supported: Markdown, GFM tables/task lists, code highlighting, footnotes, math, callouts, published-note heading links, raster images, SVG attachments, and tokenizer iframes. HTML text, tables, captions, and flex layouts can use inline colors, typography, spacing, borders, and sizing. Scripts, event handlers, style blocks, positioning, CSS variables, and CSS resource loads remain blocked; use Markdown for links and images. Embedded notes, block references, PDFs, canvases, Dataview and Mermaid blocks produce a clear error instead of silently publishing incorrect content. Convert these to ordinary Markdown or supported images first.
+Supported: Markdown, GFM tables/task lists, code highlighting, footnotes, inline `$…$` math and display `$$…$$` math (including same-line display equations), callouts, published-note heading links, raster images, SVG attachments, and tokenizer iframes. HTML text, tables, captions, and flex layouts can use inline colors, typography, spacing, borders, and sizing. Scripts, event handlers, style blocks, positioning, CSS variables, and CSS resource loads remain blocked; use Markdown for links and images. Embedded notes, block references, PDFs, canvases, Dataview and Mermaid blocks produce a clear error instead of silently publishing incorrect content. Convert these to ordinary Markdown or supported images first.
 
 ## Development and installation
 

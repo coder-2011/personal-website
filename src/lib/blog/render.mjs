@@ -35,16 +35,16 @@ const schema = {
 };
 let processor;
 
-export async function renderPost(markdown) {
+export async function renderPost(markdown, { legacyMath = false } = {}) {
   // The server repeats the export checks; a client cannot bypass the publication boundary.
-  const result = await exportNote(markdown);
+  const result = await exportNote(markdown, {legacyMath});
   processor ??= createMarkdownProcessor({
     remarkPlugins: [remarkMath, callouts],
     rehypePlugins: [rehypeRaw, [rehypeSanitize, schema], [rehypeKatex, { trust: false, strict: 'ignore' }]],
     shikiConfig: { theme: codeTheme },
   });
   const rendered = await (await processor).render(result.markdown);
-  const html = presentPost(rendered.code, result.markdown);
+  const html = presentPost(rendered.code, result.markdown).replace(/class="katex"/g, 'class="katex" data-math-version="2"');
   assertPublicText(html, 'Rendered post');
   return { markdown: result.markdown, html };
 }

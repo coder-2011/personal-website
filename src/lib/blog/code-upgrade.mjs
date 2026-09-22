@@ -1,6 +1,7 @@
 import { createShikiHighlighter } from '@astrojs/markdown-remark';
 import { parseFragment, serialize } from 'parse5';
 import { codeTheme } from './code-theme.mjs';
+import { renderPost } from './render.mjs';
 import { presentPost } from './presentation.mjs';
 
 const cache = new Map();
@@ -46,10 +47,13 @@ async function upgrade(html) {
 }
 
 export function presentPostForReading(html, markdown) {
-  // Newly published posts already contain the palette and need no highlighter.
-  if (!html.includes('github-dark')) return Promise.resolve(presentPost(html, markdown));
+  // Current publications already contain the palette and corrected math.
+  // Legacy repairs are cached so reads do not repeatedly render the article.
+  const legacyMath = html.includes('class="katex"') && !html.includes('data-math-version="2"');
+  if (!legacyMath && !html.includes('github-dark')) return Promise.resolve(presentPost(html, markdown));
   if (cache.has(html)) return cache.get(html);
-  const result = upgrade(presentPost(html, markdown)).catch(error => { cache.delete(html); throw error; });
+  const result = (legacyMath ? renderPost(markdown, {legacyMath:true}).then(post => post.html) : upgrade(presentPost(html, markdown)))
+    .catch(error => { cache.delete(html); throw error; });
   cache.set(html, result);
   if (cache.size > 8) cache.delete(cache.keys().next().value);
   return result;
