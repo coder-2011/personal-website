@@ -10,9 +10,16 @@ export function enableEmbedThemes() {
   const sync = () => frames().forEach(send);
   // The handshake covers lazy frames, live post replacements, and either load order.
   window.addEventListener('message', event => {
-    if (event.data?.type !== 'naman:theme-ready') return;
+    if (!['naman:theme-ready', 'naman:embed-size'].includes(event.data?.type)) return;
     const frame = frames().find(frame => frame.contentWindow === event.source);
-    if (frame) send(frame);
+    if (!frame) return;
+    if (event.data.type === 'naman:theme-ready') send(frame);
+    else {
+      const height = event.data.height;
+      if (!Number.isFinite(height) || height <= 0 || height > 100000) return;
+      frame.style.height = `${Math.ceil(height)}px`;
+      frame.setAttribute('scrolling', 'no');
+    }
   });
   document.addEventListener('load', event => {
     if (event.target instanceof HTMLIFrameElement && frames().includes(event.target)) send(event.target);

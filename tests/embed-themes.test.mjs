@@ -8,11 +8,13 @@ const read = path => readFileSync(new URL(path, import.meta.url), 'utf8');
 
 test('sandboxed demos accept only valid themes from their parent', () => {
   const messages = [], handlers = {};
+  let height = 1200, resize;
   const parent = { postMessage: (...args) => messages.push(args) };
   const root = { dataset: {} };
   const window = { parent, addEventListener: (type, handler) => { handlers[type] = handler; } };
   runInNewContext(read('../src/scripts/embed-theme-receiver.js'), {
-    window, document: { documentElement: root }, matchMedia: () => ({ matches: false }),
+    window, document: { documentElement: root, body: { getBoundingClientRect: () => ({ height }) } }, matchMedia: () => ({ matches: false }),
+    ResizeObserver: class { constructor(callback) { resize = callback; } observe() {} },
     localStorage: { getItem() { throw new Error('opaque origin'); } },
   });
   assert.equal(messages[0][0].type, 'naman:theme-ready');
@@ -24,12 +26,21 @@ test('sandboxed demos accept only valid themes from their parent', () => {
   }
   handlers.message({ source: parent, data: { type: 'naman:theme', theme: 'invalid' } });
   assert.equal(root.dataset.theme, 'dark');
+  resize();
+  assert.equal(messages.at(-1)[0].height, 1201);
+  height = 900;
+  resize();
+  assert.equal(messages.at(-1)[0].height, 901, 'content can shrink below the current viewport');
+  const count = messages.length;
+  resize();
+  assert.equal(messages.length, count, 'unchanged height does not send another message');
 });
 
 test('parent synchronizes existing, lazy and replacement frames while ignoring other windows', () => {
   const events = {}, loads = {}, messages = [];
   class Frame {
-    constructor(src) { this.src = src; this.contentWindow = { postMessage: data => messages.push([this, data.theme]) }; }
+    constructor(src) { this.src = src; this.style = {}; this.contentWindow = { postMessage: data => messages.push([this, data.theme]) }; }
+    setAttribute(name, value) { this[name] = value; }
   }
   const first = new Frame('https://naman.world/embeds/bpe.html');
   const foreign = new Frame('https://example.com/embeds/bpe.html');
@@ -55,6 +66,16 @@ test('parent synchronizes existing, lazy and replacement frames while ignoring o
   sync();
   assert.deepEqual(messages, [[replacement, 'dark'], [replacement, 'light']]);
   assert.equal(replacement.src, 'https://naman.world/embeds/unigram.html', 'sync does not reload the demo');
+  events.message({ source: replacement.contentWindow, data: { type: 'naman:embed-size', height: 1480.2 } });
+  assert.equal(replacement.style.height, '1481px');
+  assert.equal(replacement.scrolling, 'no');
+  for (const source of [foreign.contentWindow, first.contentWindow, {}]) {
+    events.message({ source, data: { type: 'naman:embed-size', height: 600 } });
+  }
+  for (const height of [0, -1, Infinity, NaN, '700', 100001]) {
+    events.message({ source: replacement.contentWindow, data: { type: 'naman:embed-size', height } });
+  }
+  assert.equal(replacement.style.height, '1481px', 'stale frames, foreign windows and invalid sizes are ignored');
 });
 
 test('both built demos share the palette and receiver under valid script hashes', () => {

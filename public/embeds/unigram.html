@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TVNsb5ABGlcwVDQzzLcn0bstFTQGZVfCf06/sOY1aik='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-jVExqSke+iQZmBDAoj3bbwHKs5PryCvamUmI7dUNE6g='; style-src 'unsafe-inline' 'self'; font-src 'self'; connect-src https://naman.world http://localhost:* http://127.0.0.1:*; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>T5 Unigram tokenization</title>
 <link rel="stylesheet" href="/fonts/et-book-v1/fonts.css">
@@ -111,9 +111,20 @@ h1{font-size:25px;font-weight:400;letter-spacing:normal}.section-title h2{font-s
   } catch {} // Sandboxed embeds intentionally cannot access site storage.
   root.dataset.theme = theme;
   if (window.parent === window) return;
+  let lastHeight = 0;
+  const reportSize = () => {
+    // Measure content, not the iframe viewport, so a shorter result can shrink.
+    const height = Math.ceil(document.body.getBoundingClientRect().height) + 1;
+    if (height === lastHeight) return;
+    lastHeight = height;
+    window.parent.postMessage({ type: 'naman:embed-size', height }, '*');
+  };
+  new ResizeObserver(reportSize).observe(document.body);
   window.addEventListener('message', event => {
     if (event.source === window.parent && event.data?.type === 'naman:theme' && valid(event.data.theme)) {
       root.dataset.theme = event.data.theme;
+      lastHeight = 0;
+      reportSize();
     }
   });
   window.parent.postMessage({ type: 'naman:theme-ready' }, '*');
