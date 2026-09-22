@@ -21,10 +21,10 @@
 .blog-code-copy { margin-left: auto; border: 1px solid var(--code-border); border-radius: 3px; padding: .3rem .65rem; background: transparent; color: var(--code-text); cursor: pointer; }
 .blog-code-copy:hover { background: var(--code-hover); }
 .blog-code-copy:focus-visible { outline: 2px solid var(--code-text); outline-offset: 3px; }
-.blog-post .blog-code-block pre { margin: 0; border-radius: 0; }
+.blog-post .blog-code-block pre { margin: 0; padding-top: .25rem; border-radius: 0; }
 .blog-post pre > code { font-size: inherit; }
 .blog-post code { font-size: .9em; }
-.blog-post :not(pre) > code { background: var(--wash); padding: .1em .25em; border-radius: 3px; }
+.blog-post :not(pre) > code { font-family: var(--mono); font-size: .8em; background: var(--wash); padding: .1em .25em; border-radius: 3px; }
 .blog-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; margin-block: 1.5rem; }
 .blog-table-scroll:focus-visible { outline: 2px solid var(--soft); outline-offset: 3px; }
 .blog-post table { width: 100%; border-collapse: collapse; overflow-wrap: normal; font-size: 1.1rem; line-height: 1.55; font-variant-numeric: tabular-nums; }
