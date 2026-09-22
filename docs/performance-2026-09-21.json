@@ -1,0 +1,1151 @@
+{
+  "http-before": {
+    "/": {
+      "first": {
+        "status": 200,
+        "ttfb": 359,
+        "total": 364,
+        "cache": "MISS"
+      },
+      "repeatMedian": 37,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 359,
+          "total": 364,
+          "cache": "MISS"
+        },
+        {
+          "status": 200,
+          "ttfb": 43,
+          "total": 44,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 40,
+          "total": 41,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 37,
+          "total": 37,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 37,
+          "total": 38,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 30,
+          "total": 30,
+          "cache": "HIT"
+        }
+      ]
+    },
+    "/blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 481,
+        "total": 482,
+        "cache": "MISS"
+      },
+      "repeatMedian": 105,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 481,
+          "total": 482,
+          "cache": "MISS"
+        },
+        {
+          "status": 200,
+          "ttfb": 101,
+          "total": 103,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 106,
+          "total": 112,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 99,
+          "total": 100,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 105,
+          "total": 108,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 116,
+          "total": 120,
+          "cache": "HIT"
+        }
+      ]
+    },
+    "/blog/snaptokens-blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 159,
+        "total": 165,
+        "cache": "HIT"
+      },
+      "repeatMedian": 111,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 159,
+          "total": 165,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 111,
+          "total": 117,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 104,
+          "total": 105,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 103,
+          "total": 112,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 157,
+          "total": 164,
+          "cache": "HIT"
+        },
+        {
+          "status": 200,
+          "ttfb": 116,
+          "total": 120,
+          "cache": "HIT"
+        }
+      ]
+    }
+  },
+  "http-after": {
+    "/": {
+      "first": {
+        "status": 200,
+        "ttfb": 376,
+        "total": 378,
+        "bytes": 3570,
+        "cache": "HIT",
+        "timing": null
+      },
+      "repeatMedian": 33,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 376,
+          "total": 378,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 42,
+          "total": 42,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 32,
+          "total": 33,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 32,
+          "total": 33,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 43,
+          "total": 44,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 33,
+          "total": 33,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        }
+      ]
+    },
+    "/blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 401,
+        "total": 403,
+        "bytes": 3933,
+        "cache": "HIT",
+        "timing": "index;dur=51.0, response;dur=24.0"
+      },
+      "repeatMedian": 105,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 401,
+          "total": 403,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=51.0, response;dur=24.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 100,
+          "total": 101,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=55.0, response;dur=6.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 102,
+          "total": 106,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=54.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 126,
+          "total": 127,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=73.0, response;dur=15.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 133,
+          "total": 135,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=88.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 105,
+          "total": 111,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=58.0, response;dur=5.0"
+        }
+      ]
+    },
+    "/blog/snaptokens-blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 99,
+        "total": 109,
+        "bytes": 229233,
+        "cache": "HIT",
+        "timing": "index;dur=46.0, response;dur=5.0"
+      },
+      "repeatMedian": 101,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 99,
+          "total": 109,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=46.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 132,
+          "total": 140,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=78.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 95,
+          "total": 98,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=44.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 103,
+          "total": 108,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=53.0, response;dur=3.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 101,
+          "total": 105,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=53.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 101,
+          "total": 109,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=48.0, response;dur=2.0"
+        }
+      ]
+    },
+    "/api/blog/posts/snaptokens-blog?revision=0f24f09c-3eb6-4397-8077-da3017d3a377": {
+      "first": {
+        "status": 200,
+        "ttfb": 76,
+        "total": 76,
+        "bytes": 51,
+        "cache": null,
+        "timing": "index;dur=45.0, response;dur=0.0"
+      },
+      "repeatMedian": 84,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 76,
+          "total": 76,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=45.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 84,
+          "total": 85,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=47.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 89,
+          "total": 90,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=55.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 78,
+          "total": 78,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=47.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 76,
+          "total": 76,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=46.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 89,
+          "total": 90,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=54.0, response;dur=0.0"
+        }
+      ]
+    },
+    "/api/blog/assets/8f728e8dd33939223ae0ff4d91735726e19a4bbf08d8cc140df0dce4eb8a87b2": {
+      "first": {
+        "status": 200,
+        "ttfb": 94,
+        "total": 95,
+        "bytes": 17974,
+        "cache": "HIT",
+        "timing": "index;dur=54.0, response;dur=6.0"
+      },
+      "repeatMedian": 100,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 94,
+          "total": 95,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=54.0, response;dur=6.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 205,
+          "total": 207,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=69.0, response;dur=12.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 89,
+          "total": 89,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=46.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 113,
+          "total": 115,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=60.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 92,
+          "total": 93,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=45.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 100,
+          "total": 107,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=56.0, response;dur=7.0"
+        }
+      ]
+    },
+    "/api/blog/assets/5eee7d5b66ec0857137cf49b7cde703a4b022eda9d99ccab1daa8f09fc661805": {
+      "first": {
+        "status": 200,
+        "ttfb": 179,
+        "total": 209,
+        "bytes": 138822,
+        "cache": "HIT",
+        "timing": "index;dur=134.0, response;dur=5.0"
+      },
+      "repeatMedian": 105,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 179,
+          "total": 209,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=134.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 103,
+          "total": 132,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=58.0, response;dur=6.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 105,
+          "total": 108,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=58.0, response;dur=3.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 107,
+          "total": 117,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=58.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 88,
+          "total": 98,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=48.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 116,
+          "total": 125,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=62.0, response;dur=8.0"
+        }
+      ]
+    }
+  },
+  "http-after-repeat": {
+    "/": {
+      "first": {
+        "status": 200,
+        "ttfb": 167,
+        "total": 190,
+        "bytes": 3570,
+        "cache": "HIT",
+        "timing": null
+      },
+      "repeatMedian": 45,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 167,
+          "total": 190,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 50,
+          "total": 53,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 46,
+          "total": 47,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 43,
+          "total": 44,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 45,
+          "total": 51,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        },
+        {
+          "status": 200,
+          "ttfb": 45,
+          "total": 46,
+          "bytes": 3570,
+          "cache": "HIT",
+          "timing": null
+        }
+      ]
+    },
+    "/blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 130,
+        "total": 134,
+        "bytes": 3933,
+        "cache": "HIT",
+        "timing": "index;dur=69.0, response;dur=9.0"
+      },
+      "repeatMedian": 103,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 130,
+          "total": 134,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=69.0, response;dur=9.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 103,
+          "total": 105,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=51.0, response;dur=6.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 103,
+          "total": 104,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=52.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 118,
+          "total": 119,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=62.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 102,
+          "total": 102,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=50.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 101,
+          "total": 102,
+          "bytes": 3933,
+          "cache": "HIT",
+          "timing": "index;dur=56.0, response;dur=6.0"
+        }
+      ]
+    },
+    "/blog/snaptokens-blog": {
+      "first": {
+        "status": 200,
+        "ttfb": 108,
+        "total": 115,
+        "bytes": 229233,
+        "cache": "HIT",
+        "timing": "index;dur=50.0, response;dur=7.0"
+      },
+      "repeatMedian": 143,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 108,
+          "total": 115,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=50.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 114,
+          "total": 141,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=53.0, response;dur=6.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 133,
+          "total": 137,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=69.0, response;dur=11.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 143,
+          "total": 148,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=73.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 149,
+          "total": 150,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=73.0, response;dur=11.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 258,
+          "total": 261,
+          "bytes": 229233,
+          "cache": "HIT",
+          "timing": "index;dur=193.0, response;dur=10.0"
+        }
+      ]
+    },
+    "/api/blog/posts/snaptokens-blog?revision=0f24f09c-3eb6-4397-8077-da3017d3a377": {
+      "first": {
+        "status": 200,
+        "ttfb": 149,
+        "total": 150,
+        "bytes": 51,
+        "cache": null,
+        "timing": "index;dur=94.0, response;dur=0.0"
+      },
+      "repeatMedian": 109,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 149,
+          "total": 150,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=94.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 135,
+          "total": 136,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=93.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 109,
+          "total": 110,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=71.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 101,
+          "total": 102,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=63.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 188,
+          "total": 188,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=151.0, response;dur=0.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 100,
+          "total": 100,
+          "bytes": 51,
+          "cache": null,
+          "timing": "index;dur=54.0, response;dur=0.0"
+        }
+      ]
+    },
+    "/api/blog/assets/8f728e8dd33939223ae0ff4d91735726e19a4bbf08d8cc140df0dce4eb8a87b2": {
+      "first": {
+        "status": 200,
+        "ttfb": 111,
+        "total": 112,
+        "bytes": 17974,
+        "cache": "HIT",
+        "timing": "index;dur=59.0, response;dur=7.0"
+      },
+      "repeatMedian": 151,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 111,
+          "total": 112,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=59.0, response;dur=7.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 155,
+          "total": 156,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=45.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 253,
+          "total": 254,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=206.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 102,
+          "total": 104,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=58.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 151,
+          "total": 152,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=99.0, response;dur=8.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 97,
+          "total": 102,
+          "bytes": 17974,
+          "cache": "HIT",
+          "timing": "index;dur=57.0, response;dur=5.0"
+        }
+      ]
+    },
+    "/api/blog/assets/5eee7d5b66ec0857137cf49b7cde703a4b022eda9d99ccab1daa8f09fc661805": {
+      "first": {
+        "status": 200,
+        "ttfb": 142,
+        "total": 176,
+        "bytes": 138822,
+        "cache": "HIT",
+        "timing": "index;dur=82.0, response;dur=17.0"
+      },
+      "repeatMedian": 107,
+      "samples": [
+        {
+          "status": 200,
+          "ttfb": 142,
+          "total": 176,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=82.0, response;dur=17.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 107,
+          "total": 139,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=55.0, response;dur=5.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 123,
+          "total": 139,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=66.0, response;dur=9.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 95,
+          "total": 364,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=51.0, response;dur=4.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 140,
+          "total": 153,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=87.0, response;dur=8.0"
+        },
+        {
+          "status": 200,
+          "ttfb": 94,
+          "total": 109,
+          "bytes": 138822,
+          "cache": "HIT",
+          "timing": "index;dur=50.0, response;dur=5.0"
+        }
+      ]
+    }
+  },
+  "cpu-initial-bpe": {
+    "corpus": [
+      "my name is naman",
+      "snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! ",
+      "caf\u00e9 \ud83d\ude42 \u6f22\u5b57\n\t text",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "rounds": 12,
+    "samples": [
+      {
+        "before": 5.627408,
+        "after": 1.4767309166666653
+      },
+      {
+        "before": 2.5449583333333337,
+        "after": 1.0783333333333331
+      },
+      {
+        "before": 2.443739583333335,
+        "after": 1.1575919999999986
+      },
+      {
+        "before": 4.173005208333336,
+        "after": 2.839406250000001
+      },
+      {
+        "before": 2.802517333333332,
+        "after": 1.1024843749999984
+      },
+      {
+        "before": 2.7177343750000014,
+        "after": 1.0378316250000001
+      },
+      {
+        "before": 2.6520607916666705,
+        "after": 1.0483420416666622
+      },
+      {
+        "before": 2.5727048749999994,
+        "after": 1.2122829999999947
+      },
+      {
+        "before": 2.580756916666663,
+        "after": 1.1517205000000008
+      },
+      {
+        "before": 2.5151614583333335,
+        "after": 1.0676666666666677
+      },
+      {
+        "before": 2.416685749999999,
+        "after": 0.980168416666667
+      },
+      {
+        "before": 2.4053992916666687,
+        "after": 0.9917586666666693
+      }
+    ],
+    "beforeMedianMs": 2.580756916666663,
+    "afterMedianMs": 1.1024843749999984,
+    "geomeanSpeedup": 2.370467798052141
+  },
+  "cpu-initial-reading": {
+    "sameOutput": true,
+    "beforeMedianMs": 16.26183400000002,
+    "afterMedianMs": 10.256040999999982,
+    "samples": [
+      {
+        "before": 16.19954199999995,
+        "after": 10.525750000000016
+      },
+      {
+        "before": 16.334500000000048,
+        "after": 10.256040999999982
+      },
+      {
+        "before": 16.0871249999999,
+        "after": 10.299499999999966
+      },
+      {
+        "before": 16.101875000000064,
+        "after": 9.899125000000026
+      },
+      {
+        "before": 15.970459000000005,
+        "after": 9.859874999999988
+      },
+      {
+        "before": 16.178499999999985,
+        "after": 9.956833000000074
+      },
+      {
+        "before": 16.09233299999994,
+        "after": 9.660708
+      },
+      {
+        "before": 16.089249999999993,
+        "after": 9.933874999999944
+      },
+      {
+        "before": 16.01400000000001,
+        "after": 10.802542000000017
+      },
+      {
+        "before": 16.485208000000057,
+        "after": 10.624624999999924
+      },
+      {
+        "before": 16.76670899999999,
+        "after": 10.433583999999996
+      },
+      {
+        "before": 17.142665999999963,
+        "after": 9.816542000000027
+      },
+      {
+        "before": 16.26183400000002,
+        "after": 9.975749999999948
+      },
+      {
+        "before": 16.31337499999995,
+        "after": 10.239458000000013
+      },
+      {
+        "before": 17.03254199999992,
+        "after": 11.70683299999996
+      },
+      {
+        "before": 16.524541,
+        "after": 10.327875000000063
+      }
+    ]
+  },
+  "cpu-repeat": {
+    "baseline": "e8e8b8a",
+    "node": "v22.22.2",
+    "corpus": [
+      "my name is naman",
+      "snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! snaptokens is the best! ",
+      "caf\u00e9 \ud83d\ude42 \u6f22\u5b57\n\t text",
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    ],
+    "htmlBytes": 220861,
+    "bpe": {
+      "beforeMedianMs": 2.476170166666672,
+      "afterMedianMs": 0.9916302083333335,
+      "geomeanSpeedup": 2.608327654944455,
+      "samples": [
+        {
+          "before": 2.4322118333333314,
+          "after": 0.9443784583333326
+        },
+        {
+          "after": 0.9867899583333374,
+          "before": 2.5274062500000034
+        },
+        {
+          "before": 2.509991333333337,
+          "after": 1.0167499999999923
+        },
+        {
+          "after": 0.946831583333335,
+          "before": 2.4742569583333327
+        },
+        {
+          "before": 2.4326857499999996,
+          "after": 0.983914916666663
+        },
+        {
+          "after": 0.9916302083333335,
+          "before": 2.4321041666666665
+        },
+        {
+          "before": 2.4737587083333303,
+          "after": 1.1518645833333399
+        },
+        {
+          "after": 0.9616892083333349,
+          "before": 2.476170166666672
+        },
+        {
+          "before": 2.3108732499999953,
+          "after": 0.9009531250000009
+        },
+        {
+          "after": 1.000276041666666,
+          "before": 2.512690958333337
+        },
+        {
+          "before": 4.235001708333338,
+          "after": 1.110727458333334
+        },
+        {
+          "after": 1.1135138750000049,
+          "before": 3.1499514166666622
+        }
+      ]
+    },
+    "reading": {
+      "beforeMedianMs": 21.143625000000156,
+      "afterMedianMs": 12.267249999999876,
+      "geomeanSpeedup": 1.748318449568644,
+      "samples": [
+        {
+          "before": 34.28970799999979,
+          "after": 11.708625000000211
+        },
+        {
+          "after": 12.977249999999913,
+          "before": 21.932416000000103
+        },
+        {
+          "before": 21.835291999999754,
+          "after": 12.267249999999876
+        },
+        {
+          "after": 12.358374999999796,
+          "before": 20.839750000000095
+        },
+        {
+          "before": 19.376208000000133,
+          "after": 14.530167000000347
+        },
+        {
+          "after": 15.220332999999755,
+          "before": 25.87579199999982
+        },
+        {
+          "before": 23.326000000000022,
+          "after": 13.667417000000114
+        },
+        {
+          "after": 12.58116599999994,
+          "before": 21.143625000000156
+        },
+        {
+          "before": 26.016333999999915,
+          "after": 11.64516599999979
+        },
+        {
+          "after": 11.356707999999799,
+          "before": 20.135125000000244
+        },
+        {
+          "before": 19.669916999999714,
+          "after": 11.907916000000114
+        },
+        {
+          "after": 11.315750000000207,
+          "before": 19.720208999999613
+        },
+        {
+          "before": 17.26870800000006,
+          "after": 11.047207999999955
+        },
+        {
+          "after": 11.239249999999629,
+          "before": 18.737791000000016
+        },
+        {
+          "before": 18.908500000000004,
+          "after": 11.616165999999794
+        },
+        {
+          "after": 13.137042000000292,
+          "before": 21.42208299999993
+        }
+      ]
+    }
+  }
+}

@@ -141,11 +141,15 @@ revision. Raster uploads are decoded and re-encoded to WebP through Cloudflare
 Images to strip metadata; SVGs are sanitized separately on the server.
 
 Public requests check R2's strongly consistent publication index before consulting
-Cloudflare's response cache. Cache keys include the current index revision and
-site build. A new publication or withdrawal immediately stops serving the old
-cached response without a global purge. Images require a reference from a current
-published post. Browser responses are never cached; unpublished revisions remain
-private for recovery. Live polling still performs one index read per request.
+Cloudflare's response cache. Post keys use their own revision, image keys use their
+content hash, and the blog list uses the current index revision; all include the
+site build. Unrelated edits preserve cached posts and images. Images require a
+reference from a current published post. HTML and API responses are never cached
+by the browser. Images use private browser caching with mandatory revalidation;
+even a `304` requires a fresh visibility check. Unpublished revisions remain
+private for recovery. Each public request performs one index read, reused on a
+cache miss. Unchanged live polls return directly from that index. `Server-Timing`
+separates the index read from the remaining response work.
 
 Validation:
 
@@ -161,11 +165,13 @@ Run `npm run preview` after building to test in the actual Workers runtime. The 
 
 ## Page loading
 
-The main layout serves and preloads Inter as a local WOFF2 file, avoiding external font stylesheets. Browser icons are generated at 32 and 180 pixels (`node scripts/optimize-icons.mjs` after changing the source logo), and project images use responsive WebP variants generated at build time. Primary navigation prefetches after page load; blog post links prefetch on hover. Slow connections and data-saving preferences are respected. Tokenizer models, Markdown rendering, and image processing initialize only when their API needs them. An unchanged live poll reads only the current post index. Shared scripts are separate hashed assets; analytics initializes once. The cursor batches pointer events and stops animation frames when stationary, hidden, or on a touch device.
+The main layout serves ET Book as local WOFF2 files and preloads the roman face. Font declarations are bundled into the page stylesheet, avoiding another stylesheet request. Browser icons are generated at 32 and 180 pixels (`node scripts/optimize-icons.mjs` after changing the source logo), and project images use responsive WebP variants generated at build time. Primary navigation prefetches after page load; blog post links prefetch on hover. Slow connections and data-saving preferences are respected. Tokenizer models and legacy Markdown rendering initialize only when needed. Shared scripts are separate hashed assets; analytics initializes once. The cursor batches pointer events and stops animation frames when stationary, hidden, or on a touch device. The catalogue measures headings only when layout changes, and hidden tabs suspend live-update timers.
 
 Tokenizer embeds include their default example, generated from the real models during `npm run build`, so the initial view makes no API request. Each embed keeps up to four recent results in memory for repeated inputs. `node scripts/build-embed-examples.mjs` refreshes those examples and their CSP hashes after editing an embed.
 
 `node scripts/blog/measure.mjs POST_SLUG` reports first and repeated HTTP response timings. These are network response measurements, not browser paint measurements. Run `BLOG_EXPECT_CDN=1 BLOG_TEST_ORIGIN=https://naman.world node --env-file=.env.local scripts/blog/integration.mjs` to verify actual cache hits, then immediate update and unpublish behavior against production using a temporary synthetic post.
+
+`node scripts/measure-cpu.mjs` compares BPE response generation against the pre-optimization handler and verifies identical JSON before timing. It also compares one versus two HTML parses on the public Snaptokens article. See [`docs/performance.md`](docs/performance.md) for measured results and their limits.
 
 ## Analytics
 

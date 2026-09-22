@@ -46,6 +46,14 @@ try {
   await (await fetch(origin+asset.url)).arrayBuffer();
   const served=await fetch(origin+asset.url);
   assert.equal(served.status,200);
+  const etag=served.headers.get('etag');
+  if (process.env.BLOG_EXPECT_CDN === '1') {
+    assert.ok(etag, 'Published image missing validator');
+    assert.equal(served.headers.get('cache-control'),'private, no-cache');
+    const reused=await fetch(origin+asset.url,{headers:{'If-None-Match':etag}});
+    assert.equal(reused.status,304);
+    assert.equal((await reused.arrayBuffer()).byteLength,0);
+  }
   const metadata=await sharp(Buffer.from(await served.arrayBuffer())).metadata();
   assert.equal(metadata.exif,undefined); assert.equal(metadata.xmp,undefined);
   const vectorRead=await fetch(origin+vector.url);
@@ -68,6 +76,7 @@ try {
   assert.equal((await send({...payload,baseVersion:version,markdown:'<span style="background:url(https://example.com/tracker)">Unsafe CSS</span>'})).status,422);
   assert.match((await (await fetch(`${origin}/api/blog/posts/${slug}`)).json()).html,/Visible immediately/);
   assert.equal((await fetch(origin+asset.url)).status,404);
+  if (etag) assert.equal((await fetch(origin+asset.url,{headers:{'If-None-Match':etag}})).status,404, 'Conditional image request bypassed withdrawal');
   assert.equal((await fetch(origin+vector.url)).status,404);
   const unchanged=await fetch(`${origin}/api/blog/posts/${slug}?revision=${version}`);
   assert.equal(unchanged.status,200);
