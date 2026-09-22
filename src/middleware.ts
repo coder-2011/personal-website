@@ -1,8 +1,11 @@
 import { defineMiddleware } from 'astro:middleware';
 import { blogStore, digest } from './lib/blog/store.mjs';
 import { cachedBlogResponse } from './lib/blog/cache.mjs';
+import { redirectBlogAlias } from './lib/blog/slugs.mjs';
 
 export const onRequest = defineMiddleware(async ({ request, url, locals }, next) => {
+  const redirect = redirectBlogAlias(request);
+  if (redirect) return redirect;
   if (['/api/bpe', '/api/unigram'].includes(url.pathname) && locals.runtime?.env.TOKENIZER_LIMIT) {
     const { success } = await locals.runtime.env.TOKENIZER_LIMIT.limit({ key: request.headers.get('CF-Connecting-IP') || 'local' });
     if (!success) return Response.json({ error: 'Too many requests. Try again in a minute.' }, {

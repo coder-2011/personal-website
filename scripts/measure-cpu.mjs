@@ -6,7 +6,7 @@ import { prepareReading, readingSummary } from '../src/lib/blog/reading.mjs';
 import { prepareCatalogue } from '../src/lib/blog/catalogue.mjs';
 
 const baseline = process.argv[2] || 'e8e8b8a';
-const postURL = process.argv[3] || 'https://naman.world/api/blog/posts/snaptokens-blog';
+const postURL = process.argv[3] || 'https://naman.world/api/blog/posts/snaptokens';
 const root = new URL('../', import.meta.url);
 // Compare the old handler against the unchanged engine and model, isolating
 // display-label decoding. Keep both runs in the same process and alternate order.

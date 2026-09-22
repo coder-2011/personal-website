@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { PublishError } from './privacy.mjs';
+import { canonicalBlogSlug } from './slugs.mjs';
 
 export const digest = value => createHash('sha256').update(value).digest('hex');
 
@@ -7,7 +8,9 @@ export function createBlogStore(blobs, prefix = 'blog') {
   const indexPath = `${prefix}/index.json`;
   async function index() {
     const stored = await blobs.read(indexPath);
-    return { entries: stored ? JSON.parse(stored.text) : [], etag: stored?.etag };
+    const entries = stored ? JSON.parse(stored.text) : [];
+    for (const entry of entries) entry.slug = canonicalBlogSlug(entry.slug);
+    return { entries, etag: stored?.etag };
   }
   async function list() { return (await index()).entries; }
   async function mutate(change) {
@@ -25,6 +28,7 @@ export function createBlogStore(blobs, prefix = 'blog') {
     throw new PublishError('Another publication is in progress. Retry in a moment.', 409);
   }
   async function publish(input) {
+    input = { ...input, slug: canonicalBlogSlug(input.slug) };
     const { baseVersion, ...content } = input;
     const hash = digest(JSON.stringify(content));
     const revision = randomUUID();
@@ -66,7 +70,7 @@ export function createBlogStore(blobs, prefix = 'blog') {
     if (knownRevision === entry.revision) return { revision: entry.revision };
     const value = await blobs.read(`${prefix}/revisions/${entry.id}/${entry.revision}.json`);
     if (!value) throw new Error('Published revision is missing.');
-    return JSON.parse(value.text);
+    return { ...JSON.parse(value.text), slug: entry.slug };
   }
   async function putAsset(bytes, contentType = 'image/webp') {
     const id = digest(bytes);
