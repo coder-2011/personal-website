@@ -175,16 +175,33 @@ Tokenizer embeds include their default example, generated from the real models d
 
 ## Analytics
 
-[Cloudflare Web Analytics](https://dash.cloudflare.com/ccc40688201525bb82aed7aa2e045405/web-analytics)
-shows visitors and page views. Filter the Path dimension to `/blog/post-slug` for
-a post's readership. New published posts are tracked automatically. Historical
-Vercel analytics remain in Vercel; new visits are collected by Cloudflare.
+`src/scripts/analytics.mjs` sends one small, first-party request after a visible
+production page loads. A random browser ID in local storage identifies repeat
+visits; the server stores only its keyed hash and the latest visit time for the
+site and each post in Cloudflare D1. No IP addresses, referrers, query strings,
+reading history, or note content are stored. Inactive records expire after 90
+days on the next recorded visit. Browser IDs expire after 90 days of inactivity.
 
-`src/scripts/analytics.mjs` loads Cloudflare's deferred beacon once on production
-hosts. Local development, previews, iframe views, APIs, and the `/zoom` OAuth
-callback are excluded. Cloudflare Web Analytics does not log query strings.
-The dashboard is configured for manual installation to avoid injecting a second beacon.
-Raw embed HTML and downloads are not counted as page views.
+`GET /api/publish/analytics` requires the existing publishing key and returns
+estimated unique browsers for the last 30 days, including zeroes for published
+posts without visitors. Post IDs survive URL changes, and the site total counts
+a browser once even when it reads several posts. Statistics do not represent
+verified people and cannot recover readership before installation. Blocked
+storage, disabled tracking, different devices, and cleared storage affect counts.
+
+Naman Publish displays these counts beside each published title on opening the
+panel or clicking Refresh. Opening a post from the plugin adds
+`#analytics-exclude`, which excludes that browser before any tracking request.
+Visitors can change this preference at `/analytics`. Automation, previews,
+iframes, unpublished posts, callbacks, Do Not Track, and Global Privacy Control
+are excluded. Counting never blocks page rendering or publishing/live sync.
+
+D1 schema: `migrations/analytics/0001_visitors.sql`. The Worker needs the
+`ANALYTICS_DB` binding, `ANALYTICS_LIMIT` rate limiter, and a private random
+`ANALYTICS_SECRET` (retain it across deployments). Apply the schema before first
+deploy. Never put the secret in the plugin, public environment variables, or Git.
+Historical Cloudflare Web Analytics and Vercel analytics remain in their original
+dashboards; the first-party counter replaces the Cloudflare browser beacon.
 
 ## Site notes
 

@@ -2,6 +2,9 @@ type Runtime = import('@astrojs/cloudflare').Runtime<{
   BLOG_BUCKET: import('@cloudflare/workers-types').R2Bucket;
   BLOG_NAMESPACE: string;
   BLOG_PUBLISH_TOKEN: string;
+  ANALYTICS_DB: import('@cloudflare/workers-types').D1Database;
+  ANALYTICS_SECRET: string;
+  ANALYTICS_LIMIT: import('@cloudflare/workers-types').RateLimit;
   OPENROUTER_API_KEY: string;
   TOKENIZER_LIMIT: import('@cloudflare/workers-types').RateLimit;
   IMAGES: import('@cloudflare/workers-types').ImagesBinding;

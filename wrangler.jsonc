@@ -17,6 +17,14 @@
       "bucket_name": "naman-blog"
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "ANALYTICS_DB",
+      "database_name": "naman-analytics",
+      "database_id": "effec409-ba29-4939-bad5-8066bd031545",
+      "migrations_dir": "migrations/analytics"
+    }
+  ],
   "images": {
     "binding": "IMAGES"
   },
@@ -29,6 +37,11 @@
     "redact_query_string": true
   },
   "ratelimits": [
+    {
+      "name": "ANALYTICS_LIMIT",
+      "namespace_id": "20260923",
+      "simple": { "limit": 30, "period": 60 }
+    },
     {
       "name": "TOKENIZER_LIMIT",
       "namespace_id": "20260921",

@@ -30,7 +30,7 @@ const presentation = prepareReading(post ? await presentPostForReading(post.html
     <div class="blog-reading-tools" hidden><button type="button" aria-haspopup="dialog" aria-expanded="false">☰ Catalogue</button></div>
     <div class="blog-reading-layout">
     <BlogCatalogue entries={presentation.outline} />
-    <article class="essay blog-post" tabindex="-1" data-slug={post?.slug} data-revision={post?.revision}>
+    <article class="essay blog-post" tabindex="-1" data-post-id={post?.id} data-slug={post?.slug} data-revision={post?.revision}>
       <h1 id="post-title">{post?.title || (unavailable ? 'Temporarily unavailable' : 'Post not found')}</h1>
       {post ? <><p class="wisdom-meta blog-post-meta" id="post-meta"><time id="post-date" datetime={post.date}>{post.date}</time><span id="post-reading" title="Reading time estimated at 200 words per minute">{presentation.readingSummary}</span></p><div id="post-body" set:html={presentation.html} /></> : <p>{unavailable ? 'Please try again shortly.' : 'This post may have been unpublished.'} <a href="/blog">Back to the blog.</a></p>}
     </article>

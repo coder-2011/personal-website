@@ -5,7 +5,7 @@ import { PublishError, validateMetadata } from './privacy.mjs';
 import { json } from './http.mjs';
 export { json, noCache } from './http.mjs';
 
-function authenticate(request, env) {
+export function authenticate(request, env) {
   const secret = env.BLOG_PUBLISH_TOKEN;
   if (!secret || secret.length < 32) throw new PublishError('Publishing is not configured.', 503);
   const supplied = Buffer.from(request.headers.get('authorization') || '');
@@ -13,7 +13,7 @@ function authenticate(request, env) {
   if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) throw new PublishError('Check the publishing key in plugin settings.', 401);
 }
 
-async function readBody(request, max) {
+export async function readBody(request, max) {
   if (Number(request.headers.get('content-length')) > max) throw new PublishError('Upload is too large.', 413);
   const reader = request.body?.getReader();
   if (!reader) throw new PublishError('Missing request body.', 400);
