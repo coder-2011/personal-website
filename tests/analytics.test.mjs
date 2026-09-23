@@ -42,10 +42,10 @@ test('excludes author visits, privacy preferences, automation, previews and fram
   const owner=load('https://naman.world/blog/test#analytics-exclude');owner.events.get('load')?.();
   assert.equal(owner.requests.length,0);assert.equal(owner.storage.get('naman.analytics.disabled'),'1');
 });
-test('waits until a background page is visible and rotates expired browser IDs', () => {
+test('waits until a background page is visible and preserves old browser IDs', () => {
   const storage=new Map([['naman.analytics.visitor',JSON.stringify({id,lastSeen:0})]]);
   const f=load('https://naman.world/',{hidden:true,storage});f.events.get('load')();assert.equal(f.requests.length,0);
   f.document.visibilityState='visible';f.events.get('visibilitychange')();
-  assert.equal(f.requests.length,1);assert.notEqual(JSON.parse(f.requests[0].body).visitorId,id);
+  assert.equal(f.requests.length,1);assert.equal(JSON.parse(f.requests[0].body).visitorId,id);
   assert.equal(f.events.has('visibilitychange'),false);
 });

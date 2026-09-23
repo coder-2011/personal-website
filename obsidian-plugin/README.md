@@ -57,9 +57,9 @@ The plugin requires Obsidian 1.11.4 or newer and currently targets desktop.
 
 ## Visitor counts
 
-Published notes show estimated unique browsers over the last 30 days. Counts
-refresh when you open the panel or click Refresh. The header shows the site total,
-available date range, and last update. A failed refresh keeps prior counts marked
+Published notes show all-time estimated unique browsers. Counts
+refresh when you open the panel or click Refresh. The header shows only the site
+total. A failed refresh keeps prior counts marked
 outdated, or shows unavailable when there is no prior count. The publishing key
 authenticates this read; no new analytics account or credential is needed.
 

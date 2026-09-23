@@ -4,7 +4,6 @@ import { blogStore } from './store.mjs';
 import { PublishError } from './privacy.mjs';
 import { json, noCache } from './http.mjs';
 
-const DAY = 86_400_000;
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const origins = new Set(['https://naman.world', 'https://www.naman.world']);
 
@@ -32,7 +31,6 @@ export async function recordVisit(request, runtime, now = Date.now()) {
       ...targets.map(target => env.ANALYTICS_DB.prepare(
         'INSERT INTO visitors (target, visitor, last_seen) VALUES (?, ?, ?) ON CONFLICT (target, visitor) DO UPDATE SET last_seen = MAX(last_seen, excluded.last_seen)'
       ).bind(target, visitor, now)),
-      env.ANALYTICS_DB.prepare('DELETE FROM visitors WHERE last_seen < ?').bind(now - 90 * DAY),
     ]);
     return new Response(null, {status:204, headers:noCache});
   } catch (error) {
@@ -40,21 +38,19 @@ export async function recordVisit(request, runtime, now = Date.now()) {
   }
 }
 
-export async function visitorCounts(request, runtime, now = Date.now()) {
+export async function visitorCounts(request, runtime) {
   try {
     authenticate(request, runtime.env);
     if (request.method !== 'GET') return json({error:'Use GET.'}, 405);
     const db = runtime.env.ANALYTICS_DB;
     if (!db) return json({error:'Visitor counts are not configured yet.'}, 503);
-    const since = now - 30 * DAY;
-    const [entries, counts, meta] = await Promise.all([
+    const [entries, counts] = await Promise.all([
       blogStore(runtime).list(),
-      db.prepare('SELECT target, COUNT(*) AS visitors FROM visitors WHERE last_seen >= ? GROUP BY target').bind(since).all(),
-      db.prepare("SELECT value FROM analytics_meta WHERE key = 'started_at'").first(),
+      db.prepare('SELECT target, COUNT(*) AS visitors FROM visitors GROUP BY target').all(),
     ]);
-    if (!counts.success || !meta) throw new Error('Missing analytics data');
+    if (!counts.success) throw new Error('Missing analytics data');
     const byTarget = new Map(counts.results.map(row => [row.target, row.visitors]));
-    return json({days:30, since:Math.max(since, meta.value), startedAt:meta.value, asOf:now,
+    return json({period:'all-time',
       siteVisitors:byTarget.get('site') || 0,
       posts:Object.fromEntries(entries.filter(p => p.published).map(p => [p.id, byTarget.get(p.id) || 0])),
     });

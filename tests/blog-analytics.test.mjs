@@ -19,22 +19,24 @@ test('real SQL deduplicates browsers across reloads and renamed posts; site tota
   for(let i=0;i<3;i++)assert.equal((await recordVisit(visit(),f.runtime,now)).status,204);
   f.entries[0].slug='renamed';await recordVisit(visit(),f.runtime,now);
   await recordVisit(visit({visitorId:visitor,postId:null}),f.runtime,now);
-  let data=await (await visitorCounts(stats(),f.runtime,now)).json();
-  assert.equal(data.posts[post],1);assert.equal(data.siteVisitors,1);assert.equal(data.days,30);
+  let data=await (await visitorCounts(stats(),f.runtime)).json();
+  assert.equal(data.posts[post],1);assert.equal(data.siteVisitors,1);assert.equal(data.period,'all-time');
   const rows=f.sqlite.prepare('SELECT * FROM visitors').all();assert.equal(rows.length,2);
   assert.ok(rows.every(row=>row.visitor!==visitor && /^[a-f0-9]{64}$/.test(row.visitor)));
   await recordVisit(visit({visitorId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',postId:post}),f.runtime,now);
-  data=await (await visitorCounts(stats(),f.runtime,now)).json();assert.equal(data.posts[post],2);
+  data=await (await visitorCounts(stats(),f.runtime)).json();assert.equal(data.posts[post],2);
   f.entries[0].published=false;assert.equal((await recordVisit(visit(),f.runtime,now)).status,404);
-  assert.deepEqual((await (await visitorCounts(stats(),f.runtime,now)).json()).posts,{});
+  assert.deepEqual((await (await visitorCounts(stats(),f.runtime)).json()).posts,{});
 });
-test('counts exclude stale visitors and expire old records; late requests cannot move last_seen backwards',async()=>{
-  const f=fixture();await recordVisit(visit(),f.runtime,now-91*day);
+test('all-time counts retain old visitors and deduplicate them when they return',async()=>{
+  const f=fixture();await recordVisit(visit(),f.runtime,now-365*day);
   await recordVisit(visit({visitorId:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',postId:null}),f.runtime,now);
-  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM visitors').get().n,1);
+  assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM visitors').get().n,3);
+  const beforeReturn=await (await visitorCounts(stats(),f.runtime)).json();
+  assert.equal(beforeReturn.posts[post],1);assert.equal(beforeReturn.siteVisitors,2);
   await recordVisit(visit(),f.runtime,now);await recordVisit(visit(),f.runtime,now-day);
   assert.equal(f.sqlite.prepare('SELECT last_seen FROM visitors WHERE target = ?').get(post).last_seen,now);
-  const data=await (await visitorCounts(stats(),f.runtime,now+31*day)).json();assert.equal(data.posts[post],0);assert.equal(data.siteVisitors,0);
+  const data=await (await visitorCounts(stats(),f.runtime)).json();assert.equal(data.posts[post],1);assert.equal(data.siteVisitors,2);
 });
 test('rejects unauthenticated count reads, cross-origin writes, oversized/invalid visits and rate limits',async()=>{
   const f=fixture();assert.equal((await visitorCounts(stats(false),f.runtime)).status,401);

@@ -6,7 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p><a href="/">← Home</a></p>
     <h1>Visitor counting</h1>
     <p>This site estimates how many browsers visit the website and each blog post. It stores a random ID in your browser, so reloading a page doesn't count you again.</p>
-    <p>The server stores a keyed hash of that ID and the latest visit time for the site and each post. It does not store your IP address, referrer, or a log of individual pageviews. Inactive records are removed after 90 days when the next visit is processed. Counts cover the last 30 days.</p>
+    <p>The server stores a keyed hash of that ID and the latest visit time for the site and each post. It does not store your IP address, referrer, or a log of individual pageviews. Counts cover all visits since counting was installed. Browser IDs and visitor records do not expire automatically, so returning browsers are counted once.</p>
     <p>Different browsers and cleared browser storage can count as separate visitors. Do Not Track and Global Privacy Control are respected.</p>
     <label><input id="count-visits" type="checkbox" /> Count visits from this browser</label>
     <p id="analytics-status" role="status"></p>

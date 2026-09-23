@@ -179,11 +179,11 @@ Tokenizer embeds include their default example, generated from the real models d
 production page loads. A random browser ID in local storage identifies repeat
 visits; the server stores only its keyed hash and the latest visit time for the
 site and each post in Cloudflare D1. No IP addresses, referrers, query strings,
-reading history, or note content are stored. Inactive records expire after 90
-days on the next recorded visit. Browser IDs expire after 90 days of inactivity.
+reading history, or note content are stored. Browser IDs and visitor records do
+not expire automatically, preserving deduplication across return visits.
 
 `GET /api/publish/analytics` requires the existing publishing key and returns
-estimated unique browsers for the last 30 days, including zeroes for published
+all-time estimated unique browsers, including zeroes for published
 posts without visitors. Post IDs survive URL changes, and the site total counts
 a browser once even when it reads several posts. Statistics do not represent
 verified people and cannot recover readership before installation. Blocked

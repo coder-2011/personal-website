@@ -9,7 +9,7 @@ type Data = { site: string; secretId: string; posts: Record<string, Saved> };
 type Metadata = { id: string; slug: string; title: string; date: string; description: string; baseVersion: string | null; previousSlug?: string };
 type Image = { path: string; bytes: ArrayBuffer; type: string; placeholder: string };
 type Prepared = { meta: Metadata; markdown: string; warnings: string[]; images: Image[]; hash: string };
-type Visitors = { days: number; since: number; startedAt: number; asOf: number; siteVisitors: number; posts: Record<string, number> };
+type Visitors = { period: 'all-time'; siteVisitors: number; posts: Record<string, number> };
 
 const isPublishableNote = (file: unknown): file is TFile => file instanceof TFile && file.extension === 'md';
 const requireNote = (file: unknown) => { if (!isPublishableNote(file)) throw new Error('Only individual Markdown notes can be published. Folders cannot be published.'); };
@@ -552,11 +552,11 @@ export class PublishPanel extends Modal {
           try {
             const result = await this.plugin.api('/analytics') as Visitors;
             if (generation !== this.generation) return;
-            if (result.days !== 30 || !Number.isFinite(result.asOf) || !Number.isFinite(result.since) ||
+            if (result.period !== 'all-time' ||
                 !Number.isSafeInteger(result.siteVisitors) || result.siteVisitors < 0 || !result.posts ||
                 Object.values(result.posts).some(value => !Number.isSafeInteger(value) || value < 0)) throw new Error('Invalid visitor counts. Try Refresh.');
             this.visitors = result;
-            analyticsMessage.setText(`${result.siteVisitors.toLocaleString()} website visitors · Last 30 days · Data since ${new Date(result.since).toLocaleDateString()} · Updated ${new Date(result.asOf).toLocaleTimeString()}`);
+            analyticsMessage.setText(`${result.siteVisitors.toLocaleString()} website ${result.siteVisitors === 1 ? 'visitor' : 'visitors'}`);
           } catch (error) {
             if (generation !== this.generation) return;
             this.visitorError = error instanceof Error ? error.message : 'Visitor counts unavailable.';
@@ -629,7 +629,7 @@ export class PublishPanel extends Modal {
       const row = new Setting(el).setClass('naman-publish-post').setName(post.title).setDesc(`/blog/${post.slug}${saved?.status ? ` · ${saved.status}` : ''}`);
       const count = this.visitors?.posts[post.id];
       const visitorText = this.visitorsLoading ? 'Visitors: loading…' : count !== undefined
-        ? `${count.toLocaleString()} ${count === 1 ? 'visitor' : 'visitors'} · 30 days${this.visitorError ? ' · outdated' : ''}` : 'Visitors unavailable';
+        ? `${count.toLocaleString()} ${count === 1 ? 'visitor' : 'visitors'}${this.visitorError ? ' · outdated' : ''}` : 'Visitors unavailable';
       row.nameEl.createSpan({text:visitorText, cls:'naman-publish-visitors', attr:{title:'Estimated unique browsers, not page views. Repeat visits count once; different browsers count separately.'}});
       row.addButton(b => b.setButtonText('Open').onClick(() => window.open(`${this.plugin.data.site}/blog/${post.slug}#analytics-exclude`)));
       row.addButton(b => b.setButtonText('Copy link').onClick(async () => {

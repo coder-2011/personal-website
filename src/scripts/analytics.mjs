@@ -16,12 +16,10 @@ if (!window.__namanAnalyticsInitialized && window.self === window.top &&
     document.removeEventListener('visibilitychange', record);
     try {
       if (url.hash === '#analytics-exclude' || localStorage.getItem('naman.analytics.disabled') === '1') return;
-      const now = Date.now();
       let saved;
       try { saved = JSON.parse(localStorage.getItem('naman.analytics.visitor')); } catch {}
-      if (!saved || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(saved.id) ||
-          !Number.isFinite(saved.lastSeen) || now - saved.lastSeen > 90 * 86400000) saved = {id:crypto.randomUUID()};
-      localStorage.setItem('naman.analytics.visitor', JSON.stringify({id:saved.id, lastSeen:now}));
+      if (!saved || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(saved.id)) saved = {id:crypto.randomUUID()};
+      localStorage.setItem('naman.analytics.visitor', JSON.stringify({id:saved.id}));
       const article = document.querySelector('.blog-post');
       const postId = article?.dataset.postId || null;
       if (article && !postId) return; // Missing/unpublished posts aren't visits.

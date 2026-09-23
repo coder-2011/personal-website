@@ -818,7 +818,7 @@ test('published rows distinguish zero visitors, unavailable, loading, and stale 
   const labels=()=>[...el.walk()].filter(e=>e.tag==='span').map(e=>e.text);
   assert.equal(labels().filter(t=>t==='Visitors: loading…').length,2);
   panel.visitorsLoading=false;panel.visitors={posts:{first:0,second:1234}};
-  panel.drawPublished(el);assert.ok(labels().includes('0 visitors · 30 days'));assert.ok(labels().includes('1,234 visitors · 30 days'));
-  panel.visitorError='Offline';panel.drawPublished(el);assert.ok(labels().includes('0 visitors · 30 days · outdated'));
+  panel.drawPublished(el);assert.ok(labels().includes('0 visitors'));assert.ok(labels().includes('1,234 visitors'));
+  panel.visitorError='Offline';panel.drawPublished(el);assert.ok(labels().includes('0 visitors · outdated'));
   panel.visitors=undefined;panel.drawPublished(el);assert.equal(labels().filter(t=>t==='Visitors unavailable').length,2);
 });
