@@ -39,7 +39,7 @@ PROJECTS = [
         "Snaptokens",
         "GitHub repo",
         [
-            "Built a tokenizer in rust. Achieves exact token-ID and API-level parity, while being 46.41x faster than than Hugging Face and 2.04x faster than Gigatoken. Current fastest OSS tokenizer in the world.",
+            "Built a tokenizer in rust. Achieves exact token-ID and API-level parity, while being 46.41x faster than than Hugging Face and 2.19x faster than Gigatoken. Current fastest OSS tokenizer in the world.",
         ],
     ),
     (
