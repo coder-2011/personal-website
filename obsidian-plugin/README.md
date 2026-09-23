@@ -54,3 +54,16 @@ Enable **Naman Publish** in that vault's Community plugins. Set the website orig
 Use a separate test vault and `BLOG_NAMESPACE=publishing-lab`. Never point synthetic test notes at production except for a deliberately temporary integration check. `node --env-file=.env.local scripts/blog/integration.mjs` verifies the real API and private store, then unpublishes its synthetic note.
 
 The plugin requires Obsidian 1.11.4 or newer and currently targets desktop.
+
+## Visitor counts
+
+Published notes show estimated unique browsers over the last 30 days. Counts
+refresh when you open the panel or click Refresh. The header shows the site total,
+available date range, and last update. A failed refresh keeps prior counts marked
+outdated, or shows unavailable when there is no prior count. The publishing key
+authenticates this read; no new analytics account or credential is needed.
+
+Use Open in the panel once in each browser you use: it excludes that browser's
+future visits. Copy link remains a clean public URL. You can change the preference
+at https://naman.world/analytics. Counts start at installation and follow posts
+through URL changes. They estimate browsers, not verified people.

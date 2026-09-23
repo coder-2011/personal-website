@@ -32,7 +32,7 @@ class Control {
   onClick(fn) { this.click = fn; return this; }
 }
 class Setting {
-  constructor(parent) { this.settingEl = parent.createDiv(); this.controlEl = this.settingEl.createDiv(); }
+  constructor(parent) { this.settingEl = parent.createDiv(); this.nameEl = this.settingEl.createDiv(); this.controlEl = this.settingEl.createDiv(); }
   setName(value) { this.settingEl.name = value; return this; }
   setDesc() { return this; }
   setClass() { return this; }
@@ -808,4 +808,17 @@ test('background catch-up checks unchanged notes without any storage requests', 
   await f.plugin.catchUp(); await f.plugin.pump();
   assert.equal(f.requests.length, 2, 'unsent local changes still retry');
   f.plugin.onunload();
+});
+
+test('published rows distinguish zero visitors, unavailable, loading, and stale counts', () => {
+  const f=fixture();
+  f.plugin.remote=[{id:'first',title:'First',slug:'first',published:true},{id:'second',title:'Second',slug:'second',published:true}];
+  const panel=new PublishPanel(f.app,f.plugin), el=new Element();
+  panel.drawPublished(el);
+  const labels=()=>[...el.walk()].filter(e=>e.tag==='span').map(e=>e.text);
+  assert.equal(labels().filter(t=>t==='Visitors: loading…').length,2);
+  panel.visitorsLoading=false;panel.visitors={posts:{first:0,second:1234}};
+  panel.drawPublished(el);assert.ok(labels().includes('0 visitors · 30 days'));assert.ok(labels().includes('1,234 visitors · 30 days'));
+  panel.visitorError='Offline';panel.drawPublished(el);assert.ok(labels().includes('0 visitors · 30 days · outdated'));
+  panel.visitors=undefined;panel.drawPublished(el);assert.equal(labels().filter(t=>t==='Visitors unavailable').length,2);
 });

@@ -9,6 +9,7 @@ type Data = { site: string; secretId: string; posts: Record<string, Saved> };
 type Metadata = { id: string; slug: string; title: string; date: string; description: string; baseVersion: string | null; previousSlug?: string };
 type Image = { path: string; bytes: ArrayBuffer; type: string; placeholder: string };
 type Prepared = { meta: Metadata; markdown: string; warnings: string[]; images: Image[]; hash: string };
+type Visitors = { days: number; since: number; startedAt: number; asOf: number; siteVisitors: number; posts: Record<string, number> };
 
 const isPublishableNote = (file: unknown): file is TFile => file instanceof TFile && file.extension === 'md';
 const requireNote = (file: unknown) => { if (!isPublishableNote(file)) throw new Error('Only individual Markdown notes can be published. Folders cannot be published.'); };
@@ -523,6 +524,9 @@ export class PublishModal extends Modal {
 export class PublishPanel extends Modal {
   selected = new Set<TFile>();
   generation = 0;
+  visitors?: Visitors;
+  visitorError = '';
+  visitorsLoading = true;
   constructor(app: App, private plugin: NamanPublish) { super(app); this.modalEl.addClass('naman-publish-dialog'); }
   onClose() { this.generation++; this.contentEl.empty(); }
   onOpen() {
@@ -531,21 +535,46 @@ export class PublishPanel extends Modal {
     el.createEl('h2', { text: 'Publish to naman.world' });
     const heading = new Setting(el).setName('Published notes').setHeading();
     const message = el.createEl('p', {cls:'naman-publish-muted', attr:{role:'status'}});
+    const analyticsMessage = el.createEl('p', {cls:'naman-publish-muted', attr:{role:'status'}});
     const published = el.createDiv({cls:'naman-publish-posts'});
     heading.addButton(button => {
       const refresh = async () => {
         button.setDisabled(true); message.setText('Loading published notes…');
+        this.visitorsLoading = true; this.visitorError = '';
+        analyticsMessage.setText('Loading visitor counts…');
+        this.drawPublished(published);
         message.removeClass('naman-publish-error');
         try {
           await this.plugin.refresh();
           if (generation !== this.generation) return;
           message.setText(this.plugin.remote.some(p => p.published) ? '' : 'No published notes yet. Select a note below to get started.');
           this.drawPublished(published);
+          try {
+            const result = await this.plugin.api('/analytics') as Visitors;
+            if (generation !== this.generation) return;
+            if (result.days !== 30 || !Number.isFinite(result.asOf) || !Number.isFinite(result.since) ||
+                !Number.isSafeInteger(result.siteVisitors) || result.siteVisitors < 0 || !result.posts ||
+                Object.values(result.posts).some(value => !Number.isSafeInteger(value) || value < 0)) throw new Error('Invalid visitor counts. Try Refresh.');
+            this.visitors = result;
+            analyticsMessage.setText(`${result.siteVisitors.toLocaleString()} website visitors · Last 30 days · Data since ${new Date(result.since).toLocaleDateString()} · Updated ${new Date(result.asOf).toLocaleTimeString()}`);
+          } catch (error) {
+            if (generation !== this.generation) return;
+            this.visitorError = error instanceof Error ? error.message : 'Visitor counts unavailable.';
+            analyticsMessage.setText(this.visitorError);
+          }
         } catch (error) {
           if (generation !== this.generation) return;
           message.setText(`${error instanceof Error ? error.message : 'Could not connect.'} Published notes below may be out of date.`);
           message.addClass('naman-publish-error');
-        } finally { button.setDisabled(false); }
+          this.visitorError = 'Visitor counts could not be refreshed.';
+          analyticsMessage.setText(this.visitorError);
+        } finally {
+          if (generation === this.generation) {
+            this.visitorsLoading = false;
+            this.drawPublished(published);
+            button.setDisabled(false);
+          }
+        }
       };
       button.setButtonText('Refresh').onClick(refresh);
       void refresh();
@@ -598,7 +627,11 @@ export class PublishPanel extends Modal {
       const file = saved && this.app.vault.getAbstractFileByPath(saved.path);
       const updating = file instanceof TFile && this.plugin.manualUpdates.get(file.path);
       const row = new Setting(el).setClass('naman-publish-post').setName(post.title).setDesc(`/blog/${post.slug}${saved?.status ? ` · ${saved.status}` : ''}`);
-      row.addButton(b => b.setButtonText('Open').onClick(() => window.open(`${this.plugin.data.site}/blog/${post.slug}`)));
+      const count = this.visitors?.posts[post.id];
+      const visitorText = this.visitorsLoading ? 'Visitors: loading…' : count !== undefined
+        ? `${count.toLocaleString()} ${count === 1 ? 'visitor' : 'visitors'} · 30 days${this.visitorError ? ' · outdated' : ''}` : 'Visitors unavailable';
+      row.nameEl.createSpan({text:visitorText, cls:'naman-publish-visitors', attr:{title:'Estimated unique browsers, not page views. Repeat visits count once; different browsers count separately.'}});
+      row.addButton(b => b.setButtonText('Open').onClick(() => window.open(`${this.plugin.data.site}/blog/${post.slug}#analytics-exclude`)));
       row.addButton(b => b.setButtonText('Copy link').onClick(async () => {
         try { await navigator.clipboard.writeText(`${this.plugin.data.site}/blog/${post.slug}`); new Notice('Link copied'); }
         catch { new Notice('Could not copy the link.'); }
