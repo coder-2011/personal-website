@@ -37,9 +37,9 @@ PROJECTS = [
     ),
     (
         "Snaptokens",
-        "GitHub repo",
+        (("Blog post", "https://naman.world/blog/snaptokens"), ("GitHub repo", "https://github.com/coder-2011/snaptokens")),
         [
-            "Built a tokenizer in rust. Achieves exact token-ID and API-level parity, while being 46.41x faster than than Hugging Face and 2.19x faster than Gigatoken. Current fastest OSS tokenizer in the world.",
+            "Built a tokenizer in rust. Achieves exact token-ID and API-level parity, while being 46.41x faster than than Hugging Face and 2.19x faster than Gigatoken on inference-shaped workloads. Current fastest OSS tokenizer in the world.",
         ],
     ),
     (
@@ -109,7 +109,7 @@ def paragraph(text: str, style: ParagraphStyle, link: str | None = None) -> Para
 
 def entry(
     title: str,
-    meta: str,
+    meta: str | tuple[tuple[str, str], ...],
     bullets: list[str],
     styles: dict[str, ParagraphStyle],
     title_link: str | None = None,
@@ -118,7 +118,10 @@ def entry(
     cells = [title_cell]
     col_widths = [7.4 * inch]
     if meta:
-        cells.append(paragraph(meta, styles["entry_meta"]))
+        if isinstance(meta, str):
+            cells.append(paragraph(meta, styles["entry_meta"]))
+        else:
+            cells.append([paragraph(label, styles["entry_meta"], url) for label, url in meta])
         col_widths = [5.55 * inch, 1.85 * inch]
     heading = Table(
         [cells],
