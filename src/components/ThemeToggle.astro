@@ -13,6 +13,12 @@
   const syncEmbeds = enableEmbedThemes();
   const toggle = document.querySelector<HTMLButtonElement>(".theme-toggle")!;
   const root = document.documentElement;
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
+  let followsSystem = true;
+  try {
+    const saved = localStorage.getItem("theme");
+    followsSystem = saved !== "light" && saved !== "dark";
+  } catch {}
 
   function applyTheme(theme: string) {
     const dark = theme === "dark";
@@ -24,7 +30,11 @@
   }
 
   applyTheme(root.dataset.theme ?? "light");
+  systemTheme.addEventListener("change", ({ matches }) => {
+    if (followsSystem) applyTheme(matches ? "dark" : "light");
+  });
   toggle.addEventListener("click", () => {
+    followsSystem = false;
     const chosenTheme = root.dataset.theme === "dark" ? "light" : "dark";
     applyTheme(chosenTheme);
     try { localStorage.setItem("theme", chosenTheme); } catch {}
