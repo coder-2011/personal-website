@@ -192,8 +192,7 @@ storage, disabled tracking, different devices, and cleared storage affect counts
 Naman Publish displays these counts beside each published title on opening the
 panel or clicking Refresh. Opening a post from the plugin adds
 `#analytics-exclude`, which excludes that browser before any tracking request.
-Visitors can change this preference at `/analytics`. Automation, previews,
-iframes, unpublished posts, callbacks, Do Not Track, and Global Privacy Control
+Automation, previews, iframes, unpublished posts, callbacks, Do Not Track, and Global Privacy Control
 are excluded. Counting never blocks page rendering or publishing/live sync.
 
 D1 schema: `migrations/analytics/0001_visitors.sql`. The Worker needs the
